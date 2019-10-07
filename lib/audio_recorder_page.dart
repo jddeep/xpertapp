@@ -14,7 +14,6 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
   String tempFilename = "TempRecording";
   File defaultAudioFile;
 
-
   stopRecording() async {
     await AudioRecorder.stop();
     bool isRecording = await AudioRecorder.isRecording;
@@ -24,17 +23,18 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
     setState(() {
       _isRecording = isRecording;
       _showSaveDialog();
-      defaultAudioFile = File(pathDart.join(docDir.path, this.tempFilename+'.m4a'));
+      defaultAudioFile =
+          File(pathDart.join(docDir.path, this.tempFilename + '.m4a'));
     });
   }
 
   _showSaveDialog() async {
-    if( defaultAudioFile != null){
+    if (defaultAudioFile != null) {
       String basename = pathDart.basename(defaultAudioFile.path);
-      Scaffold
-          .of(context)
-          .showSnackBar(new SnackBar(content: new Text("Saved file $basename"),
-        duration: Duration(milliseconds: 1400), ));
+      Scaffold.of(context).showSnackBar(new SnackBar(
+        content: new Text("Saved file $basename"),
+        duration: Duration(milliseconds: 1400),
+      ));
 
       setState(() {
         _isRecording = false;
@@ -46,12 +46,12 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
     try {
       Directory docDir = await getApplicationDocumentsDirectory();
       String newFilePath = pathDart.join(docDir.path, this.tempFilename);
-      File tempAudioFile = File(newFilePath+'.m4a');
-      Scaffold
-          .of(context)
-          .showSnackBar(new SnackBar(content: new Text("Recording."),
-        duration: Duration(milliseconds: 1400), ));
-      if (await tempAudioFile.exists()){
+      File tempAudioFile = File(newFilePath + '.m4a');
+      Scaffold.of(context).showSnackBar(new SnackBar(
+        content: new Text("Recording."),
+        duration: Duration(milliseconds: 1400),
+      ));
+      if (await tempAudioFile.exists()) {
         await tempAudioFile.delete();
       }
       if (await AudioRecorder.hasPermissions) {
@@ -87,40 +87,40 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
               children: <Widget>[
                 Container(
                   decoration: BoxDecoration(
-                  image: DecorationImage(image: AssetImage('assets/profile_pic.jpg'),
-                  fit: BoxFit.cover)
-                ),
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Spacer(flex:1),
-                        Text(
-                            _isRecording ? "Recording" : ""
-                        ),
-                        Spacer(),
-                        Container(height:300.0),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Container(width: 38.0),
-                              Column( children: [
-                                _isRecording
-                                    ? new Text('Stop',textScaleFactor: 1.5)
-                                    : new Text('Record', textScaleFactor: 1.5),
-                                Container(height:12.0),
-                                new FloatingActionButton(
-                                  backgroundColor: Colors.amber,
-                                  child: _isRecording
-                                      ? new Icon(Icons.stop, size: 36.0)
-                                      : new Icon(Icons.mic, size: 36.0),
-                                  disabledElevation: 0.0,
-                                  onPressed: _isRecording ? stopRecording : startRecording,
-                                ),]),
-                            ],
-                          ),
-                        Spacer(),
-                      ],
-                    ),
+                      image: DecorationImage(
+                          image: AssetImage('assets/profile_pic.jpg'),
+                          fit: BoxFit.cover)),
+                  child: new Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Spacer(flex: 1),
+                      Text(_isRecording ? "Recording" : ""),
+                      Spacer(),
+                      Container(height: 300.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Container(width: 38.0),
+                          Column(children: [
+                            _isRecording
+                                ? new Text('Stop', textScaleFactor: 1.5)
+                                : new Text('Record', textScaleFactor: 1.5),
+                            Container(height: 12.0),
+                            new FloatingActionButton(
+                              backgroundColor: Colors.amber,
+                              child: _isRecording
+                                  ? new Icon(Icons.stop, size: 36.0)
+                                  : new Icon(Icons.mic, size: 36.0),
+                              disabledElevation: 0.0,
+                              onPressed:
+                                  _isRecording ? stopRecording : startRecording,
+                            ),
+                          ]),
+                        ],
+                      ),
+                      Spacer(),
+                    ],
+                  ),
                 ),
               ],
             );

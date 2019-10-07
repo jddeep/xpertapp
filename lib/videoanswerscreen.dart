@@ -87,174 +87,161 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
   }
 
-
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // key: _scaffoldKey,
+      // appBar: AppBar(
+      //   title: const Text('Camera example'),
+      // ),
+      // body: Column(
+      //   children: <Widget>[
+      //     Expanded(
+      //       child: Container(
+      //         child: Padding(
+      //           padding: const EdgeInsets.all(1.0),
+      //           child: Center(
+      //             child: _cameraPreviewWidget(),
+      //           ),
+      //         ),
+      //         decoration: BoxDecoration(
+      //           color: Colors.black,
+      //           border: Border.all(
+      //             color: controller != null && controller.value.isRecordingVideo
+      //                 ? Colors.redAccent
+      //                 : Colors.grey,
+      //             width: 3.0,
+      //           ),
+      //         ),
+      //       ),
+      //     ),
+      //     _captureControlRowWidget(),
+      //     _toggleAudioWidget(),
+      //     Padding(
+      //       padding: const EdgeInsets.all(5.0),
+      //       child: Row(
+      //         mainAxisAlignment: MainAxisAlignment.start,
+      //         children: <Widget>[
+      //           _cameraTogglesRowWidget(),
+      //           _thumbnailWidget(),
+      //         ],
+      //       ),
+      //     ),
+      //   ],
+      // ),
 
-
-        // key: _scaffoldKey,
-        // appBar: AppBar(
-        //   title: const Text('Camera example'),
-        // ),
-        // body: Column(
-        //   children: <Widget>[
-        //     Expanded(
-        //       child: Container(
-        //         child: Padding(
-        //           padding: const EdgeInsets.all(1.0),
-        //           child: Center(
-        //             child: _cameraPreviewWidget(),
-        //           ),
-        //         ),
-        //         decoration: BoxDecoration(
-        //           color: Colors.black,
-        //           border: Border.all(
-        //             color: controller != null && controller.value.isRecordingVideo
-        //                 ? Colors.redAccent
-        //                 : Colors.grey,
-        //             width: 3.0,
-        //           ),
-        //         ),
-        //       ),
-        //     ),
-        //     _captureControlRowWidget(),
-        //     _toggleAudioWidget(),
-        //     Padding(
-        //       padding: const EdgeInsets.all(5.0),
-        //       child: Row(
-        //         mainAxisAlignment: MainAxisAlignment.start,
-        //         children: <Widget>[
-        //           _cameraTogglesRowWidget(),
-        //           _thumbnailWidget(),
-        //         ],
-        //       ),
-        //     ),
-        //   ],
-        // ),
-
-
-
-        //// Actual SHIT //////
-        key: _scaffoldKey,
-            body: Stack(
-              children: <Widget>[
-                Container(
-                  // height: MediaQuery.of(context).size.height,
-                      child: _cameraPreviewWidget(),
-                ),
-                // Align(
-                //   alignment: AlignmentDirectional.topEnd,
-                //   child: Padding(
-                //     padding: const EdgeInsets.only(top: 50.0, right: 20.0),
-                //     child:
-                //         _onlyAudioButton(),
-                //   ),
-                // ),
-                Align(
-                  alignment: AlignmentDirectional.topStart,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 50.0),
-                    child: _cameraTogglesRowWidget(),
-                  ),
-                ),
-                Align(
-                  alignment: AlignmentDirectional.bottomStart,
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 70.0),
-                                  child: Container(
-                    color: Colors.transparent,
-                    child: Text('The message incoming goes here...', style: TextStyle(color: Colors.white, fontSize: 16.0),),
-                  ),
-                                ),
-                ),
-                Align(
-                  alignment: AlignmentDirectional.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20.0),
-                        border: Border.all(
-                          width: 4.0,
-                          color: Colors.white
-                        )
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.fiber_manual_record
-                        ),
-                        iconSize: 30.0,
-                        color: Colors.red,
-                        onPressed: (){
-                          _startTimer();
-                        },
-                      ),
-                    ),
-                  )
-                ),
-                Align(
-                  alignment: AlignmentDirectional.topCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 26.0),
-                    child: Text(_timeString,
-                    style: TextStyle(color: Colors.white, fontSize: 20.0),
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: AlignmentDirectional.bottomEnd,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom:10.0, right: 10.0),
-                    child: _thumbnailWidget(),
-                  ),
-                )
-              ],
+      //// Actual SHIT //////
+      key: _scaffoldKey,
+      body: Stack(
+        children: <Widget>[
+          Container(
+            // height: MediaQuery.of(context).size.height,
+            child: _cameraPreviewWidget(),
+          ),
+          // Align(
+          //   alignment: AlignmentDirectional.topEnd,
+          //   child: Padding(
+          //     padding: const EdgeInsets.only(top: 50.0, right: 20.0),
+          //     child:
+          //         _onlyAudioButton(),
+          //   ),
+          // ),
+          Align(
+            alignment: AlignmentDirectional.topStart,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 50.0),
+              child: _cameraTogglesRowWidget(),
             ),
+          ),
+          Align(
+            alignment: AlignmentDirectional.bottomStart,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 70.0),
+              child: Container(
+                color: Colors.transparent,
+                child: Text(
+                  'The message incoming goes here...',
+                  style: TextStyle(color: Colors.white, fontSize: 16.0),
+                ),
+              ),
+            ),
+          ),
+          Align(
+              alignment: AlignmentDirectional.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      border: Border.all(width: 4.0, color: Colors.white)),
+                  child: IconButton(
+                    icon: Icon(Icons.fiber_manual_record),
+                    iconSize: 30.0,
+                    color: Colors.red,
+                    onPressed: () {
+                      _startTimer();
+                    },
+                  ),
+                ),
+              )),
+          Align(
+            alignment: AlignmentDirectional.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 26.0),
+              child: Text(
+                _timeString,
+                style: TextStyle(color: Colors.white, fontSize: 20.0),
+              ),
+            ),
+          ),
+          Align(
+            alignment: AlignmentDirectional.bottomEnd,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10.0, right: 10.0),
+              child: _thumbnailWidget(),
+            ),
+          )
+        ],
+      ),
 
-
-
-        //     _captureControlRowWidget(),
-        //     _toggleAudioWidget(),
-        //     Padding(
-        //       padding: const EdgeInsets.all(5.0),
-        //       child: Row(
-        //         mainAxisAlignment: MainAxisAlignment.start,
-        //         children: <Widget>[
-        //           _cameraTogglesRowWidget(),
-        //           _thumbnailWidget(),
-        //         ],
-        //       ),
-        //     ),
-        //   ],
-        // ),
+      //     _captureControlRowWidget(),
+      //     _toggleAudioWidget(),
+      //     Padding(
+      //       padding: const EdgeInsets.all(5.0),
+      //       child: Row(
+      //         mainAxisAlignment: MainAxisAlignment.start,
+      //         children: <Widget>[
+      //           _cameraTogglesRowWidget(),
+      //           _thumbnailWidget(),
+      //         ],
+      //       ),
+      //     ),
+      //   ],
+      // ),
     );
   }
 
-Widget _onlyAudioButton() {
-return GestureDetector(
-  onTap: (){
+  Widget _onlyAudioButton() {
+    return GestureDetector(
+      onTap: () {
         setState(() {
-      if(onlyAudio)
-    onlyAudio = false;
-    else
-    onlyAudio = true;
-    });
-  },
-  child:   Container(
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(50.0),
-      color: onlyAudio?Colors.amber:Colors.grey
-    ),
-    height: 50.0,
-    width: 50.0,
-    child: Icon(
-      Icons.keyboard_voice,
-    )
-  ),
-);
+          if (onlyAudio)
+            onlyAudio = false;
+          else
+            onlyAudio = true;
+        });
+      },
+      child: Container(
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50.0),
+              color: onlyAudio ? Colors.amber : Colors.grey),
+          height: 50.0,
+          width: 50.0,
+          child: Icon(
+            Icons.keyboard_voice,
+          )),
+    );
 // return IconButton(
 //   icon: Icon(Icons.keyboard_voice),
 //   color: onlyAudio?Colors.amber:Colors.grey,
@@ -268,7 +255,8 @@ return GestureDetector(
 //     });
 //   },
 // );
-}
+  }
+
   /// Display the preview from the camera (or a message if the preview is not available).
   Widget _cameraPreviewWidget() {
     //   for(CameraDescription camerasdesc in widget.cameras){
@@ -301,33 +289,33 @@ return GestureDetector(
 
   /// Toggle recording audio
   Widget _toggleAudioWidget() {
-    return  Row(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 90.0),
-            child: Switch(
-                          activeColor: Colors.amber,
-                          activeTrackColor: Colors.amberAccent,
-                          inactiveThumbColor: Colors.grey,
-                          inactiveTrackColor: Colors.blueGrey,
-                          value: onlyAudio,
-                          onChanged: (bool value) {
-                            print(value);
-                            setState(() {
-                              onlyAudio = value;
-                            });
-                            // if (controller != null) {
-                            //   onNewCameraSelected(controller.description);
-                            // }
-                          },
-            ),
+    return Row(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(left: 90.0),
+          child: Switch(
+            activeColor: Colors.amber,
+            activeTrackColor: Colors.amberAccent,
+            inactiveThumbColor: Colors.grey,
+            inactiveTrackColor: Colors.blueGrey,
+            value: onlyAudio,
+            onChanged: (bool value) {
+              print(value);
+              setState(() {
+                onlyAudio = value;
+              });
+              // if (controller != null) {
+              //   onNewCameraSelected(controller.description);
+              // }
+            },
           ),
-          IconButton(
-            icon: Icon(Icons.keyboard_voice),
-            color: Colors.amber,
-            onPressed: (){},
-          )
-        ],
+        ),
+        IconButton(
+          icon: Icon(Icons.keyboard_voice),
+          color: Colors.amber,
+          onPressed: () {},
+        )
+      ],
     );
   }
 
@@ -337,29 +325,28 @@ return GestureDetector(
       height: 70.0,
       width: 70.0,
       child: Row(
-          children: <Widget>[
-            videoController == null && imagePath == null
-                ? Container()
-                : SizedBox(
-                    child: (videoController == null)
-                        ? Image.file(File(imagePath))
-                        : Container(
-                            child: Center(
-                              child: AspectRatio(
-                                  aspectRatio:
-                                      videoController.value.size != null
-                                          ? videoController.value.aspectRatio
-                                          : 1.0,
-                                  child: VideoPlayer(videoController)),
-                            ),
-                            decoration: BoxDecoration(
-                                border: Border.all(color: Colors.amber)),
+        children: <Widget>[
+          videoController == null && imagePath == null
+              ? Container()
+              : SizedBox(
+                  child: (videoController == null)
+                      ? Image.file(File(imagePath))
+                      : Container(
+                          child: Center(
+                            child: AspectRatio(
+                                aspectRatio: videoController.value.size != null
+                                    ? videoController.value.aspectRatio
+                                    : 1.0,
+                                child: VideoPlayer(videoController)),
                           ),
-                    width: 64.0,
-                    height: 64.0,
-                  ),
-          ],
-        ),
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.amber)),
+                        ),
+                  width: 64.0,
+                  height: 64.0,
+                ),
+        ],
+      ),
     );
   }
 
@@ -425,7 +412,10 @@ return GestureDetector(
           SizedBox(
             width: 80.0,
             child: RadioListTile<CameraDescription>(
-              title: Icon(getCameraLensIcon(cameraDescription.lensDirection), color: Colors.amber,),
+              title: Icon(
+                getCameraLensIcon(cameraDescription.lensDirection),
+                color: Colors.amber,
+              ),
               activeColor: Colors.red,
               groupValue: controller?.description,
               value: cameraDescription,
@@ -439,10 +429,7 @@ return GestureDetector(
       toggles.add(_toggleAudioWidget());
     }
 
-    return Container(
-      color: Colors.transparent,
-      child: Row(
-        children: toggles));
+    return Container(color: Colors.transparent, child: Row(children: toggles));
   }
 
   String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -450,9 +437,10 @@ return GestureDetector(
   void showInSnackBar(String message) {
     _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(message)));
   }
-String _timeString = '';
-Timer _timer;
-int _start = 0;
+
+  String _timeString = '';
+  Timer _timer;
+  int _start = 0;
 
   //   void _getTime() {
   //   _start = _start + 1;
@@ -464,7 +452,7 @@ int _start = 0;
   // }
 
   void _startTimer() {
-    if(isRecording){
+    if (isRecording) {
       setState(() {
         isRecording = false;
         _timeString = '';
@@ -475,18 +463,17 @@ int _start = 0;
         // else _stopAudioRec();
       });
     } else {
-      isRecording =  true;
+      isRecording = true;
       startTimer();
-      if(!onlyAudio)
-      onVideoRecordButtonPressed();
-      else{
-      Navigator.push(context, 
-      MaterialPageRoute(builder: (context)=> AudioRecPage())
-      );
+      if (!onlyAudio)
+        onVideoRecordButtonPressed();
+      else {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => AudioRecPage()));
       }
-     
-    //   _timeString = _formatDateTime(DateTime.fromMillisecondsSinceEpoch(_start * 1000));
-    // Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
+
+      //   _timeString = _formatDateTime(DateTime.fromMillisecondsSinceEpoch(_start * 1000));
+      // Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
     }
   }
 
@@ -498,17 +485,17 @@ int _start = 0;
   // }
 
   void startTimer() {
-  const oneSec = const Duration(seconds: 1);
-  _timer = new Timer.periodic(
-    oneSec,
-    (Timer timer) => setState(
-      () {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+      (Timer timer) => setState(
+        () {
           _start = _start + 1;
           _timeString = formatHHMMSS(_start);
-      },
-    ),
-  );
-}
+        },
+      ),
+    );
+  }
 
   // String _formatDateTime(DateTime dateTime) {
   //   return DateFormat.ms().format(dateTime);
@@ -516,22 +503,22 @@ int _start = 0;
   // }
 
   String formatHHMMSS(int seconds) {
-  int hours = (seconds / 3600).truncate();
-  seconds = (seconds % 3600).truncate();
-  int minutes = (seconds / 60).truncate();
+    int hours = (seconds / 3600).truncate();
+    seconds = (seconds % 3600).truncate();
+    int minutes = (seconds / 60).truncate();
 
-  String hoursStr = (hours).toString().padLeft(2, '0');
-  String minutesStr = (minutes).toString().padLeft(2, '0');
-  String secondsStr = (seconds % 60).toString().padLeft(2, '0');
+    String hoursStr = (hours).toString().padLeft(2, '0');
+    String minutesStr = (minutes).toString().padLeft(2, '0');
+    String secondsStr = (seconds % 60).toString().padLeft(2, '0');
 
-  if (hours == 0) {
-    return "$minutesStr:$secondsStr";
+    if (hours == 0) {
+      return "$minutesStr:$secondsStr";
+    }
+
+    return "$hoursStr:$minutesStr:$secondsStr";
   }
 
-  return "$hoursStr:$minutesStr:$secondsStr";
-}
-
-  void onNewCameraSelected(CameraDescription cameraDescription) async {    
+  void onNewCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) {
       await controller.dispose();
     }
@@ -734,7 +721,9 @@ class CameraApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: CameraExampleHome(cameras: cameras,),
+      home: CameraExampleHome(
+        cameras: cameras,
+      ),
       theme: new ThemeData(
           brightness: Brightness.dark,
           primaryColor: Colors.amber,

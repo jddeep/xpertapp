@@ -6,7 +6,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'audio_recorder_page.dart';
 
 class AudioRecPage extends StatefulWidget {
-
   AudioRecPage({Key key}) : super(key: key);
 
   @override
@@ -32,7 +31,13 @@ class _AudioRecPageState extends State<AudioRecPage> {
   }
 
   requestPermissions() async {
-    Map<PermissionGroup, PermissionStatus> permissions = await PermissionHandler().requestPermissions([PermissionGroup.microphone, PermissionGroup.mediaLibrary, PermissionGroup.storage, PermissionGroup.phone]);
+    Map<PermissionGroup, PermissionStatus> permissions =
+        await PermissionHandler().requestPermissions([
+      PermissionGroup.microphone,
+      PermissionGroup.mediaLibrary,
+      PermissionGroup.storage,
+      PermissionGroup.phone
+    ]);
     return permissions;
   }
 }
