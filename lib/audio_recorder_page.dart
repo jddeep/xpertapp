@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audio_recorder/audio_recorder.dart';
@@ -5,6 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as pathDart;
 
 class AudioRecordingFragment extends StatefulWidget {
+  final incomingQuestion;
+  AudioRecordingFragment({this.incomingQuestion, key}):super(key: key);
   @override
   _AudioRecordingFragmentState createState() => _AudioRecordingFragmentState();
 }
@@ -14,7 +17,12 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
   String tempFilename = "TempRecording";
   File defaultAudioFile;
 
+  
+
   stopRecording() async {
+    _timeString = '';
+        _start = 0;
+        _timer.cancel();
     await AudioRecorder.stop();
     bool isRecording = await AudioRecorder.isRecording;
 
@@ -40,6 +48,49 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
         _isRecording = false;
       });
     }
+  }
+
+  void _startTimer() {
+    startRecording();
+    startTimer();
+  }
+  String _timeString = '';
+  Timer _timer;
+  int _start = 0;
+
+  void startTimer(){
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+      (Timer timer)  {
+        setState(() {
+          _start = _start + 1;
+          _timeString = formatHHMMSS(_start);
+        }
+        );
+        },
+    );
+  }
+
+  // String _formatDateTime(DateTime dateTime) {
+  //   return DateFormat.ms().format(dateTime);
+  //   // return DateFormat('MM/dd/yyyy hh:mm:ss').format(dateTime);
+  // }
+
+  String formatHHMMSS(int seconds) {
+    int hours = (seconds / 3600).truncate();
+    seconds = (seconds % 3600).truncate();
+    int minutes = (seconds / 60).truncate();
+
+    String hoursStr = (hours).toString().padLeft(2, '0');
+    String minutesStr = (minutes).toString().padLeft(2, '0');
+    String secondsStr = (seconds % 60).toString().padLeft(2, '0');
+
+    if (hours == 0) {
+      return "$minutesStr:$secondsStr";
+    }
+
+    return "$hoursStr:$minutesStr:$secondsStr";
   }
 
   startRecording() async {
@@ -88,44 +139,69 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                 Container(
                   decoration: BoxDecoration(
                       image: DecorationImage(
-                          image: AssetImage('assets/profile_pic.jpg'),
+                          image: AssetImage('assets/my_prof_pic.jpg'),
                           fit: BoxFit.cover)),
-                  child: new Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Spacer(flex: 1),
-                      Text(_isRecording ? "Recording" : ""),
-                      Spacer(),
-                      Container(height: 300.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Container(width: 38.0),
-                          Column(children: [
-                            _isRecording
-                                ? new Text('Stop', textScaleFactor: 1.5)
-                                : new Text('Record', textScaleFactor: 1.5),
-                            Container(height: 12.0),
-                            new FloatingActionButton(
+                  
+                ),
+                Align(
+            alignment: AlignmentDirectional.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 26.0),
+              child: Text(
+                _timeString,
+                style: TextStyle(color: Colors.white, fontSize: 20.0),
+              ),
+            ),
+          ),
+                Align(
+            alignment: AlignmentDirectional.bottomStart,
+            child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(14.0),
+                        topRight: Radius.circular(14.0)
+                      )  
+                      ),
+              child: Wrap(
+                children: <Widget>[
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top:8.0, bottom: 8.0),
+                      child: Text(
+                        widget.incomingQuestion,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white, fontSize: 16.0)
+                      ),
+                    ),
+                  ),
+                          Center(
+                            child: FloatingActionButton(
                               backgroundColor: Colors.amber,
                               child: _isRecording
                                   ? new Icon(Icons.stop, size: 36.0)
                                   : new Icon(Icons.mic, size: 36.0),
                               disabledElevation: 0.0,
-                              onPressed:
-                                  _isRecording ? stopRecording : startRecording,
+                              onPressed: (){
+                                _isRecording ? stopRecording() : _startTimer();
+                              }
                             ),
-                          ]),
-                        ],
-                      ),
-                      Spacer(),
-                    ],
-                  ),
-                ),
+                          ),
+                          Center(
+                            child: _isRecording
+                                ? new Text('Stop', textScaleFactor: 1.5)
+                                : new Text('Record', textScaleFactor: 1.5),
+                          )
+                ],
+              ),
+            ),
+          ),
               ],
             );
         }
       },
     );
   }
+
+
 }

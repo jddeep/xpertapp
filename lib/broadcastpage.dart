@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:xpert/homepage.dart';
+import 'package:xpert/storypageview.dart';
 
 class BroadcastPage extends StatefulWidget {
   @override
@@ -120,6 +121,7 @@ class _BroadcastPageState extends State<BroadcastPage> {
           ),
           body: TabBarView(
             children: <Widget>[
+              /// LIVE FEED PAGE ///
               Scaffold(
                 body: Column(
                   children: <Widget>[
@@ -127,6 +129,72 @@ class _BroadcastPageState extends State<BroadcastPage> {
                     Divider(
                       height: 5.0,
                       color: Colors.grey,
+                    ),
+                                        Container(
+                      height: 80,
+                      padding: EdgeInsets.all(8.0),
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: <Widget>[
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: GestureDetector(
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => StoryPageView())),
+                              child: CircleAvatar(
+                                radius: 32,
+                                backgroundColor: Colors.amber,
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage:
+                                      AssetImage('assets/profile_pic.jpg'),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: GestureDetector(
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => StoryPageView())),
+                              child: CircleAvatar(
+                                radius: 32,
+                                backgroundColor: Colors.amber,
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage:
+                                      AssetImage('assets/profile_pic.jpg'),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: GestureDetector(
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => StoryPageView())),
+                              child: CircleAvatar(
+                                radius: 32,
+                                backgroundColor: Colors.amber,
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage:
+                                      AssetImage('assets/profile_pic.jpg'),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     Expanded(
                       child: Center(
@@ -200,7 +268,7 @@ class _BroadcastPageState extends State<BroadcastPage> {
                 ),
               ),
 
-              ///
+              /// CHATS PAGE ///
               Scaffold(
                 body: Column(
                   children: <Widget>[

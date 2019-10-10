@@ -16,10 +16,10 @@ import 'package:xpert/homepage.dart';
 
 class CameraExampleHome extends StatefulWidget {
   List<CameraDescription> cameras;
-  // CameraExampleHome(this.cameras);
+String incomingQuestion;
   final LocalFileSystem localFileSystem;
 
-  CameraExampleHome({this.cameras, localFileSystem})
+  CameraExampleHome({this.cameras, this.incomingQuestion, localFileSystem})
       : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
@@ -91,62 +91,12 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // key: _scaffoldKey,
-      // appBar: AppBar(
-      //   title: const Text('Camera example'),
-      // ),
-      // body: Column(
-      //   children: <Widget>[
-      //     Expanded(
-      //       child: Container(
-      //         child: Padding(
-      //           padding: const EdgeInsets.all(1.0),
-      //           child: Center(
-      //             child: _cameraPreviewWidget(),
-      //           ),
-      //         ),
-      //         decoration: BoxDecoration(
-      //           color: Colors.black,
-      //           border: Border.all(
-      //             color: controller != null && controller.value.isRecordingVideo
-      //                 ? Colors.redAccent
-      //                 : Colors.grey,
-      //             width: 3.0,
-      //           ),
-      //         ),
-      //       ),
-      //     ),
-      //     _captureControlRowWidget(),
-      //     _toggleAudioWidget(),
-      //     Padding(
-      //       padding: const EdgeInsets.all(5.0),
-      //       child: Row(
-      //         mainAxisAlignment: MainAxisAlignment.start,
-      //         children: <Widget>[
-      //           _cameraTogglesRowWidget(),
-      //           _thumbnailWidget(),
-      //         ],
-      //       ),
-      //     ),
-      //   ],
-      // ),
-
-      //// Actual SHIT //////
       key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
           Container(
-            // height: MediaQuery.of(context).size.height,
             child: _cameraPreviewWidget(),
           ),
-          // Align(
-          //   alignment: AlignmentDirectional.topEnd,
-          //   child: Padding(
-          //     padding: const EdgeInsets.only(top: 50.0, right: 20.0),
-          //     child:
-          //         _onlyAudioButton(),
-          //   ),
-          // ),
           Align(
             alignment: AlignmentDirectional.topStart,
             child: Padding(
@@ -156,35 +106,105 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           ),
           Align(
             alignment: AlignmentDirectional.bottomStart,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 70.0),
-              child: Container(
-                color: Colors.transparent,
-                child: Text(
-                  'The message incoming goes here...',
-                  style: TextStyle(color: Colors.white, fontSize: 16.0),
-                ),
+            child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(14.0),
+                        topRight: Radius.circular(14.0)
+                      )  
+                      ),
+              child: Wrap(
+                children: <Widget>[
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top:8.0, bottom: 8.0),
+                      child: Text(
+                        widget.incomingQuestion,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white, fontSize: 16.0)
+                      ),
+                    ),
+                  ),
+                          Center(
+                            child: Container(
+                        decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20.0),
+                              border: Border.all(width: 4.0, color: Colors.white)),
+                        child: IconButton(
+                            icon: isRecording?Icon(Icons.stop):Icon(Icons.fiber_manual_record),
+                            iconSize: 30.0,
+                            color: Colors.red,
+                            onPressed: () {
+                              _startTimer();
+                            },
+                        ),
+                      ),
+                          ),
+                ],
               ),
             ),
           ),
-          Align(
-              alignment: AlignmentDirectional.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20.0),
-                      border: Border.all(width: 4.0, color: Colors.white)),
-                  child: IconButton(
-                    icon: Icon(Icons.fiber_manual_record),
-                    iconSize: 30.0,
-                    color: Colors.red,
-                    onPressed: () {
-                      _startTimer();
-                    },
-                  ),
-                ),
-              )),
+          // Align(
+          //   alignment: AlignmentDirectional.bottomCenter,
+          //   child: Container(
+          //     decoration: BoxDecoration(
+          //             color: Colors.black54,
+          //             borderRadius: BorderRadius.only(
+          //               topLeft: Radius.circular(14.0),
+          //               topRight: Radius.circular(14.0)
+          //             )  
+          //             ),
+          //     height: MediaQuery.of(context).size.height * 1/6,
+          //     child: Column(
+          //       children: <Widget>[
+          //           Container(
+          //             padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+          //             child: Text(
+          //               widget.incomingQuestion,
+          //               textAlign: TextAlign.center,
+          //               style: TextStyle(color: Colors.white, fontSize: 16.0),
+          //             ),
+          //           ),
+          //         Container(
+          //             decoration: BoxDecoration(
+          //                 borderRadius: BorderRadius.circular(20.0),
+          //                 border: Border.all(width: 4.0, color: Colors.white)),
+          //             child: IconButton(
+          //               icon: Icon(Icons.fiber_manual_record),
+          //               iconSize: 30.0,
+          //               color: Colors.red,
+          //               onPressed: () {
+          //                 _startTimer();
+          //               },
+          //             ),
+          //           ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+
+
+          //////////////////
+          // Align(
+          //     alignment: AlignmentDirectional.bottomCenter,
+          //     child: Container(
+          //       padding: const EdgeInsets.only(bottom: 10.0),
+          //       child: Container(
+          //         decoration: BoxDecoration(
+          //             borderRadius: BorderRadius.circular(20.0),
+          //             border: Border.all(width: 4.0, color: Colors.white)),
+          //         child: IconButton(
+          //           icon: Icon(Icons.fiber_manual_record),
+          //           iconSize: 30.0,
+          //           color: Colors.red,
+          //           onPressed: () {
+          //             _startTimer();
+          //           },
+          //         ),
+          //       ),
+          //     )
+          //     ),
           Align(
             alignment: AlignmentDirectional.topCenter,
             child: Padding(
@@ -204,66 +224,33 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           )
         ],
       ),
-
-      //     _captureControlRowWidget(),
-      //     _toggleAudioWidget(),
-      //     Padding(
-      //       padding: const EdgeInsets.all(5.0),
-      //       child: Row(
-      //         mainAxisAlignment: MainAxisAlignment.start,
-      //         children: <Widget>[
-      //           _cameraTogglesRowWidget(),
-      //           _thumbnailWidget(),
-      //         ],
-      //       ),
-      //     ),
-      //   ],
-      // ),
     );
   }
 
-  Widget _onlyAudioButton() {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (onlyAudio)
-            onlyAudio = false;
-          else
-            onlyAudio = true;
-        });
-      },
-      child: Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(50.0),
-              color: onlyAudio ? Colors.amber : Colors.grey),
-          height: 50.0,
-          width: 50.0,
-          child: Icon(
-            Icons.keyboard_voice,
-          )),
-    );
-// return IconButton(
-//   icon: Icon(Icons.keyboard_voice),
-//   color: onlyAudio?Colors.amber:Colors.grey,
-//   iconSize: 25.0,
-//   onPressed: (){
-//     setState(() {
-//       if(onlyAudio)
-//     onlyAudio = false;
-//     else
-//     onlyAudio = true;
-//     });
-//   },
-// );
-  }
+  // Widget _onlyAudioButton() {
+  //   return GestureDetector(
+  //     onTap: () {
+  //       setState(() {
+  //         if (onlyAudio)
+  //           onlyAudio = false;
+  //         else
+  //           onlyAudio = true;
+  //       });
+  //     },
+  //     child: Container(
+  //         decoration: BoxDecoration(
+  //             borderRadius: BorderRadius.circular(50.0),
+  //             color: onlyAudio ? Colors.amber : Colors.grey),
+  //         height: 50.0,
+  //         width: 50.0,
+  //         child: Icon(
+  //           Icons.keyboard_voice,
+  //         )),
+  //   );
+  // }
 
   /// Display the preview from the camera (or a message if the preview is not available).
   Widget _cameraPreviewWidget() {
-    //   for(CameraDescription camerasdesc in widget.cameras){
-    //   if(camerasdesc.lensDirection == CameraLensDirection.front){
-    //     onNewCameraSelected(camerasdesc);
-    //   }
-    // }
     if (controller == null || !controller.value.isInitialized) {
       return Center(
         child: Container(
@@ -280,9 +267,14 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         ),
       );
     } else {
-      return AspectRatio(
-        aspectRatio: controller.value.aspectRatio,
-        child: CameraPreview(controller),
+      return Center(
+        child: Transform.scale(
+          scale: 1 / controller.value.aspectRatio,
+          child: AspectRatio(
+            aspectRatio: controller.value.aspectRatio,
+            child: CameraPreview(controller),
+          ),
+        ),
       );
     }
   }
@@ -469,7 +461,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         onVideoRecordButtonPressed();
       else {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AudioRecPage()));
+            context, MaterialPageRoute(builder: (context) => AudioRecPage(incomingQuestion: widget.incomingQuestion,)));
       }
 
       //   _timeString = _formatDateTime(DateTime.fromMillisecondsSinceEpoch(_start * 1000));
@@ -716,13 +708,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
 class CameraApp extends StatelessWidget {
   var cameras;
+  var incomingQuestion;
 
-  CameraApp(this.cameras);
+  CameraApp(this.cameras, this.incomingQuestion);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: CameraExampleHome(
         cameras: cameras,
+        incomingQuestion: incomingQuestion,
       ),
       theme: new ThemeData(
           brightness: Brightness.dark,
