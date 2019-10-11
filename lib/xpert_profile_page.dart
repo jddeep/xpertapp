@@ -2,6 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:xpert/profile_options/change_price_page.dart';
+import 'package:share/share.dart';
+import 'package:xpert/profile_options/manage_bank_page.dart';
+import 'package:xpert/profile_options/xpert_settings_page.dart';
 
 class XpertProfilePage extends StatefulWidget {
   @override
@@ -183,15 +187,23 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                      child: Icon(Icons.attach_money),
 
                    ),
+                   onTap: (){
+                     Navigator.push(context, MaterialPageRoute(builder: (context)=>ChangePricePage()));
+                   },
                    title: Text('Change Price', style: TextStyle(color: Colors.black)),
                  ),
                  ListTile(
                    leading: IconTheme(
                      data: IconThemeData(color: Colors.grey, size: 35.0),
-                     child: Icon(Icons.sentiment_neutral),
+                     child: Icon(Icons.account_balance),
 
                    ),
-                   title: Text('Settlements', style: TextStyle(color: Colors.black)),
+                   onTap: (){
+                     Navigator.push(context,
+                     MaterialPageRoute(builder: (context)=> ManageBankPage())
+                     );
+                   },
+                   title: Text('Manage Bank', style: TextStyle(color: Colors.black)),
                  ),
                  ListTile(
                    leading: IconTheme(
@@ -207,15 +219,23 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                      child: Icon(Icons.mobile_screen_share),
 
                    ),
+                   onTap: (){
+                     Share.share('Share stuff from Xpert app', subject: 'Invite a friend via...');
+                   },
                    title: Text('Refer A Friend', style: TextStyle(color: Colors.black)),
                  ),
                  ListTile(
                    leading: IconTheme(
                      data: IconThemeData(color: Colors.grey, size: 35.0),
-                     child: Icon(Icons.add_alert),
+                     child: Icon(Icons.settings),
 
                    ),
-                   title: Text('Terms and Privacy Policy', style: TextStyle(color: Colors.black)),
+                   onTap: (){
+                     Navigator.push(context,
+                     MaterialPageRoute(builder: (context)=>SettingsPage())
+                     );
+                   },
+                   title: Text('Settings', style: TextStyle(color: Colors.black)),
                  ),
                  ListTile(
                    leading: IconTheme(

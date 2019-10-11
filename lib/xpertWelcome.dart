@@ -1,6 +1,8 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:xpert/main.dart';
 import 'package:xpert/otpscreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class XpertWelcomePage extends StatefulWidget {
   var cameras;
@@ -12,6 +14,59 @@ class XpertWelcomePage extends StatefulWidget {
 
 class _XpertWelcomePageState extends State<XpertWelcomePage> {
   TextEditingController _controller;
+  TextEditingController _smsCodeController = TextEditingController();
+TextEditingController _phoneNumberController = TextEditingController();
+String phoneNo;
+  String smsCode;
+  String verificationId;
+
+  Future<void> verifyPhone() async {
+    final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
+      this.verificationId = verId;
+      print('autotimeout ' + '+91' +_phoneNumberController.text);
+    };
+
+    final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeResend]) {
+      this.verificationId = verId;
+      print('sms code sent: ' + '+91' +_phoneNumberController.text);
+      // smsCodeDialog(context).then((value) {
+      //   print('Signed in');
+      // });
+    };
+
+    final PhoneVerificationCompleted verifiedSuccess = (AuthCredential user) {
+      print('verified');
+    };
+
+    final PhoneVerificationFailed veriFailed = (AuthException exception) {
+      print('${exception.message}');
+      print('exception on: ' + '+91' +_phoneNumberController.text);
+    };
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: '+91'+_phoneNumberController.text,
+        codeAutoRetrievalTimeout: autoRetrieve,
+        codeSent: smsCodeSent,
+        timeout: const Duration(seconds: 5),
+        verificationCompleted: verifiedSuccess,
+        verificationFailed: veriFailed);
+  }
+
+  /// Sign in using an sms code as input
+  /// CALLED IN OTP SCREEN
+  void signInWithPhoneNumber(String smsCode) async {
+
+final AuthCredential credential = PhoneAuthProvider.getCredential(
+      verificationId: verificationId,
+      smsCode: smsCode,
+    );
+    final FirebaseUser user = (await FirebaseAuth.instance.signInWithCredential(credential)).user;
+    final FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    assert(user.uid == currentUser.uid);
+
+    _smsCodeController.text = '';
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +129,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                   Container(
                     width: 200,
                     child: TextField(
-                      controller: _controller,
+                      controller: _phoneNumberController,
                       decoration: InputDecoration(
                         hintText: 'Enter your phone number',
                         hintStyle: TextStyle(color: Colors.white),
@@ -110,11 +165,12 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
             child: Text('Continue',
                 style: TextStyle(color: Colors.white, fontSize: 20)),
             onPressed: () {
+              verifyPhone();
               // Move to OTP Page
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => new OTPScreen(widget.cameras),
+                    builder: (context) => new OTPScreen(widget.cameras,signInWithPhoneNumber),
                   ));
             },
           ),
