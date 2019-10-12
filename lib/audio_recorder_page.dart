@@ -17,7 +17,7 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
   String tempFilename = "TempRecording";
   File defaultAudioFile;
 
-  
+
 
   stopRecording() async {
     _timeString = '';
@@ -141,7 +141,7 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                       image: DecorationImage(
                           image: AssetImage('assets/my_prof_pic.jpg'),
                           fit: BoxFit.cover)),
-                  
+
                 ),
                 Align(
             alignment: AlignmentDirectional.topCenter,
@@ -161,7 +161,7 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(14.0),
                         topRight: Radius.circular(14.0)
-                      )  
+                      )
                       ),
               child: Wrap(
                 children: <Widget>[
