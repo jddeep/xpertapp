@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tindercard/flutter_tindercard.dart';
 import 'package:xpert/broadcastpage.dart';
+import 'package:xpert/detail_question_page.dart';
 import 'package:xpert/videoanswerscreen.dart';
 import 'package:xpert/xpert_profile_page.dart';
 
@@ -33,13 +34,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String _questionAsked = 'What dietary restrictions should be followed by people who follow a sedentary lifestyle without much scope for exercise?';
   
   Widget _questionCard() {
+//    if(_isCardScrollable){
+//      setState(() {
+//        Navigator.pushReplacement(context,
+//            MaterialPageRoute(builder: (context)=> DetailQuestionPage(incomingQuestion: _questionAsked,))
+//        );
+//      });
+//      return Container();
+//    }
     return GestureDetector(
       onTap: () {
         setState(() {
           if (_isCardScrollable)
             _isCardScrollable = false;
-          else
+          else{
             _isCardScrollable = true;
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context)=> DetailQuestionPage(incomingQuestion: _questionAsked,))
+            );
+          }
         });
       },
       child: Card(

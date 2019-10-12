@@ -27,9 +27,9 @@ class _ChangePricePageState extends State<ChangePricePage> {
           title: Text('Change Price'),
           bottom: TabBar(
             
-            labelColor: Colors.grey,
+            labelColor: Colors.white,
             indicatorColor: Colors.amber,
-            unselectedLabelColor: Colors.white,
+            unselectedLabelColor: Colors.grey,
             labelStyle: TextStyle(color: Colors.black),
             tabs: <Widget>[
               Tab(

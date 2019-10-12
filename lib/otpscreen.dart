@@ -125,7 +125,7 @@ class _OTPScreenState extends State<OTPScreen> {
             child: Text('Continue',
                 style: TextStyle(color: Colors.white, fontSize: 20)),
             onPressed: () {
-              widget.signInCallback(_controller.text);
+//              widget.signInCallback(_controller.text);
               Navigator.push(
                   context,
                   MaterialPageRoute(
