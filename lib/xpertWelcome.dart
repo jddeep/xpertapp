@@ -15,20 +15,20 @@ class XpertWelcomePage extends StatefulWidget {
 class _XpertWelcomePageState extends State<XpertWelcomePage> {
   TextEditingController _controller;
   TextEditingController _smsCodeController = TextEditingController();
-TextEditingController _phoneNumberController = TextEditingController();
-String phoneNo;
+  TextEditingController _phoneNumberController = TextEditingController();
+  String phoneNo;
   String smsCode;
   String verificationId;
 
   Future<void> verifyPhone() async {
     final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
       this.verificationId = verId;
-      print('autotimeout ' + '+91' +_phoneNumberController.text);
+      print('autotimeout ' + '+91' + _phoneNumberController.text);
     };
 
     final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeResend]) {
       this.verificationId = verId;
-      print('sms code sent: ' + '+91' +_phoneNumberController.text);
+      print('sms code sent: ' + '+91' + _phoneNumberController.text);
       // smsCodeDialog(context).then((value) {
       //   print('Signed in');
       // });
@@ -40,32 +40,33 @@ String phoneNo;
 
     final PhoneVerificationFailed veriFailed = (AuthException exception) {
       print('${exception.message}');
-      print('exception on: ' + '+91' +_phoneNumberController.text);
+      print('exception on: ' + '+91' + _phoneNumberController.text);
     };
 
     await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+91'+_phoneNumberController.text,
-        codeAutoRetrievalTimeout: autoRetrieve,
-        codeSent: smsCodeSent,
-        timeout: const Duration(seconds: 5),
-        verificationCompleted: verifiedSuccess,
-        verificationFailed: veriFailed);
+      phoneNumber: '+91' + _phoneNumberController.text,
+      codeAutoRetrievalTimeout: autoRetrieve,
+      codeSent: smsCodeSent,
+      timeout: const Duration(seconds: 5),
+      verificationCompleted: verifiedSuccess,
+      verificationFailed: veriFailed,
+    );
   }
 
   /// Sign in using an sms code as input
   /// CALLED IN OTP SCREEN
-  void signInWithPhoneNumber(String smsCode) async {
-
-final AuthCredential credential = PhoneAuthProvider.getCredential(
+  Future<FirebaseUser> signInWithPhoneNumber(String smsCode) async {
+    final AuthCredential credential = PhoneAuthProvider.getCredential(
       verificationId: verificationId,
       smsCode: smsCode,
     );
-    final FirebaseUser user = (await FirebaseAuth.instance.signInWithCredential(credential)).user;
+    final FirebaseUser user =
+        (await FirebaseAuth.instance.signInWithCredential(credential)).user;
     final FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     assert(user.uid == currentUser.uid);
 
     _smsCodeController.text = '';
-
+    return user;
   }
 
   @override
@@ -80,9 +81,10 @@ final AuthCredential credential = PhoneAuthProvider.getCredential(
                 Container(
                   height: 350,
                   decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage('assets/celeb_banner.png'),
-                          fit: BoxFit.cover)),
+                    image: DecorationImage(
+                        image: AssetImage('assets/celeb_banner.png'),
+                        fit: BoxFit.cover),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 310.0),
@@ -112,38 +114,38 @@ final AuthCredential credential = PhoneAuthProvider.getCredential(
             ),
             // Expanded(
             //   child:
-              Padding(
-                padding: const EdgeInsets.only(bottom: 100.0, left: 20, top: 6),
-                child: Row(
-                  children: <Widget>[
-                    new CountryCodePicker(
-                      onChanged: print,
-                      // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
-                      initialSelection: '+91',
-                      favorite: ['+91', 'IN'],
-                      // optional. Shows only country name and flag
-                      showCountryOnly: false,
-                      // optional. Shows only country name and flag when popup is closed.
-                      //  showOnlyCountryCodeWhenClosed: false,
-                      // optional. aligns the flag and the Text left
-                      alignLeft: false,
-                    ),
-                    Container(
-                      width: 200,
-                      child: TextField(
-                        controller: _phoneNumberController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter your phone number',
-                          hintStyle: TextStyle(color: Colors.white),
-                        ),
-                        onChanged: print,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: Colors.white),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 100.0, left: 20, top: 6),
+              child: Row(
+                children: <Widget>[
+                  new CountryCodePicker(
+                    onChanged: print,
+                    // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
+                    initialSelection: '+91',
+                    favorite: ['+91', 'IN'],
+                    // optional. Shows only country name and flag
+                    showCountryOnly: false,
+                    // optional. Shows only country name and flag when popup is closed.
+                    //  showOnlyCountryCodeWhenClosed: false,
+                    // optional. aligns the flag and the Text left
+                    alignLeft: false,
+                  ),
+                  Container(
+                    width: 200,
+                    child: TextField(
+                      controller: _phoneNumberController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter your phone number',
+                        hintStyle: TextStyle(color: Colors.white),
                       ),
+                      onChanged: print,
+                      keyboardType: TextInputType.number,
+                      style: TextStyle(color: Colors.white),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
             // ),
             Padding(
               padding: const EdgeInsets.only(left: 20, bottom: 5),
@@ -172,7 +174,8 @@ final AuthCredential credential = PhoneAuthProvider.getCredential(
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => new OTPScreen(widget.cameras,signInWithPhoneNumber),
+                      builder: (context) =>
+                          new OTPScreen(widget.cameras, signInWithPhoneNumber),
                     ));
               },
             ),

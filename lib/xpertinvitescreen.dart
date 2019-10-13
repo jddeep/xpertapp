@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xpert/homepage.dart';
@@ -6,8 +8,9 @@ import 'package:xpert/videoanswerscreen.dart' as prefix0;
 
 class XpertInviteScreen extends StatefulWidget {
   var cameras;
+  FirebaseUser user;
 
-  XpertInviteScreen(this.cameras);
+  XpertInviteScreen({this.cameras, @required this.user});
   @override
   _XpertInviteScreenState createState() => _XpertInviteScreenState();
 }
@@ -23,6 +26,42 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
     'GitHub'
   ];
   String _socialAccount = '';
+  final dataBaseRef = Firestore.instance;
+  String _fname;
+  String _lname;
+  String _mobile;
+  String _email;
+  String _sname = '';
+  String _shandle;
+  String _sfollowers;
+  String _source = 'app';
+  String _status = 'underReview';
+
+  Future<void> _registerUser({
+    String firstname,
+    String lastname,
+    String mobile,
+    String email,
+    String sname,
+    String shandle,
+    String sfollowers,
+    String source,
+    String status,
+  }) async {
+    await dataBaseRef.collection('invite_requests').document(widget.user.uid).setData({
+      'uid': widget.user.uid,
+      'date': DateTime.now(),
+      'fname': firstname,
+      'lname': lastname,
+      'mobile': mobile,
+      'email': email,
+      'sname': sname,
+      'shandle': shandle,
+      'sfollowers': sfollowers,
+      'source': source,
+      'status': status,
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +90,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         Container(
                           width: 160,
                           child: TextFormField(
+                            onChanged: (value){
+                              setState(() {
+                                _fname = value;
+                              });
+                            },
                             autofocus: false,
                             decoration: InputDecoration(
                               alignLabelWithHint: true,
@@ -65,6 +109,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         Container(
                           width: 160,
                           child: TextFormField(
+                            onChanged: (value){
+                              setState(() {
+                                _lname = value;
+                              });
+                            },
                             autofocus: false,
                             decoration: InputDecoration(
                               alignLabelWithHint: true,
@@ -79,6 +128,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       ],
                     ),
                     new TextFormField(
+                      onChanged: (value){
+                              setState(() {
+                                _email = value;
+                              });
+                            },
                       decoration: const InputDecoration(
                         hintText: 'Enter a email address',
                         labelText: 'Email',
@@ -120,7 +174,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                           decoration: InputDecoration(
                             labelText: 'Social Media',
                           ),
-                          isEmpty: _socialAccount == '',
+                          isEmpty: _sname == '',
                           child: new DropdownButtonHideUnderline(
                             child: new DropdownButton(
                               value: _socialAccount,
@@ -129,7 +183,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                                 setState(() {
                                   print(newValue);
                                   // newContact.favoriteColor = newValue;
-                                  _socialAccount = newValue;
+                                  _sname = newValue;
                                   state.didChange(newValue);
                                 });
                               },
@@ -145,6 +199,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       },
                     ),
                     new TextFormField(
+                      onChanged: (value){
+                              setState(() {
+                                _shandle = value;
+                              });
+                            },
                       decoration: const InputDecoration(
                         hintText: 'Enter your handle',
                         labelText: 'Your handle',
@@ -152,6 +211,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       keyboardType: TextInputType.text,
                     ),
                     new TextFormField(
+                      onChanged: (value){
+                              setState(() {
+                                _sfollowers = value;
+                              });
+                            },
                       decoration: const InputDecoration(
                         hintText: 'Enter the number of your followers',
                         labelText: 'How many followers do you have?',
@@ -181,13 +245,26 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                     style: TextStyle(color: Colors.white, fontSize: 20)),
                 onPressed: () {
                   // Move to Account form Page
-                  Navigator.push(
+                  _registerUser(
+                    firstname: _fname,
+                    lastname: _lname,
+                    mobile: _controller.text,
+                    email: _email,
+                    sname: _sname,
+                    shandle: _shandle,
+                    sfollowers: _sfollowers,
+                    source: _source,
+                    status: _status,
+                  ).whenComplete((){
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => HomePage(
                           cameras: widget.cameras,
                         ),
                       ));
+                  });
+
                 },
               ),
             ],
