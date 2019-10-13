@@ -2,7 +2,8 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:xpert/main.dart';
 import 'package:xpert/otpscreen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import 'xpertinvitescreen.dart';
 
 class XpertWelcomePage extends StatefulWidget {
   var cameras;
@@ -13,7 +14,6 @@ class XpertWelcomePage extends StatefulWidget {
 }
 
 class _XpertWelcomePageState extends State<XpertWelcomePage> {
-  TextEditingController _controller;
   TextEditingController _smsCodeController = TextEditingController();
   TextEditingController _phoneNumberController = TextEditingController();
   String phoneNo;
@@ -181,6 +181,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
             ),
           ],
         ),
+
       ),
     );
   }
