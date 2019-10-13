@@ -179,6 +179,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                             child: new DropdownButton(
                               value: _socialAccount,
                               isDense: true,
+                              style: TextStyle(color: Colors.white),
                               onChanged: (String newValue) {
                                 setState(() {
                                   print(newValue);
@@ -190,7 +191,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                               items: _socialAccounts.map((String value) {
                                 return new DropdownMenuItem(
                                   value: value,
-                                  child: new Text(value),
+                                  child: new Text(value, style: TextStyle(color: Colors.white),),
                                 );
                               }).toList(),
                             ),
