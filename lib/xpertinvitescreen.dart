@@ -55,7 +55,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
   }) async {
     await dataBaseRef
         .collection('invite_requests')
-        .document(widget.user.uid)
+        .document(firstname.toLowerCase()+'_'+lastname.toLowerCase())
         .setData({
       'uid': widget.user.uid,
       'date': DateTime.now(),
