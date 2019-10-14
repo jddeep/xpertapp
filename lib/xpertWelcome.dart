@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:xpert/homepage.dart';
 import 'package:xpert/main.dart';
 import 'package:xpert/otpscreen.dart';
+import 'package:xpert/rejectedPage.dart';
+import 'package:xpert/underReview_page.dart';
 
 import 'xpertinvitescreen.dart';
 
@@ -21,6 +25,60 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
   String smsCode;
   String verificationId;
 
+  bool _isRegisteredNo = false;
+
+  _checkPhone() async {
+    await Firestore.instance
+        .collection('invite_requests')
+        .where('mobile', isEqualTo: _phoneNumberController.text)
+        .getDocuments()
+        .then((docs) {
+      if (docs.documents.length == 0) {
+        print("This No is not registered before in database");
+        verifyPhone().whenComplete(() {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPScreen(
+                  cameras, signInWithPhoneNumber, -2), // Not registerd yet
+            ),
+          );
+        });
+      } else {
+        if (docs.documents[0].data['status'] == 'underReview') {
+          print("UnderReview Profile");
+          verifyPhone();
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OTPScreen(
+                    cameras, signInWithPhoneNumber, 0), //UnderReview Profile
+              ));
+        } else if (docs.documents[0].data['status'] == 'rejected') {
+          print("Rejected Profile");
+          verifyPhone();
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPScreen(
+                  cameras, signInWithPhoneNumber, -1), //Rejected Profile
+            ),
+          );
+        } else if (docs.documents[0].data['status'] == 'accepted') {
+          print("Accepted profile");
+          verifyPhone();
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPScreen(
+                  cameras, signInWithPhoneNumber, 1), //Accepted Profile
+            ),
+          );
+        }
+      }
+    });
+  }
+
   Future<void> verifyPhone() async {
     final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
       this.verificationId = verId;
@@ -37,6 +95,11 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
 
     final PhoneVerificationCompleted verifiedSuccess = (AuthCredential user) {
       print('verified');
+      // FirebaseAuth.instance.signInWithCredential(user).then((authResult) async {
+      //   if (authResult.additionalUserInfo.profile.isNotEmpty) {
+
+      //   }
+      // });
     };
 
     final PhoneVerificationFailed veriFailed = (AuthException exception) {
@@ -170,19 +233,19 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
               child: Text('Continue',
                   style: TextStyle(color: Colors.white, fontSize: 20)),
               onPressed: () {
-                verifyPhone();
-                // Move to OTP Page
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          new OTPScreen(widget.cameras, signInWithPhoneNumber),
-                    ));
+                _checkPhone();
+                // verifyPhone();
+                ////Move to OTP Page
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //       builder: (context) =>
+                //           new OTPScreen(widget.cameras, signInWithPhoneNumber,),
+                //     ));
               },
             ),
           ],
         ),
-
       ),
     );
   }
