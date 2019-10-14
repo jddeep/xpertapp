@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
           ),
         )),
     PageViewModel(
-      pageColor: Colors.amber,
+      pageColor: new Color(0xFF37474F),
       body: Text(
         'Earn money by brand shoutouts',
       ),
