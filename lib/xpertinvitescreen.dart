@@ -48,7 +48,10 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
     String source,
     String status,
   }) async {
-    await dataBaseRef.collection('invite_requests').document(widget.user.uid).setData({
+    await dataBaseRef
+        .collection('invite_requests')
+        .document(widget.user.uid)
+        .setData({
       'auth_id': widget.user.uid,
       'date': DateTime.now(),
       'fname': firstname,
@@ -90,7 +93,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         Container(
                           width: 160,
                           child: TextFormField(
-                            onChanged: (value){
+                            onChanged: (value) {
                               setState(() {
                                 _fname = value;
                               });
@@ -109,7 +112,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         Container(
                           width: 160,
                           child: TextFormField(
-                            onChanged: (value){
+                            onChanged: (value) {
                               setState(() {
                                 _lname = value;
                               });
@@ -128,11 +131,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       ],
                     ),
                     new TextFormField(
-                      onChanged: (value){
-                              setState(() {
-                                _email = value;
-                              });
-                            },
+                      onChanged: (value) {
+                        setState(() {
+                          _email = value;
+                        });
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Enter a email address',
                         labelText: 'Email',
@@ -191,7 +194,10 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                               items: _socialAccounts.map((String value) {
                                 return new DropdownMenuItem(
                                   value: value,
-                                  child: new Text(value, style: TextStyle(color: Colors.white),),
+                                  child: new Text(
+                                    value,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
                                 );
                               }).toList(),
                             ),
@@ -200,11 +206,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       },
                     ),
                     new TextFormField(
-                      onChanged: (value){
-                              setState(() {
-                                _shandle = value;
-                              });
-                            },
+                      onChanged: (value) {
+                        setState(() {
+                          _shandle = value;
+                        });
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Enter your handle',
                         labelText: 'Your handle',
@@ -212,11 +218,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       keyboardType: TextInputType.text,
                     ),
                     new TextFormField(
-                      onChanged: (value){
-                              setState(() {
-                                _sfollowers = value;
-                              });
-                            },
+                      onChanged: (value) {
+                        setState(() {
+                          _sfollowers = value;
+                        });
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Enter the number of your followers',
                         labelText: 'How many followers do you have?',
@@ -256,16 +262,15 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                     sfollowers: _sfollowers,
                     source: _source,
                     status: _status,
-                  ).whenComplete((){
+                  ).whenComplete(() {
                     Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomePage(
-                          cameras: widget.cameras,
-                        ),
-                      ));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(
+                            cameras: widget.cameras,
+                          ),
+                        ));
                   });
-
                 },
               ),
             ],

@@ -16,7 +16,7 @@ import 'package:xpert/homepage.dart';
 
 class CameraExampleHome extends StatefulWidget {
   List<CameraDescription> cameras;
-String incomingQuestion;
+  String incomingQuestion;
   final LocalFileSystem localFileSystem;
 
   CameraExampleHome({this.cameras, this.incomingQuestion, localFileSystem})
@@ -107,40 +107,39 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           Align(
             alignment: AlignmentDirectional.bottomStart,
             child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(14.0),
-                        topRight: Radius.circular(14.0)
-                      )  
-                      ),
+              decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(14.0),
+                      topRight: Radius.circular(14.0))),
               child: Wrap(
                 children: <Widget>[
                   SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.only(top:8.0, bottom: 8.0),
-                      child: Text(
-                        widget.incomingQuestion,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 16.0)
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                      child: Text(widget.incomingQuestion,
+                          textAlign: TextAlign.center,
+                          style:
+                              TextStyle(color: Colors.white, fontSize: 16.0)),
+                    ),
+                  ),
+                  Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20.0),
+                          border: Border.all(width: 4.0, color: Colors.white)),
+                      child: IconButton(
+                        icon: isRecording
+                            ? Icon(Icons.stop)
+                            : Icon(Icons.fiber_manual_record),
+                        iconSize: 30.0,
+                        color: Colors.red,
+                        onPressed: () {
+                          _startTimer();
+                        },
                       ),
                     ),
                   ),
-                          Center(
-                            child: Container(
-                        decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20.0),
-                              border: Border.all(width: 4.0, color: Colors.white)),
-                        child: IconButton(
-                            icon: isRecording?Icon(Icons.stop):Icon(Icons.fiber_manual_record),
-                            iconSize: 30.0,
-                            color: Colors.red,
-                            onPressed: () {
-                              _startTimer();
-                            },
-                        ),
-                      ),
-                          ),
                 ],
               ),
             ),
@@ -153,7 +152,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //             borderRadius: BorderRadius.only(
           //               topLeft: Radius.circular(14.0),
           //               topRight: Radius.circular(14.0)
-          //             )  
+          //             )
           //             ),
           //     height: MediaQuery.of(context).size.height * 1/6,
           //     child: Column(
@@ -183,7 +182,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //     ),
           //   ),
           // ),
-
 
           //////////////////
           // Align(
@@ -461,7 +459,11 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         onVideoRecordButtonPressed();
       else {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AudioRecPage(incomingQuestion: widget.incomingQuestion,)));
+            context,
+            MaterialPageRoute(
+                builder: (context) => AudioRecPage(
+                      incomingQuestion: widget.incomingQuestion,
+                    )));
       }
 
       //   _timeString = _formatDateTime(DateTime.fromMillisecondsSinceEpoch(_start * 1000));

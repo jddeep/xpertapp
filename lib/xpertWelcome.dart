@@ -77,7 +77,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
       body: Column(
         children: <Widget>[
           Expanded(
-                  child: Container(
+            child: Container(
               child: Column(
                 children: <Widget>[
                   SingleChildScrollView(
@@ -89,7 +89,8 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                               height: 350,
                               decoration: BoxDecoration(
                                 image: DecorationImage(
-                                    image: AssetImage('assets/celeb_banner.png'),
+                                    image:
+                                        AssetImage('assets/celeb_banner.png'),
                                     fit: BoxFit.cover),
                               ),
                             ),
@@ -101,7 +102,8 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                                   width: 75,
                                   decoration: BoxDecoration(
                                       image: DecorationImage(
-                                          image: AssetImage('assets/xpert_icon.png')),
+                                          image: AssetImage(
+                                              'assets/xpert_icon.png')),
                                       borderRadius: BorderRadius.circular(15),
                                       color: Colors.black),
                                 ),
@@ -122,11 +124,12 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                         // Expanded(
                         //   child:
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 100.0, left: 20, top: 6),
+                          padding: const EdgeInsets.only(
+                              bottom: 100.0, left: 20, top: 6),
                           child: Row(
                             children: <Widget>[
                               new CountryCodePicker(
-                                onChanged: (value){
+                                onChanged: (value) {
                                   this.smsCode = value.toString();
                                 },
                                 // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
@@ -173,44 +176,43 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                         // ),
                       ],
                     ),
-
                   ),
                 ],
               ),
             ),
           ),
           Padding(
-                          padding: const EdgeInsets.only(left: 20, bottom: 5),
-                          child: Row(
-                            children: <Widget>[
-                              Text(
-                                'Looking to follow Xperts? ',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              Text(
-                                'Download our User App.',
-                                style: TextStyle(color: Colors.amber),
-                              )
-                            ],
-                          ),
-                        ),
+            padding: const EdgeInsets.only(left: 20, bottom: 5),
+            child: Row(
+              children: <Widget>[
+                Text(
+                  'Looking to follow Xperts? ',
+                  style: TextStyle(color: Colors.white),
+                ),
+                Text(
+                  'Download our User App.',
+                  style: TextStyle(color: Colors.amber),
+                )
+              ],
+            ),
+          ),
           MaterialButton(
-                          minWidth: double.infinity,
-                          height: 60,
-                          color: Colors.amber,
-                          child: Text('Continue',
-                              style: TextStyle(color: Colors.white, fontSize: 20)),
-                          onPressed: () {
-                            verifyPhone();
-                            // Move to OTP Page
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      new OTPScreen(widget.cameras, signInWithPhoneNumber),
-                                ));
-                          },
-                        ),
+            minWidth: double.infinity,
+            height: 60,
+            color: Colors.amber,
+            child: Text('Continue',
+                style: TextStyle(color: Colors.white, fontSize: 20)),
+            onPressed: () {
+              verifyPhone();
+              // Move to OTP Page
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        new OTPScreen(widget.cameras, signInWithPhoneNumber),
+                  ));
+            },
+          ),
         ],
       ),
     );

@@ -34,28 +34,45 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   static bool _isAccepted = false; //let's assume default action is reject
   // The question incoming goes here below
   // String _questionAsked = 'What dietary restrictions should be followed by people who follow a sedentary lifestyle without much scope for exercise?';
-  
-  Widget _questionCard(String questionAsked) {
-//    if(_isCardScrollable){
-//      setState(() {
-//        Navigator.pushReplacement(context,
-//            MaterialPageRoute(builder: (context)=> DetailQuestionPage(incomingQuestion: _questionAsked,))
-//        );
-//      });
-//      return Container();
-//    }
+  List<DocumentSnapshot> _userDocs;
+
+  Future<List<DocumentSnapshot>> getData() async {
+    List<DocumentSnapshot> userDocuments;
+    await Firestore.instance
+        .collection('web_orders')
+        .getDocuments()
+        .then((data) {
+      userDocuments = data.documents;
+    }
+            // (data) => print('grower ${data.documents[0]['name']}')
+            );
+    return userDocuments;
+  }
+
+  @override
+  void initState() {
+    getData().then((userDocs) {
+      setState(() {
+        _userDocs = userDocs;
+      });
+    });
+    super.initState();
+  }
+
+  Widget _questionCard(var questionAsked) {
     return GestureDetector(
       onTap: () {
-        setState(() {
-          if (_isCardScrollable)
+        if (_isCardScrollable)
             _isCardScrollable = false;
-          else{
+          else {
             _isCardScrollable = true;
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context)=> DetailQuestionPage(incomingQuestion: questionAsked,))
-            );
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => DetailQuestionPage(
+                          incomingQuestion: questionAsked["message"],
+                        )));
           }
-        });
       },
       child: Card(
         clipBehavior: Clip.none,
@@ -68,12 +85,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Container(
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.amber,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10.0),
-                      topRight: Radius.circular(10.0)
-                    )
-                  ),
+                      color: Colors.amber,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10.0),
+                          topRight: Radius.circular(10.0))),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 10.0, top: 5.0),
@@ -116,128 +131,151 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             SizedBox(
               height: 15.0,
             ),
-            _isVisible?Center(
-              child: IconTheme(
-                data: IconThemeData(color: _isAccepted?Colors.green:Colors.red, size: 30.0),
-                child: Icon(_isAccepted?Icons.thumb_up:Icons.thumb_down),
-              ),
-            ):Container(),
+            _isVisible
+                ? Center(
+                    child: IconTheme(
+                      data: IconThemeData(
+                          color: _isAccepted ? Colors.green : Colors.red,
+                          size: 30.0),
+                      child:
+                          Icon(_isAccepted ? Icons.thumb_up : Icons.thumb_down),
+                    ),
+                  )
+                : Container(),
             _isCardScrollable
                 ? SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        questionAsked,
-                        style: TextStyle(color: Colors.black, fontSize: 18.0,),
+                        questionAsked["message"],
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                        ),
                       ),
                     ))
                 : Expanded(
                     child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      questionAsked,
+                      questionAsked["message"],
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black, fontSize: 18.0, fontWeight: FontWeight.w300),
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w300),
                     ),
                   )),
             _isCardScrollable
                 ? Container()
                 : Align(
                     alignment: AlignmentDirectional.bottomStart,
-                    child: Row(
-                      children: <Widget>[
+                    child: Container(
+                      child:
                         Padding(
                           padding: const EdgeInsets.only(
                               bottom: 8.0, left: 8.0, right: 4.0),
-                          child: _isPopularQuestion
-                              ? Stack(
-                                  children: <Widget>[
-                                    CircleAvatar(
-                                      radius: 25.0,
-                                      backgroundImage:
-                                          AssetImage('assets/profile_pic.jpg'),
-                                    ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(left: 10.0),
-                                      child: CircleAvatar(
-                                        radius: 25.0,
-                                        backgroundImage: AssetImage(
-                                            'assets/profile_pic.jpg'),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(left: 20.0),
-                                      child: CircleAvatar(
-                                        radius: 25.0,
-                                        backgroundImage: AssetImage(
-                                            'assets/profile_pic.jpg'),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : CircleAvatar(
-                                  radius: 20.0,
-                                  backgroundImage:
-                                      AssetImage('assets/profile_pic.jpg'),
-                                ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              _isPopularQuestion
+                                  ? Stack(
+                                      children: <Widget>[
+                                        CircleAvatar(
+                                          radius: 25.0,
+                                          backgroundImage:
+                                              AssetImage('assets/profile_pic.jpg'),
+                                        ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 10.0),
+                                          child: CircleAvatar(
+                                            radius: 25.0,
+                                            backgroundImage: AssetImage(
+                                                'assets/profile_pic.jpg'),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 20.0),
+                                          child: CircleAvatar(
+                                            radius: 25.0,
+                                            backgroundImage: AssetImage(
+                                                'assets/profile_pic.jpg'),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : 
+                                        Row(
+                                          children: <Widget>[
+                                            CircleAvatar(
+                                              radius: 20.0,
+                                              backgroundImage: NetworkImage(
+                                                  questionAsked["profile_image"]),
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                _isPopularQuestion
+                                                    ? Text(
+                                                        'VOTED BY',
+                                                        style: TextStyle(
+                                                            color: Colors.grey,
+                                                            fontSize: 12.0),
+                                                      )
+                                                    : Text(
+                                                        'ASKED BY',
+                                                        style: TextStyle(
+                                                            color: Colors.grey,
+                                                            fontSize: 9.0),
+                                                      ),
+                                                _isPopularQuestion
+                                                    ? Row(
+                                                        children: <Widget>[
+                                                          Text(
+                                                            '10,000 ',
+                                                            style: TextStyle(
+                                                                color: Colors.amber,
+                                                                fontWeight:
+                                                                    FontWeight.bold,
+                                                                fontSize: 22.0),
+                                                          ),
+                                                          Text(
+                                                            'people',
+                                                            style: TextStyle(
+                                                                color: Colors.black,
+                                                                fontWeight:
+                                                                    FontWeight.bold,
+                                                                fontSize: 14.0),
+                                                          ),
+                                                        ],
+                                                      )
+                                                    : Text(
+                                                        questionAsked["name"],
+                                                        style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 14.0),
+                                                      ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        _isPopularQuestion
+                                            ? Container()
+                                            : Text(
+                                                '₹'+questionAsked["amount"].toString(),
+                                                style: TextStyle(
+                                                    color: Colors.amber,
+                                                    fontSize: 20.0),
+                                              ),
+                            ],
+                          ),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            
-                            _isPopularQuestion
-                                ? Text(
-                                    'VOTED BY',
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 12.0),
-                                  )
-                                : Text(
-                                    'ASKED BY',
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 9.0),
-                                  ),
-                            _isPopularQuestion
-                                ? Row(
-                                    children: <Widget>[
-                                      Text(
-                                        '10,000 ',
-                                        style: TextStyle(
-                                            color: Colors.amber,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 22.0),
-                                      ),
-                                      Text(
-                                        'people',
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14.0),
-                                      ),
-                                    ],
-                                  )
-                                : Text(
-                                    'Anushka',
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14.0),
-                                  ),
-                          ],
-                        ),
-                        _isPopularQuestion
-                            ? Container()
-                            : Padding(
-                              padding: EdgeInsets.only(left: 44.0),
-                              child: Text(
-                                  '₹2500',
-                                  style: TextStyle(
-                                      color: Colors.amber, fontSize: 20.0),
-                                ),
-                            ),
-                      ],
                     ),
                   ),
           ],
@@ -245,25 +283,390 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
   }
-int _currDocIndex = 0;
+
+  Widget _endorsementCard(var company){
+    return GestureDetector(
+      onTap: () {
+        if (_isCardScrollable)
+            _isCardScrollable = false;
+          else {
+            _isCardScrollable = true;
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => DetailQuestionPage(
+                          incomingQuestion: company["message"],
+                        )));
+          }
+      },
+      child: Card(
+        clipBehavior: Clip.none,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Column(
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Container(
+                  height: 65.0,
+                  decoration: BoxDecoration(
+                      color: Colors.amber,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10.0),
+                          topRight: Radius.circular(10.0))),
+                ),
+                Align(
+                  alignment: AlignmentDirectional.topCenter,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                    'Give a shoutout for',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.0,),
+                  ),
+                  Text(
+                    company["name"],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.bold),
+                  ),
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: AlignmentDirectional.topEnd,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: DropdownButton<String>(
+                      value: dropdownValue,
+                      icon: Icon(Icons.arrow_drop_down),
+                      iconSize: 24,
+                      iconEnabledColor: Colors.white,
+                      iconDisabledColor: Colors.white,
+                      style: TextStyle(color: Colors.amber),
+                      onChanged: (String newValue) {
+                        setState(() {
+                          dropdownValue = newValue;
+                        });
+                      },
+                      items: <String>['', 'Delete', 'Report']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 15.0,
+            ),
+            _isVisible
+                ? Center(
+                    child: IconTheme(
+                      data: IconThemeData(
+                          color: _isAccepted ? Colors.green : Colors.red,
+                          size: 30.0),
+                      child:
+                          Icon(_isAccepted ? Icons.thumb_up : Icons.thumb_down),
+                    ),
+                  )
+                : Container(),
+            _isCardScrollable
+                ? SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        company["message"],
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                        ),
+                      ),
+                    ))
+                : Expanded(
+                    child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      company["message"],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w300),
+                    ),
+                  )),
+            _isCardScrollable
+                ? Container()
+                : Align(
+                    alignment: AlignmentDirectional.bottomStart,
+                    child: Container(
+                      child: 
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              bottom: 8.0, left: 8.0, right: 4.0),
+                          child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                                  children: <Widget>[
+                                    Row(
+                                      children: <Widget>[
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                                    'REQUESTED BY',
+                                                    style: TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 9.0),
+                                                  ),
+                                                  Text(
+                                                    company["name"],
+                                                    style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 14.0),
+                                                  ),
+                                          ],
+                                        ),
+                                        IconTheme(
+                                          data: IconThemeData(color: Colors.amber, size: 8.0),
+                                          child: Icon(Icons.info_outline),
+                                        )
+                                      ],
+                                    ),
+                                    _isPopularQuestion
+                                        ? Container()
+                                        : Padding(
+                                          padding: EdgeInsets.only(left: 4.0),
+                                          child:Text(
+                                            '₹'+company["amount"].toString(),
+                                            style: TextStyle(
+                                                color: Colors.amber,
+                                                fontSize: 20.0),
+                                          ),
+                                        ),
+                                  ],
+                                ),
+                        ),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _wishCard(var user){
+    return GestureDetector(
+      onTap: () {
+        if (_isCardScrollable)
+            _isCardScrollable = false;
+          else {
+            _isCardScrollable = true;
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => DetailQuestionPage(
+                          incomingQuestion: user["message"],
+                        )));
+          }
+        // setState(() {
+        //   if (_isCardScrollable)
+        //     _isCardScrollable = false;
+        //   else {
+        //     _isCardScrollable = true;
+        //     Navigator.pushReplacement(
+        //         context,
+        //         MaterialPageRoute(
+        //             builder: (context) => DetailQuestionPage(
+        //                   incomingQuestion: user["message"],
+        //                 )));
+        //   }
+        // });
+      },
+      child: Card(
+        clipBehavior: Clip.none,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Column(
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Container(
+                  height: 65.0,
+                  decoration: BoxDecoration(
+                      color: Colors.amber,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10.0),
+                          topRight: Radius.circular(10.0))),
+                ),
+                Align(
+                  alignment: AlignmentDirectional.topCenter,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                    'Record a wish for',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.0,),
+                  ),
+                  Text(
+                    user["name"],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.bold),
+                  ),
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: AlignmentDirectional.topEnd,
+                  child: DropdownButtonHideUnderline(
+                                          child: DropdownButton<String>(
+                        value: dropdownValue,
+                        icon: Icon(Icons.arrow_drop_down),
+                        iconSize: 24,
+                        iconEnabledColor: Colors.white,
+                        iconDisabledColor: Colors.white,
+                        style: TextStyle(color: Colors.amber),
+                        onChanged: (String newValue) {
+                          setState(() {
+                            dropdownValue = newValue;
+                          });
+                        },
+                        items: <String>['', 'Delete', 'Report']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 15.0,
+            ),
+            _isVisible
+                ? Center(
+                    child: IconTheme(
+                      data: IconThemeData(
+                          color: _isAccepted ? Colors.green : Colors.red,
+                          size: 30.0),
+                      child:
+                          Icon(_isAccepted ? Icons.thumb_up : Icons.thumb_down),
+                    ),
+                  )
+                : Container(),
+            _isCardScrollable
+                ? SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        user["message"],
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                        ),
+                      ),
+                    ))
+                : Expanded(
+                    child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      user["message"],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w300),
+                    ),
+                  )),
+            _isCardScrollable
+                ? Container()
+                : Align(
+                    alignment: AlignmentDirectional.bottomStart,
+                    child: Container(
+                      child: 
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              bottom: 8.0, left: 8.0, right: 4.0),
+                          child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                                  children: <Widget>[
+                                    Row(
+                                      children: <Widget>[
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                                    'REQUESTED BY',
+                                                    style: TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 9.0),
+                                                  ),
+                                                  Text(
+                                                    user["name"],
+                                                    style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 14.0),
+                                                  ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    _isPopularQuestion
+                                        ? Container()
+                                        : Padding(
+                                          padding: EdgeInsets.only(left: 4.0),
+                                          child:Text(
+                                            '₹'+user["amount"].toString(),
+                                            style: TextStyle(
+                                                color: Colors.amber,
+                                                fontSize: 20.0),
+                                          ),
+                                        ),
+                                  ],
+                                ),
+                        ),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static int _currDocIndex = 0;
   @override
   Widget build(BuildContext context) {
     CardController controller; //Use this to trigger swap.
-    List<DocumentSnapshot> userDocuments;
-    Firestore.instance.collection('web_orders')
-    .snapshots().listen(
-      (data) => userDocuments = data.documents
-          // (data) => print('grower ${data.documents[0]['name']}')
-    );
-    int _documentsLength;
-    
-    if(userDocuments != null)
-    _documentsLength = userDocuments.length;
 
     return new Scaffold(
       body: Column(
         children: <Widget>[
-          SizedBox(height:30.0),
+          SizedBox(height: 30.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
@@ -282,87 +685,136 @@ int _currDocIndex = 0;
               )
             ],
           ),
-          SizedBox(height: 20.0,),
+          SizedBox(
+            height: 20.0,
+          ),
           Expanded(
             child: Column(
               children: <Widget>[
                 Container(
-                  padding: EdgeInsets.only(top: 20.0),
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: _allQuestionsDone?
-                  Container()
-                  :
-                  StreamBuilder(
-                    stream: Firestore.instance.collection('web_orders').document(userDocuments.elementAt(_currDocIndex).toString()).snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-          return CircularProgressIndicator();
-        }
-        var userDocument = snapshot.data;
-                      return _isCardScrollable
-                          ? _questionCard(userDocument["message"])
-                          : Transform.scale(
-                              scale: 1/0.68,
-                                                      child: TinderSwapCard(
-                                orientation: AmassOrientation.BOTTOM,
-                                totalNum: 6,
-                                stackNum: 3,
-                                swipeEdge: 3.0,
-                                maxWidth: MediaQuery.of(context).size.width * 0.7,
-                                maxHeight: MediaQuery.of(context).size.width * 1.0,
-                                minWidth: MediaQuery.of(context).size.width * 0.6,
-                                minHeight: MediaQuery.of(context).size.width * 0.9,
-                                cardBuilder: (context, index) => _questionCard(userDocument["message"]),
-                                // cardBuilder: (context, index) => Card(
-                                //       child: Image.asset('${welcomeImages[index]}'),
-                                //       color: Colors.white,
-                                //     ),
-                                cardController: controller = CardController(),
-                                swipeUpdateCallback:
-                                    (DragUpdateDetails details, Alignment align) {
-                                  /// Get swiping card's alignment
-                                  print(align.x);
-                                  if(align.x > 0 && align.x <= 3.2){
-                                    _isVisible = true;
-                                    _isAccepted = true;
+                    padding: EdgeInsets.only(top: 20.0),
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: _allQuestionsDone
+                        ? Container()
+                        : _userDocs != null
+                            ? StreamBuilder<DocumentSnapshot>(
+                                stream: Firestore.instance
+                                    .collection('web_orders')
+                                    .document(_userDocs
+                                        .elementAt(_currDocIndex)
+                                        .documentID)
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return Center(
+                                      child: Container(
+                                        height: 50.0,
+                                        width: 50.0,
+                                        child: CircularProgressIndicator(
+                                          backgroundColor: Colors.amber,
+                                        ),
+                                      ),
+                                    );
                                   }
-                                  
-                                  else if (align.x < 0) {
-                                    _isVisible = true;
-                                    _isAccepted = false;
-                                    print('left');
-                                    //Card is LEFT swiping
-                                  } else if (align.x > 3.2) {
-                                    //Card is RIGHT swiping
-                                    // Future.delayed(
-                                    //     const Duration(milliseconds: 500), () {});
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                new CameraApp(widget.cameras, userDocument["message"])));
+                                  var userDocument = snapshot.data;
+                                  return _isCardScrollable
+                                      ? (){
+                                        if(userDocument["type"].toString()=="wishes")
+                                        return _wishCard(userDocument);
+                                        else if(userDocument["type"].toString()=="endorsement")
+                                        return _endorsementCard(userDocument);
+                                        else
+                                        return _questionCard(userDocument);
+                                      }
+                                      : Transform.scale(
+                                          scale: 1 / 0.68,
+                                          child: TinderSwapCard(
+                                              orientation:
+                                                  AmassOrientation.BOTTOM,
+                                              totalNum: 6,
+                                              stackNum: 3,
+                                              swipeEdge: 3.0,
+                                              maxWidth: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.7,
+                                              maxHeight: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  1.0,
+                                              minWidth: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.6,
+                                              minHeight: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.9,
+                                              cardBuilder: ((context, index){
+                                                if(userDocument["type"].toString()=="wishes")
+                                        return _wishCard(userDocument);
+                                        else if(userDocument["type"].toString()=="endorsement")
+                                        return _endorsementCard(userDocument);
+                                        else
+                                        return _questionCard(userDocument);
+                                              }),
+                                              // cardBuilder: (context, index) => Card(
+                                              //       child: Image.asset('${welcomeImages[index]}'),
+                                              //       color: Colors.white,
+                                              //     ),
+                                              cardController: controller =
+                                                  CardController(),
+                                              swipeUpdateCallback:
+                                                  (DragUpdateDetails details,
+                                                      Alignment align) {
+                                                /// Get swiping card's alignment
+                                                print(align.x);
+                                                if (align.x > 0 &&
+                                                    align.x <= 3.2) {
+                                                  _isVisible = true;
+                                                  _isAccepted = true;
+                                                } else if (align.x < 0) {
+                                                  _isVisible = true;
+                                                  _isAccepted = false;
+                                                  print('left');
+                                                  //Card is LEFT swiping
+                                                } else if (align.x > 3.2) {
+                                                  //Card is RIGHT swiping
+                                                  // Future.delayed(
+                                                  //     const Duration(milliseconds: 500), () {});
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              new CameraApp(
+                                                                  widget
+                                                                      .cameras,
+                                                                  userDocument[
+                                                                      "message"])));
 
-                                    print('right');
-                                    // _isVisible = false;
-                                  }
-                                },
-                                swipeCompleteCallback:
-                                    (CardSwipeOrientation orientation, int index) {
-                                  /// Get orientation & index of swiped card!
-                                   _isVisible = false;
-                                   _currDocIndex++;
-                                   if(_currDocIndex >= _documentsLength){
-                                     setState(() {
-                                       _allQuestionsDone = true;
-                                     });
-                                   }
-                                   
-                                }
-                                ),
-                );
-                    }
-                  ),
-                ),
+                                                  print('right');
+                                                  // _isVisible = false;
+                                                }
+                                              },
+                                              swipeCompleteCallback:
+                                                  (CardSwipeOrientation orientation,
+                                                      int index) {
+                                                /// Get orientation & index of swiped card!
+                                                _isVisible = false;
+                                                print('Users Length:' + '${_userDocs.length}');
+                                                
+                                                
+                                                  setState(() {
+                                                    _currDocIndex++;
+                                                    if (_currDocIndex >=
+                                                    _userDocs.length) {
+                                                    _allQuestionsDone = true;
+                                                    }
+                                                  });
+                                              }),
+                                        );
+                                })
+                            : Container()),
                 SizedBox(
                   height: 100.0,
                 ),
@@ -398,10 +850,11 @@ int _currDocIndex = 0;
                 color: Colors.grey,
                 iconSize: 30.0,
                 onPressed: () {
-                  Navigator.push(context, 
-                  MaterialPageRoute(builder: (context)=>XpertProfilePage(),
-                  )
-                  );
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => XpertProfilePage(),
+                      ));
                 },
               ),
             ],

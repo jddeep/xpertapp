@@ -77,9 +77,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'XPERT',
-      theme: ThemeData(
-          primarySwatch: Colors.yellow,
-          brightness: Brightness.dark),
+      theme:
+          ThemeData(primarySwatch: Colors.yellow, brightness: Brightness.dark),
       home: Builder(
         builder: (context) => IntroViewsFlutter(
           pages,

@@ -13,7 +13,6 @@ class XpertProfilePage extends StatefulWidget {
 }
 
 class _XpertProfilePageState extends State<XpertProfilePage> {
-
   Future<File> imageFile;
   FileImage profile_pic;
 
@@ -30,10 +29,10 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
       builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
             snapshot.data != null) {
-              return CircleAvatar(
-                radius: 30.0,
-                backgroundImage: FileImage(File(snapshot.data.path)),
-              );
+          return CircleAvatar(
+            radius: 30.0,
+            backgroundImage: FileImage(File(snapshot.data.path)),
+          );
         } else {
           return CircleAvatar(
             radius: 30.0,
@@ -77,7 +76,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
   //   await _showImage().then((onValue)=> retImage = onValue);
   //   return retImage;
   // }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +84,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.edit),
-            onPressed: (){
+            onPressed: () {
               pickImageFromGallery(ImageSource.gallery);
             },
           )
@@ -106,16 +105,15 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                       Text(
                         'Jaideep Prasad',
                         textAlign: TextAlign.start,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26.0),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 26.0),
                       ),
-                      Text(
-                        'Software Developer',
-                        textAlign: TextAlign.start
-                      ),
+                      Text('Software Developer', textAlign: TextAlign.start),
                       Row(
                         children: <Widget>[
                           IconTheme(
-                            data: IconThemeData(color: Colors.amber, size: 10.0),
+                            data:
+                                IconThemeData(color: Colors.amber, size: 10.0),
                             child: Icon(Icons.star),
                           ),
                           Text('5.0')
@@ -127,17 +125,22 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
               ],
             ),
           ),
-          SizedBox(height: 25.0,),
+          SizedBox(
+            height: 25.0,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Column(
                 children: <Widget>[
-                  Text('₹30K',
-                  style: TextStyle(color: Colors.amber, fontSize: 20.0),
-                  textAlign: TextAlign.center,
+                  Text(
+                    '₹30K',
+                    style: TextStyle(color: Colors.amber, fontSize: 20.0),
+                    textAlign: TextAlign.center,
                   ),
-                  Text('Earned',)
+                  Text(
+                    'Earned',
+                  )
                 ],
               ),
               Container(
@@ -149,11 +152,14 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
               ),
               Column(
                 children: <Widget>[
-                  Text('586',
-                  style: TextStyle(color: Colors.amber, fontSize: 20.0),
-                  textAlign: TextAlign.center,
+                  Text(
+                    '586',
+                    style: TextStyle(color: Colors.amber, fontSize: 20.0),
+                    textAlign: TextAlign.center,
                   ),
-                  Text('Requests',)
+                  Text(
+                    'Requests',
+                  )
                 ],
               ),
               Container(
@@ -165,86 +171,96 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
               ),
               Column(
                 children: <Widget>[
-                  Text('120',
-                  style: TextStyle(color: Colors.amber, fontSize: 20.0),
-                  textAlign: TextAlign.center,
+                  Text(
+                    '120',
+                    style: TextStyle(color: Colors.amber, fontSize: 20.0),
+                    textAlign: TextAlign.center,
                   ),
-                  Text('Chats',)
+                  Text(
+                    'Chats',
+                  )
                 ],
               ),
             ],
           ),
-          SizedBox(height: 20.0,),
+          SizedBox(
+            height: 20.0,
+          ),
           Expanded(
             child: Container(
               color: Colors.white,
               child: ListView(
-                
                 children: <Widget>[
-                 ListTile(
-                   leading: IconTheme(
-                     data: IconThemeData(color: Colors.grey, size: 35.0),
-                     child: Icon(Icons.attach_money),
-
-                   ),
-                   onTap: (){
-                     Navigator.push(context, MaterialPageRoute(builder: (context)=>ChangePricePage()));
-                   },
-                   title: Text('Change Price', style: TextStyle(color: Colors.black)),
-                 ),
-                 ListTile(
-                   leading: IconTheme(
-                     data: IconThemeData(color: Colors.grey, size: 35.0),
-                     child: Icon(Icons.account_balance),
-
-                   ),
-                   onTap: (){
-                     Navigator.push(context,
-                     MaterialPageRoute(builder: (context)=> ManageBankPage())
-                     );
-                   },
-                   title: Text('Manage Bank', style: TextStyle(color: Colors.black)),
-                 ),
-                 ListTile(
-                   leading: IconTheme(
-                     data: IconThemeData(color: Colors.grey, size: 35.0),
-                     child: Icon(Icons.headset_mic),
-
-                   ),
-                   title: Text('WhatsApp Jacqueline', style: TextStyle(color: Colors.black)),
-                 ),
-                 ListTile(
-                   leading: IconTheme(
-                     data: IconThemeData(color: Colors.grey, size: 35.0),
-                     child: Icon(Icons.mobile_screen_share),
-
-                   ),
-                   onTap: (){
-                     Share.share('Share stuff from Xpert app', subject: 'Invite a friend via...');
-                   },
-                   title: Text('Refer A Friend', style: TextStyle(color: Colors.black)),
-                 ),
-                 ListTile(
-                   leading: IconTheme(
-                     data: IconThemeData(color: Colors.grey, size: 35.0),
-                     child: Icon(Icons.settings),
-
-                   ),
-                   onTap: (){
-                     Navigator.push(context,
-                     MaterialPageRoute(builder: (context)=>SettingsPage())
-                     );
-                   },
-                   title: Text('Settings', style: TextStyle(color: Colors.black)),
-                 ),
-                 ListTile(
-                   leading: IconTheme(
-                     data: IconThemeData(color: Colors.grey, size: 35.0),
-                     child: Icon(Icons.power_settings_new),
-
-                   ),
-                   title: Text('Logout', style: TextStyle(color: Colors.black)),
-                 ),
+                  ListTile(
+                    leading: IconTheme(
+                      data: IconThemeData(color: Colors.grey, size: 35.0),
+                      child: Icon(Icons.attach_money),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ChangePricePage()));
+                    },
+                    title: Text('Change Price',
+                        style: TextStyle(color: Colors.black)),
+                  ),
+                  ListTile(
+                    leading: IconTheme(
+                      data: IconThemeData(color: Colors.grey, size: 35.0),
+                      child: Icon(Icons.account_balance),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ManageBankPage()));
+                    },
+                    title: Text('Manage Bank',
+                        style: TextStyle(color: Colors.black)),
+                  ),
+                  ListTile(
+                    leading: IconTheme(
+                      data: IconThemeData(color: Colors.grey, size: 35.0),
+                      child: Icon(Icons.headset_mic),
+                    ),
+                    title: Text('WhatsApp Jacqueline',
+                        style: TextStyle(color: Colors.black)),
+                  ),
+                  ListTile(
+                    leading: IconTheme(
+                      data: IconThemeData(color: Colors.grey, size: 35.0),
+                      child: Icon(Icons.mobile_screen_share),
+                    ),
+                    onTap: () {
+                      Share.share('Share stuff from Xpert app',
+                          subject: 'Invite a friend via...');
+                    },
+                    title: Text('Refer A Friend',
+                        style: TextStyle(color: Colors.black)),
+                  ),
+                  ListTile(
+                    leading: IconTheme(
+                      data: IconThemeData(color: Colors.grey, size: 35.0),
+                      child: Icon(Icons.settings),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SettingsPage()));
+                    },
+                    title:
+                        Text('Settings', style: TextStyle(color: Colors.black)),
+                  ),
+                  ListTile(
+                    leading: IconTheme(
+                      data: IconThemeData(color: Colors.grey, size: 35.0),
+                      child: Icon(Icons.power_settings_new),
+                    ),
+                    title:
+                        Text('Logout', style: TextStyle(color: Colors.black)),
+                  ),
                 ],
               ),
             ),

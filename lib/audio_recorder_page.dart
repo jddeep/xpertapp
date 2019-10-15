@@ -7,7 +7,7 @@ import 'package:path/path.dart' as pathDart;
 
 class AudioRecordingFragment extends StatefulWidget {
   final incomingQuestion;
-  AudioRecordingFragment({this.incomingQuestion, key}):super(key: key);
+  AudioRecordingFragment({this.incomingQuestion, key}) : super(key: key);
   @override
   _AudioRecordingFragmentState createState() => _AudioRecordingFragmentState();
 }
@@ -17,12 +17,10 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
   String tempFilename = "TempRecording";
   File defaultAudioFile;
 
-
-
   stopRecording() async {
     _timeString = '';
-        _start = 0;
-        _timer.cancel();
+    _start = 0;
+    _timer.cancel();
     await AudioRecorder.stop();
     bool isRecording = await AudioRecorder.isRecording;
 
@@ -54,21 +52,21 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
     startRecording();
     startTimer();
   }
+
   String _timeString = '';
   Timer _timer;
   int _start = 0;
 
-  void startTimer(){
+  void startTimer() {
     const oneSec = const Duration(seconds: 1);
     _timer = new Timer.periodic(
       oneSec,
-      (Timer timer)  {
+      (Timer timer) {
         setState(() {
           _start = _start + 1;
           _timeString = formatHHMMSS(_start);
-        }
-        );
-        },
+        });
+      },
     );
   }
 
@@ -141,67 +139,61 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                       image: DecorationImage(
                           image: AssetImage('assets/my_prof_pic.jpg'),
                           fit: BoxFit.cover)),
-
                 ),
                 Align(
-            alignment: AlignmentDirectional.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 26.0),
-              child: Text(
-                _timeString,
-                style: TextStyle(color: Colors.white, fontSize: 20.0),
-              ),
-            ),
-          ),
-                Align(
-            alignment: AlignmentDirectional.bottomStart,
-            child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(14.0),
-                        topRight: Radius.circular(14.0)
-                      )
-                      ),
-              child: Wrap(
-                children: <Widget>[
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top:8.0, bottom: 8.0),
-                      child: Text(
-                        widget.incomingQuestion,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 16.0)
-                      ),
+                  alignment: AlignmentDirectional.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 26.0),
+                    child: Text(
+                      _timeString,
+                      style: TextStyle(color: Colors.white, fontSize: 20.0),
                     ),
                   ),
-                          Center(
-                            child: FloatingActionButton(
+                ),
+                Align(
+                  alignment: AlignmentDirectional.bottomStart,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(14.0),
+                            topRight: Radius.circular(14.0))),
+                    child: Wrap(
+                      children: <Widget>[
+                        SingleChildScrollView(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                            child: Text(widget.incomingQuestion,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16.0)),
+                          ),
+                        ),
+                        Center(
+                          child: FloatingActionButton(
                               backgroundColor: Colors.amber,
                               child: _isRecording
                                   ? new Icon(Icons.stop, size: 36.0)
                                   : new Icon(Icons.mic, size: 36.0),
                               disabledElevation: 0.0,
-                              onPressed: (){
+                              onPressed: () {
                                 _isRecording ? stopRecording() : _startTimer();
-                              }
-                            ),
-                          ),
-                          Center(
-                            child: _isRecording
-                                ? new Text('Stop', textScaleFactor: 1.5)
-                                : new Text('Record', textScaleFactor: 1.5),
-                          )
-                ],
-              ),
-            ),
-          ),
+                              }),
+                        ),
+                        Center(
+                          child: _isRecording
+                              ? new Text('Stop', textScaleFactor: 1.5)
+                              : new Text('Record', textScaleFactor: 1.5),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
               ],
             );
         }
       },
     );
   }
-
-
 }
