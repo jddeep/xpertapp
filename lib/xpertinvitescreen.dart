@@ -4,13 +4,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xpert/homepage.dart';
+import 'package:xpert/underReview_page.dart';
 import 'package:xpert/videoanswerscreen.dart' as prefix0;
 
 class XpertInviteScreen extends StatefulWidget {
+  // bool isRegisteredInDataBase = true;
   var cameras;
   FirebaseUser user;
 
-  XpertInviteScreen({this.cameras, @required this.user});
+  XpertInviteScreen(
+      {this.cameras,
+      @required this.user,
+      });
   @override
   _XpertInviteScreenState createState() => _XpertInviteScreenState();
 }
@@ -180,7 +185,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                           isEmpty: _sname == '',
                           child: new DropdownButtonHideUnderline(
                             child: new DropdownButton(
-                              value: _socialAccount,
+                              value: _sname,
                               isDense: true,
                               style: TextStyle(color: Colors.white),
                               onChanged: (String newValue) {
@@ -266,9 +271,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HomePage(
-                            cameras: widget.cameras,
-                          ),
+                          builder: (context) => UnderReviewPage(),
                         ));
                   });
                 },
