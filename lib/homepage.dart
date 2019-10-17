@@ -728,7 +728,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       }
                                       : Transform.scale(
                                           scale: 1 / 0.68,
-                                          child: TinderSwapCard(
+                                          child: TinderSwapCard(animDuration: 5,
                                               orientation:
                                                   AmassOrientation.BOTTOM,
                                               totalNum: 6,
@@ -830,33 +830,59 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.chat),
-                color: Colors.grey,
-                iconSize: 30.0,
-                onPressed: () {
-                  Navigator.push(context,
+              GestureDetector(
+  child: Container(
+   width:50,
+   height: 50,
+   decoration: BoxDecoration(
+    //  color: Colors.black,
+     image: DecorationImage(
+       image:AssetImage("assets/chat_icon.png"), 
+       fit:BoxFit.cover
+     ),
+   ),
+  ),onTap:(){
+   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => BroadcastPage()));
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.credit_card),
-                color: Colors.amber,
-                iconSize: 40.0,
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.person),
-                color: Colors.grey,
-                iconSize: 30.0,
-                onPressed: () {
+                
+  }
+),
+GestureDetector(
+  child: Container(
+   width:50,
+   height: 50,
+   decoration: BoxDecoration(
+    //  color: Colors.black,
+     image: DecorationImage(
+       image:AssetImage("assets/cards_icon.png"), 
+       fit:BoxFit.cover
+     ),
+   ),
+  ),onTap:(){
+  //  Navigator.push(context,
+  //                     MaterialPageRoute(builder: (context) => BroadcastPage()));
+                
+  }
+),
+GestureDetector(
+  child: Container(
+   width:50,
+   height: 50,
+   decoration: BoxDecoration(
+    //  color: Colors.black,
+     image: DecorationImage(
+       image:AssetImage("assets/user_prof_icon.png"), 
+       fit:BoxFit.cover
+     ),
+   ),
+  ),onTap:(){
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => XpertProfilePage(),
-                      ));
-                },
-              ),
+                      )); 
+  }
+)
             ],
           )
         ],

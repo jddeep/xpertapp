@@ -29,7 +29,7 @@ class _EditPricePageState extends State<EditPricePage> {
         title: Text('Change Price'),
       ),
       body: SlidingUpPanel(
-        maxHeight: 500.0,
+        maxHeight: 200.0,
         backdropEnabled: true,
         controller: _pc,
         panel: Center(
@@ -41,11 +41,17 @@ class _EditPricePageState extends State<EditPricePage> {
         collapsed: Container(
           decoration: BoxDecoration(
               color: Colors.white, borderRadius: BorderRadius.circular(15.0)),
-          child: Center(
-            child: Text(
-              "Note: The Average price xperts ask...",
-              style: TextStyle(color: Colors.black),
-            ),
+          child: Column(
+            
+            children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Note: The Average price xperts ask...",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+            ],
           ),
         ),
         body: Column(

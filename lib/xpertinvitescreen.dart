@@ -26,9 +26,9 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
   List<String> _socialAccounts = <String>[
     '',
     'Twitter',
-    'LinkedIn',
+    'Instagram',
     'Youtube',
-    'GitHub'
+    'Facebook'
   ];
   String _socialAccount = '';
   final dataBaseRef = Firestore.instance;
@@ -55,7 +55,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
   }) async {
     await dataBaseRef
         .collection('invite_requests')
-        .document(widget.user.uid)
+        .document(firstname.toLowerCase()+'_'+lastname.toLowerCase())
         .setData({
       'auth_id': widget.user.uid,
       'date': DateTime.now(),
