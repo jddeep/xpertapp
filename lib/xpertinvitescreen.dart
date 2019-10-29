@@ -4,13 +4,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xpert/homepage.dart';
+import 'package:xpert/underReview_page.dart';
 import 'package:xpert/videoanswerscreen.dart' as prefix0;
 
 class XpertInviteScreen extends StatefulWidget {
+  // bool isRegisteredInDataBase = true;
   var cameras;
   FirebaseUser user;
 
-  XpertInviteScreen({this.cameras, @required this.user});
+  XpertInviteScreen(
+      {this.cameras,
+      @required this.user,
+      });
   @override
   _XpertInviteScreenState createState() => _XpertInviteScreenState();
 }
@@ -21,9 +26,9 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
   List<String> _socialAccounts = <String>[
     '',
     'Twitter',
-    'LinkedIn',
+    'Instagram',
     'Youtube',
-    'GitHub'
+    'Facebook'
   ];
   String _socialAccount = '';
   final dataBaseRef = Firestore.instance;
@@ -48,8 +53,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
     String source,
     String status,
   }) async {
-    await dataBaseRef.collection('invite_requests').document(widget.user.uid).setData({
-      'uid': widget.user.uid,
+    await dataBaseRef
+        .collection('invite_requests')
+        .document(firstname.toLowerCase()+'_'+lastname.toLowerCase())
+        .setData({
+      'auth_id': widget.user.uid,
       'date': DateTime.now(),
       'fname': firstname,
       'lname': lastname,
@@ -90,7 +98,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         Container(
                           width: 160,
                           child: TextFormField(
-                            onChanged: (value){
+                            onChanged: (value) {
                               setState(() {
                                 _fname = value;
                               });
@@ -109,7 +117,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         Container(
                           width: 160,
                           child: TextFormField(
-                            onChanged: (value){
+                            onChanged: (value) {
                               setState(() {
                                 _lname = value;
                               });
@@ -128,11 +136,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       ],
                     ),
                     new TextFormField(
-                      onChanged: (value){
-                              setState(() {
-                                _email = value;
-                              });
-                            },
+                      onChanged: (value) {
+                        setState(() {
+                          _email = value;
+                        });
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Enter a email address',
                         labelText: 'Email',
@@ -177,7 +185,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                           isEmpty: _sname == '',
                           child: new DropdownButtonHideUnderline(
                             child: new DropdownButton(
-                              value: _socialAccount,
+                              value: _sname,
                               isDense: true,
                               style: TextStyle(color: Colors.white),
                               onChanged: (String newValue) {
@@ -191,7 +199,10 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                               items: _socialAccounts.map((String value) {
                                 return new DropdownMenuItem(
                                   value: value,
-                                  child: new Text(value, style: TextStyle(color: Colors.white),),
+                                  child: new Text(
+                                    value,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
                                 );
                               }).toList(),
                             ),
@@ -200,11 +211,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       },
                     ),
                     new TextFormField(
-                      onChanged: (value){
-                              setState(() {
-                                _shandle = value;
-                              });
-                            },
+                      onChanged: (value) {
+                        setState(() {
+                          _shandle = value;
+                        });
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Enter your handle',
                         labelText: 'Your handle',
@@ -212,11 +223,11 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       keyboardType: TextInputType.text,
                     ),
                     new TextFormField(
-                      onChanged: (value){
-                              setState(() {
-                                _sfollowers = value;
-                              });
-                            },
+                      onChanged: (value) {
+                        setState(() {
+                          _sfollowers = value;
+                        });
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Enter the number of your followers',
                         labelText: 'How many followers do you have?',
@@ -256,16 +267,13 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                     sfollowers: _sfollowers,
                     source: _source,
                     status: _status,
-                  ).whenComplete((){
+                  ).whenComplete(() {
                     Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomePage(
-                          cameras: widget.cameras,
-                        ),
-                      ));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UnderReviewPage(),
+                        ));
                   });
-
                 },
               ),
             ],

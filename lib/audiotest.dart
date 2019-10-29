@@ -6,8 +6,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'audio_recorder_page.dart';
 
 class AudioRecPage extends StatefulWidget {
-  AudioRecPage({this.incomingQuestion,  key}) : super(key: key);
+  AudioRecPage({this.incomingQuestion, this.userDocId, this.orderDocId, key}) : super(key: key);
   final incomingQuestion;
+  final userDocId;
+  final orderDocId;
 
   @override
   _AudioRecPageState createState() => _AudioRecPageState();
@@ -20,7 +22,11 @@ class _AudioRecPageState extends State<AudioRecPage> {
       body: SafeArea(
         top: false,
         bottom: false,
-        child: AudioRecordingFragment(incomingQuestion: widget.incomingQuestion,),
+        child: AudioRecordingFragment(
+          incomingQuestion: widget.incomingQuestion,
+          userDocId: widget.userDocId,
+          orderDocId: widget.orderDocId,
+        ),
       ),
     );
   }

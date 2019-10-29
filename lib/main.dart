@@ -1,19 +1,27 @@
 import 'package:camera/camera.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intro_views_flutter/Models/page_view_model.dart';
 import 'package:intro_views_flutter/intro_views_flutter.dart';
+import 'package:xpert/otpscreen.dart';
 
 import 'dart:async';
 import 'xpertWelcome.dart';
 
 List<CameraDescription> cameras;
+bool isLoggedIn = false;
 
 Future<Null> main() async {
+  
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    cameras = await availableCameras();
+    // cameras = await availableCameras();
+    
   } on CameraException catch (e) {
     print(e);
+  }
+  if (await FirebaseAuth.instance.currentUser() != null){
+      isLoggedIn = true;
   }
   runApp(MyApp());
 }
@@ -40,7 +48,7 @@ class MyApp extends StatelessWidget {
           ),
         )),
     PageViewModel(
-      pageColor: Colors.amber,
+      pageColor: new Color(0xFF37474F),
       body: Text(
         'Earn money by brand shoutouts',
       ),
@@ -77,21 +85,28 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'XPERT',
-      theme: ThemeData(
-          primarySwatch: Colors.yellow,
-          brightness: Brightness.dark),
+      theme:
+          ThemeData(primarySwatch: Colors.yellow, brightness: Brightness.dark),
       home: Builder(
         builder: (context) => IntroViewsFlutter(
           pages,
           showNextButton: false,
           showBackButton: false,
           onTapDoneButton: () {
-            Navigator.push(
+            if(!isLoggedIn){
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) => XpertWelcomePage(cameras),
               ), //MaterialPageRoute
             );
+            } else{
+              Navigator.pushReplacement(context,
+              MaterialPageRoute(
+                builder: (context)=> OTPScreen(cameras, null, '')
+              )
+              );
+            }
             // Navigator.pop(context);
           },
           pageButtonTextStyles: TextStyle(

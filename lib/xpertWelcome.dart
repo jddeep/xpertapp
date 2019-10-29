@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:xpert/main.dart';
-import 'package:xpert/otpscreen.dart';
+import 'package:xpert/homepage.dart';
+import 'main.dart';
+import 'otpscreen.dart';
+import 'rejectedPage.dart';
+import 'underReview_page.dart';
 
 import 'xpertinvitescreen.dart';
 
@@ -18,8 +22,72 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
   TextEditingController _smsCodeController = TextEditingController();
   TextEditingController _phoneNumberController = TextEditingController();
   String phoneNo;
-  String smsCode = '+91'; // default India
+  String smsCode;
   String verificationId;
+
+  bool isVerified = false;
+
+  // _checkMaster() async{
+  //   await Firestore.instance.collection('xpert_master')
+  //   .where('mobile',isEqualTo: _phoneNumberController.text)
+  //   .getDocuments().then((docs){
+  //     if(docs.documents.length==0){
+
+  //     }
+  //   });
+  // }
+
+  // _checkPhone() async {
+  //   await Firestore.instance
+  //       .collection('invite_requests')
+  //       .where('mobile', isEqualTo: _phoneNumberController.text)
+  //       .getDocuments()
+  //       .then((docs) {
+  //     if (docs.documents.length == 0) {
+  //       print("This No is not registered before in database");
+  //       verifyPhone().whenComplete(() {
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder: (context) => OTPScreen(
+  //                 cameras, signInWithPhoneNumber), // Not registerd yet
+  //           ),
+  //         );
+  //       });
+  //     } else {
+  //       if (docs.documents[0].data['status'] == 'underReview') {
+  //         print("UnderReview Profile");
+  //         verifyPhone();
+  //         Navigator.pushReplacement(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder: (context) => OTPScreen(
+  //                   cameras, signInWithPhoneNumber, 0), //UnderReview Profile
+  //             ));
+  //       } else if (docs.documents[0].data['status'] == 'rejected') {
+  //         print("Rejected Profile");
+  //         verifyPhone();
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder: (context) => OTPScreen(
+  //                 cameras, signInWithPhoneNumber, -1), //Rejected Profile
+  //           ),
+  //         );
+  //       } else if (docs.documents[0].data['status'] == 'accepted') {
+  //         print("Accepted profile");
+  //         verifyPhone();
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder: (context) => OTPScreen(
+  //                 cameras, signInWithPhoneNumber, 1), //Accepted Profile
+  //           ),
+  //         );
+  //       }
+  //     }
+  //   });
+  // }
 
   Future<void> verifyPhone() async {
     final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
@@ -29,7 +97,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
 
     final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeResend]) {
       this.verificationId = verId;
-      print('sms code sent: ' + this.smsCode + _phoneNumberController.text);
+      print('sms code sent: ' + '+91' + _phoneNumberController.text);
       // smsCodeDialog(context).then((value) {
       //   print('Signed in');
       // });
@@ -37,18 +105,27 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
 
     final PhoneVerificationCompleted verifiedSuccess = (AuthCredential user) {
       print('verified');
+      isVerified = true;
+      // FirebaseAuth.instance.signInWithCredential(user).then((authResult) async {
+      //   if (authResult.additionalUserInfo.profile.isNotEmpty) {
+
+      //   }
+      // });
+      // Navigator.pushReplacement(context,
+      // MaterialPageRoute(builder: (context)=> HomePage())
+      // );
     };
 
     final PhoneVerificationFailed veriFailed = (AuthException exception) {
       print('${exception.message}');
-      print('exception on: ' + this.smsCode + _phoneNumberController.text);
+      print('exception on: ' + '+91' + _phoneNumberController.text);
     };
 
     await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: this.smsCode + _phoneNumberController.text,
+      phoneNumber: '+91' + _phoneNumberController.text,
       codeAutoRetrievalTimeout: autoRetrieve,
       codeSent: smsCodeSent,
-      timeout: const Duration(seconds: 5),
+      timeout: const Duration(seconds: 120),
       verificationCompleted: verifiedSuccess,
       verificationFailed: veriFailed,
     );
@@ -57,6 +134,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
   /// Sign in using an sms code as input
   /// CALLED IN OTP SCREEN
   Future<FirebaseUser> signInWithPhoneNumber(String smsCode) async {
+    print(smsCode + 'ver: ' + verificationId);
     final AuthCredential credential = PhoneAuthProvider.getCredential(
       verificationId: verificationId,
       smsCode: smsCode,
@@ -66,7 +144,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
     final FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     assert(user.uid == currentUser.uid);
 
-    _smsCodeController.text = '';
+    // _smsCodeController.text = '';
     return user;
   }
 
@@ -126,9 +204,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                           child: Row(
                             children: <Widget>[
                               new CountryCodePicker(
-                                onChanged: (value){
-                                  this.smsCode = value.toString();
-                                },
+                                onChanged: print,
                                 // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
                                 initialSelection: '+91',
                                 favorite: ['+91', 'IN'],
@@ -156,30 +232,15 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                           ),
                         ),
                         // ),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(left: 20, bottom: 5),
-                        //   child: Row(
-                        //     children: <Widget>[
-                        //       Text(
-                        //         'Looking to follow Xperts? ',
-                        //         style: TextStyle(color: Colors.white),
-                        //       ),
-                        //       Text(
-                        //         'Download our User App.',
-                        //         style: TextStyle(color: Colors.amber),
-                        //       )
-                        //     ],
-                        //   ),
-                        // ),
                       ],
                     ),
-
                   ),
                 ],
               ),
             ),
           ),
-          Padding(
+
+                        Padding(
                           padding: const EdgeInsets.only(left: 20, bottom: 5),
                           child: Row(
                             children: <Widget>[
@@ -194,20 +255,21 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                             ],
                           ),
                         ),
-          MaterialButton(
+                        MaterialButton(
                           minWidth: double.infinity,
                           height: 60,
                           color: Colors.amber,
                           child: Text('Continue',
                               style: TextStyle(color: Colors.white, fontSize: 20)),
                           onPressed: () {
+                            // _checkPhone();
                             verifyPhone();
-                            // Move to OTP Page
+                              ////Move to OTP Page
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      new OTPScreen(widget.cameras, signInWithPhoneNumber),
+                                  builder: (context) => new OTPScreen(widget.cameras,
+                                      signInWithPhoneNumber, _phoneNumberController.text),
                                 ));
                           },
                         ),

@@ -40,6 +40,8 @@ dependencies:
   share:
   cloud_firestore:
   firebase_auth:
+  sliding_up_panel:
+  firebase_storage: ^3.0.6
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +69,12 @@ flutter:
   - assets/app_logo_bg.png
   - assets/profile_pic.jpg
   - assets/my_prof_pic.jpg
+  - assets/cards_icon.png
+  - assets/chat_icon.png
+  - assets/user_prof_icon.png
+  - assets/accept_stamp.png
+  - assets/do_later_stamp.png
+  - assets/reject_stamp.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

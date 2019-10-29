@@ -1,4 +1,4 @@
-package com.example.xpert
+package com.releasemyad.xpert
 
 import android.os.Bundle
 

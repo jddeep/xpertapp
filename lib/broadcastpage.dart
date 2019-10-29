@@ -130,7 +130,7 @@ class _BroadcastPageState extends State<BroadcastPage> {
                       height: 5.0,
                       color: Colors.grey,
                     ),
-                                        Container(
+                    Container(
                       height: 80,
                       padding: EdgeInsets.all(8.0),
                       child: ListView(

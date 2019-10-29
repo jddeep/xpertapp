@@ -3,6 +3,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:camera/camera.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -15,11 +18,13 @@ import 'package:xpert/audiotest.dart';
 import 'package:xpert/homepage.dart';
 
 class CameraExampleHome extends StatefulWidget {
-  List<CameraDescription> cameras;
-String incomingQuestion;
+  // List<CameraDescription> cameras;
+  String incomingQuestion;
   final LocalFileSystem localFileSystem;
+  var orderDocId;
+  var docId;
 
-  CameraExampleHome({this.cameras, this.incomingQuestion, localFileSystem})
+  CameraExampleHome({this.incomingQuestion, this.orderDocId, this.docId, localFileSystem})
       : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
@@ -51,14 +56,65 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   String videoPath;
   VideoPlayerController videoController;
   VoidCallback videoPlayerListener;
-  bool onlyAudio = false;
+  bool onlyVideo = true;
   Recording _recording = new Recording();
   bool isRecording = false;
   Random random = new Random();
   TextEditingController _controller = new TextEditingController();
+  bool isReady = false;
+  bool showBottom = true;
+  bool _paid = false;
+
+  List<CameraDescription> cameras;
+
+  Future<String> uploadToStorage(String filePath) async {
+    String url;
+    try {
+      final DateTime now = DateTime.now();
+      final int millSeconds = now.millisecondsSinceEpoch;
+      final String month = now.month.toString();
+      final String date = now.day.toString();
+      final String storageId = (millSeconds.toString());
+      final String today = ('$month-$date');
+
+//  final file =  await ImagePicker.pickVideo(source: ImageSource.gallery);
+      final file = File(filePath);
+      StorageReference ref = FirebaseStorage.instance
+          .ref()
+          .child("video")
+          .child(today)
+          .child(storageId);
+      StorageUploadTask uploadTask =
+          ref.putFile(file, StorageMetadata(contentType: 'video/mp4'));
+      final StorageTaskSnapshot downloadUrl = (await uploadTask.onComplete);
+      url = (await downloadUrl.ref.getDownloadURL());
+
+      print(url);
+    } catch (error) {
+      print(error);
+      return null;
+    }
+    return url;
+  }
+
+  Future<void> setupCameras() async {
+    try {
+      cameras = await availableCameras();
+      controller = new CameraController(cameras[1], ResolutionPreset.medium);
+      await controller.initialize();
+    } on CameraException catch (_) {
+      setState(() {
+        isReady = false;
+      });
+    }
+    setState(() {
+      isReady = true;
+    });
+  }
 
   @override
   void initState() {
+    setupCameras();
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // CameraDescription cameraDescription = CameraDescription(lensDirection: CameraLensDirection.front);
@@ -68,6 +124,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _controller.dispose();
     _stopVideoPlayer();
     super.dispose();
   }
@@ -86,6 +143,22 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       }
     }
   }
+  
+  void _updateAnswerUrl(String url) async{
+    print('URL: ' + url + 'DOCID: ' + widget.docId.toString() + 'orderDociID ' + widget.orderDocId.toString());
+    await Firestore.instance
+    .collection('xpert_master')
+    .document(widget.docId.toString())
+    .collection('orders')
+    .document(widget.orderDocId.toString())
+    .updateData({
+      'answer_url': url,
+      'status': 'delivered',
+      'answer_type' : 'video'
+    }).whenComplete((){
+      print('Updated!');
+    });
+  }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
@@ -101,48 +174,153 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
             alignment: AlignmentDirectional.topStart,
             child: Padding(
               padding: const EdgeInsets.only(top: 50.0),
-              child: _cameraTogglesRowWidget(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      IconTheme(
+                        data: IconThemeData(color: Colors.red),
+                        child: isRecording?Icon(Icons.fiber_manual_record):Container(height: 1.0),
+                      ),
+                      Text(
+                _timeString,
+                style: TextStyle(color: Colors.white, fontSize: 20.0),
+              ),
+                    ],
+                  ),
+                  
+                  _cameraTogglesRowWidget(),
+                ],
+              ),
             ),
           ),
           Align(
             alignment: AlignmentDirectional.bottomStart,
-            child: Container(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                !showBottom? Container(
                   decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(14.0),
-                        topRight: Radius.circular(14.0)
-                      )  
-                      ),
-              child: Wrap(
-                children: <Widget>[
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top:8.0, bottom: 8.0),
-                      child: Text(
-                        widget.incomingQuestion,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 16.0)
-                      ),
+                      color: Colors.grey
+                   ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    Text('MARK ANSWER AS: ', style: TextStyle(color: Colors.black)),
+                    Text(_paid? "PAID" : "FREE", style: TextStyle(color: Colors.black)),
+                    CupertinoSwitch(
+                      value: _paid,
+                      onChanged: (value){
+                        setState(() {
+                         _paid = value;
+                        });
+                      },
                     ),
-                  ),
-                          Center(
-                            child: Container(
-                        decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20.0),
-                              border: Border.all(width: 4.0, color: Colors.white)),
-                        child: IconButton(
-                            icon: isRecording?Icon(Icons.stop):Icon(Icons.fiber_manual_record),
-                            iconSize: 30.0,
-                            color: Colors.red,
-                            onPressed: () {
-                              _startTimer();
-                            },
-                        ),
-                      ),
-                          ),
-                ],
-              ),
+                  ],
+                )
+                ):Container(),
+                Container(
+                    decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(14.0),
+                            topRight: Radius.circular(14.0))),
+                    child: showBottom
+                        ? Wrap(
+                            children: <Widget>[
+                              SingleChildScrollView(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 8.0, bottom: 8.0, left: 8.0),
+                                  child: Text(widget.incomingQuestion,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 16.0)),
+                                ),
+                              ),
+                              Center(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      border: Border.all(
+                                          width: 4.0, color: Colors.white)),
+                                  child: IconButton(
+                                    icon: isRecording
+                                        ? Icon(Icons.stop)
+                                        : Icon(Icons.fiber_manual_record),
+                                    iconSize: 30.0,
+                                    color: Colors.red,
+                                    onPressed: () {
+                                      _startTimer();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Wrap(
+                            children: <Widget>[
+                              SingleChildScrollView(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 8.0, bottom: 8.0, left: 8.0),
+                                  child: Text(widget.incomingQuestion,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 16.0)),
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  IconButton(
+                                    icon: Icon(Icons.refresh),
+                                    onPressed: () {
+                                      setState(() {
+                                        // onResumeButtonPressed();
+                                        showBottom = true;
+                                      });
+                                    },
+                                  ),
+                                  FlatButton(
+                                    onPressed: () {
+                                      print("videoPath: $videoPath");
+                                      setState(() {
+                                        showBottom = true;
+                                      });
+                                      uploadToStorage(videoPath).then((url){
+                                        _updateAnswerUrl(url);
+                                      });
+                                    },
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(360.0)),
+                                    color: Colors.white,
+                                    child: Row(
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "Tap to send",
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.send,
+                                          color: Colors.amber,
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ) //todo,
+                    ),
+              ],
             ),
           ),
           // Align(
@@ -153,7 +331,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //             borderRadius: BorderRadius.only(
           //               topLeft: Radius.circular(14.0),
           //               topRight: Radius.circular(14.0)
-          //             )  
+          //             )
           //             ),
           //     height: MediaQuery.of(context).size.height * 1/6,
           //     child: Column(
@@ -184,7 +362,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //   ),
           // ),
 
-
           //////////////////
           // Align(
           //     alignment: AlignmentDirectional.bottomCenter,
@@ -205,16 +382,16 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //       ),
           //     )
           //     ),
-          Align(
-            alignment: AlignmentDirectional.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 26.0),
-              child: Text(
-                _timeString,
-                style: TextStyle(color: Colors.white, fontSize: 20.0),
-              ),
-            ),
-          ),
+          // Align(
+          //   alignment: AlignmentDirectional.topCenter,
+          //   child: Padding(
+          //     padding: const EdgeInsets.only(top: 26.0),
+          //     child: Text(
+          //       _timeString,
+          //       style: TextStyle(color: Colors.white, fontSize: 20.0),
+          //     ),
+          //   ),
+          // ),
           Align(
             alignment: AlignmentDirectional.bottomEnd,
             child: Padding(
@@ -256,14 +433,17 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         child: Container(
           padding: EdgeInsets.all(10.0),
           color: Colors.transparent,
-          child: Text(
-            'Choose front or rear camera from above to record your message!',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-            ),
+          child: Center(
+            child: CircularProgressIndicator(),
           ),
+          // child: Text(
+          //   'Choose front or rear camera from above to record your message!',
+          //   style: TextStyle(
+          //     color: Colors.white,
+          //     fontSize: 24.0,
+          //     fontWeight: FontWeight.w900,
+          //   ),
+          // ),
         ),
       );
     } else {
@@ -283,28 +463,37 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   Widget _toggleAudioWidget() {
     return Row(
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(left: 90.0),
-          child: Switch(
+        Switch(
             activeColor: Colors.amber,
             activeTrackColor: Colors.amberAccent,
             inactiveThumbColor: Colors.grey,
             inactiveTrackColor: Colors.blueGrey,
-            value: onlyAudio,
+            value: onlyVideo,
             onChanged: (bool value) {
               print(value);
               setState(() {
-                onlyAudio = value;
+                onlyVideo = value;
+                if(!onlyVideo){
+                  Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AudioRecPage(
+              incomingQuestion: widget.incomingQuestion,
+              userDocId: widget.docId,
+              orderDocId: widget.orderDocId,
+            ),
+          ),
+        );
+                }
               });
               // if (controller != null) {
               //   onNewCameraSelected(controller.description);
               // }
             },
           ),
-        ),
         IconButton(
-          icon: Icon(Icons.keyboard_voice),
-          color: Colors.amber,
+          icon: Icon(Icons.videocam),
+          color: Colors.white,
           onPressed: () {},
         )
       ],
@@ -391,37 +580,59 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       ],
     );
   }
-
+static int cameraDir = 0;
   /// Display a row of toggle to select the camera (or a message if no camera is available).
   Widget _cameraTogglesRowWidget() {
     final List<Widget> toggles = <Widget>[];
+    
+    // List<CameraDescription> cameras;
 
-    if (widget.cameras.isEmpty) {
+    if (cameras == null) {
       return const Text('No camera found');
     } else {
-      for (CameraDescription cameraDescription in widget.cameras) {
-        toggles.add(
-          SizedBox(
-            width: 80.0,
-            child: RadioListTile<CameraDescription>(
-              title: Icon(
-                getCameraLensIcon(cameraDescription.lensDirection),
-                color: Colors.amber,
-              ),
-              activeColor: Colors.red,
-              groupValue: controller?.description,
-              value: cameraDescription,
-              onChanged: controller != null && controller.value.isRecordingVideo
-                  ? null
-                  : onNewCameraSelected,
-            ),
-          ),
-        );
+      List<CameraDescription> camerasDesc = new List();
+      for(CameraDescription cameraDescription in cameras) {
+        camerasDesc.add(cameraDescription);
       }
+      toggles.add( CircleAvatar(
+        backgroundColor: Colors.grey,
+              child: IconTheme(
+              data: IconThemeData(color: Colors.white),
+              child: IconButton(tooltip: 'Switch Camera',
+                onPressed:(){
+                    onNewCameraSelected(camerasDesc.elementAt(cameraDir));
+                    if(cameraDir == 0)
+                    cameraDir = 1;
+                    else
+                    cameraDir = 0;
+                },
+                icon: Icon(Icons.switch_camera),
+              ),
+        ),
+      ));
+      // for (CameraDescription cameraDescription in cameras) {
+      //   toggles.add(
+      //     SizedBox(
+      //       width: 80.0,
+      //       child: RadioListTile<CameraDescription>(
+      //         title: Icon(
+      //           getCameraLensIcon(cameraDescription.lensDirection),
+      //           color: Colors.amber,
+      //         ),
+      //         activeColor: Colors.red,
+      //         groupValue: controller?.description,
+      //         value: cameraDescription,
+      //         onChanged: controller != null && controller.value.isRecordingVideo
+      //             ? null
+      //             : onNewCameraSelected,
+      //       ),
+      //     ),
+      //   );
+      // }
       toggles.add(_toggleAudioWidget());
     }
 
-    return Container(color: Colors.transparent, child: Row(children: toggles));
+    return Container(color: Colors.transparent, child: Row(children: toggles, mainAxisAlignment: MainAxisAlignment.end,));
   }
 
   String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -457,11 +668,19 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     } else {
       isRecording = true;
       startTimer();
-      if (!onlyAudio)
+      if (onlyVideo)
         onVideoRecordButtonPressed();
       else {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AudioRecPage(incomingQuestion: widget.incomingQuestion,)));
+          context,
+          MaterialPageRoute(
+            builder: (context) => AudioRecPage(
+              incomingQuestion: widget.incomingQuestion,
+              userDocId: widget.docId,
+              orderDocId: widget.orderDocId,
+            ),
+          ),
+        );
       }
 
       //   _timeString = _formatDateTime(DateTime.fromMillisecondsSinceEpoch(_start * 1000));
@@ -556,14 +775,17 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   void onVideoRecordButtonPressed() {
     startVideoRecording().then((String filePath) {
       if (mounted) setState(() {});
-      if (filePath != null) showInSnackBar('Saving video to $filePath');
+      // if (filePath != null) showInSnackBar('Saving video to $filePath');
     });
   }
 
   void onStopButtonPressed() {
     stopVideoRecording().then((_) {
-      if (mounted) setState(() {});
-      showInSnackBar('Video recorded to: $videoPath');
+      if (mounted)
+        setState(() {
+          showBottom = false;
+        });
+      // showInSnackBar('Video recorded to: $videoPath');
     });
   }
 
@@ -614,12 +836,14 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     try {
       await controller.stopVideoRecording();
+      // setState(() {
+      //   //todo
+      // });
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
     }
-
-    await _startVideoPlayer();
+    // await _startVideoPlayer();
   }
 
   Future<void> pauseVideoRecording() async {
@@ -707,16 +931,19 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 }
 
 class CameraApp extends StatelessWidget {
-  var cameras;
+  // var cameras;
   var incomingQuestion;
+  var orderDocId;
+  var docId;
 
-  CameraApp(this.cameras, this.incomingQuestion);
+  CameraApp(this.incomingQuestion, this.orderDocId, this.docId);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: CameraExampleHome(
-        cameras: cameras,
         incomingQuestion: incomingQuestion,
+        orderDocId: orderDocId,
+        docId: docId,
       ),
       theme: new ThemeData(
           brightness: Brightness.dark,

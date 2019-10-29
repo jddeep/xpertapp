@@ -1,90 +1,226 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:xpert/profile_options/edit_price_page.dart';
 
 class ChangePricePage extends StatefulWidget {
+  final userDocID;
+  final String questionPrice;
+  final String wishPrice;
+  final String shoutPrice;
+  ChangePricePage(this.userDocID, this.questionPrice, this.wishPrice, this.shoutPrice);
   @override
   _ChangePricePageState createState() => _ChangePricePageState();
 }
 
-Widget _currPrice(){
 
-  return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text('₹500/', style: TextStyle(fontSize: 40.0,)),
-                              Text('answer', style: TextStyle(fontSize: 26.0,))
-                            ],
-                          );
-}
 
 class _ChangePricePageState extends State<ChangePricePage> {
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-          child: Scaffold(
-        appBar: AppBar(
-          title: Text('Change Price'),
-          bottom: TabBar(
-            
-            labelColor: Colors.white,
-            indicatorColor: Colors.amber,
-            unselectedLabelColor: Colors.grey,
-            labelStyle: TextStyle(color: Colors.black),
-            tabs: <Widget>[
-              Tab(
-                 child: Text('Ask me anything'),
+
+  Widget _currQuesPrice(String price) {
+  return Container(
+    height: 120.0,
+    child: Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0)
+      ),
+      color: Colors.amber,
+      elevation: 10.0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Text(
+                'ANSWERING A QUESTION',
+                style: TextStyle(fontSize: 18.0)
               ),
-              Tab(
-                child: Text('Invites & wishes'),
-              ),
-              Tab(
-                child: Text('Brand Shoutouts'),
+              CupertinoSwitch(
+                value: true,
+                onChanged: (value){
+                  print(value);
+                },
+                activeColor: Colors.green,
+                
               )
             ],
           ),
-        ),
-        body: TabBarView(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Expanded(
-                    child: Container(
-                      color: Colors.amber,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            'Current Price',
-                            style: TextStyle(color: Colors.black)
-                          ),
-                          _currPrice(),
-                          OutlineButton(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-                            onPressed: (){
-                              Navigator.push(context,
-                              MaterialPageRoute(builder: (context)=>EditPricePage(oldPrice: _currPrice(),))
-                              );
-                            },
-                            borderSide: BorderSide(color: Colors.blue),
-                            child: Text('Change Price', style:TextStyle(color: Colors.black, fontSize: 20.0)),
-                          ),
-                        ],
-                      ),
-                    ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Text('₹'+price+'/',
+                  style: TextStyle(fontSize: 25.0),
                   ),
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: EdgeInsets.all(10.0),
-                  color: Colors.white,
-                  child: Text('NOTE: your yearly income is Rs xxxxxx', style: TextStyle(color: Colors.black), textAlign: TextAlign.center,),
-                )
-              ],
-            ),
-            Container(),
-            Container(),
-          ],
+                  Text('answer', style: TextStyle(fontSize: 16.0),),
+                ],
+              ),
+              
+              IconTheme(
+                data: IconThemeData(color: Colors.white, size: 18.0),
+                child: IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: (){
+                    Navigator.push(context, 
+                    MaterialPageRoute(builder: (context)=>EditPricePage(userDocID: widget.userDocID, pricetype: 'question',))
+                    );
+                  },
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+  Widget _currWishPrice(String price) {
+  return Container(
+    height: 120.0,
+    child: Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0)
+      ),
+      color: Colors.amber,
+      elevation: 10.0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Text(
+                'RECORDING A GREETING',
+                style: TextStyle(fontSize: 18.0)
+              ),
+              CupertinoSwitch(
+                value: true,
+                onChanged: (value){
+                  print(value);
+                },
+                activeColor: Colors.green,
+                
+              )
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Text('₹'+price+'/',
+                  style: TextStyle(fontSize: 25.0),
+                  ),
+                  Text('wish', style: TextStyle(fontSize: 16.0),),
+                ],
+              ),
+              
+              IconTheme(
+                data: IconThemeData(color: Colors.white, size: 18.0),
+                child: IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: (){
+                    Navigator.push(context, 
+                    MaterialPageRoute(builder: (context)=>EditPricePage(userDocID: widget.userDocID, pricetype: 'wish',))
+                    );
+                  },
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    ),
+  );
+}
+  Widget _currShoutoutPrice(String price) {
+  return Container(
+    height: 120.0,
+    child: Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0)
+      ),
+      color: Colors.amber,
+      elevation: 10.0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Text(
+                'ENDORSING A BRAND',
+                style: TextStyle(fontSize: 18.0)
+              ),
+              CupertinoSwitch(
+                value: true,
+                onChanged: (value){
+                  print(value);
+                },
+                activeColor: Colors.green,
+                
+              )
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Text('₹'+price+'/',
+                  style: TextStyle(fontSize: 25.0),
+                  ),
+                  Text('brand', style: TextStyle(fontSize: 16.0),),
+                ],
+              ),
+              
+              IconTheme(
+                data: IconThemeData(color: Colors.white, size: 18.0),
+                child: IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: (){
+                    Navigator.push(context, 
+                    MaterialPageRoute(builder: (context)=>EditPricePage(userDocID: widget.userDocID, pricetype: 'shout',))
+                    );
+                  },
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    ),
+  );
+}
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text(
+          'Change Price'
         ),
+      ),
+      body: ListView(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(10.0),
+            child: _currQuesPrice(widget.questionPrice),
+          ),
+          Padding(
+            padding: EdgeInsets.all(10.0),
+            child: _currWishPrice(widget.wishPrice),
+          ),
+          Padding(
+            padding: EdgeInsets.all(10.0),
+            child: _currShoutoutPrice(widget.shoutPrice),
+          ),
+        ],
       ),
     );
   }
