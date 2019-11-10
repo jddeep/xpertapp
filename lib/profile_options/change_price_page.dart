@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:xpert/profile_options/edit_price_page.dart';
@@ -13,8 +14,40 @@ class ChangePricePage extends StatefulWidget {
 }
 
 
-
 class _ChangePricePageState extends State<ChangePricePage> {
+
+    Future<Null> _updateQuesPriceInDB(String newprice) async{
+    await Firestore.instance
+    .collection('xpert_master')
+    .document(widget.userDocID)
+    .updateData({
+      'question_price': newprice
+    }).whenComplete((){
+      print('Price updated');
+    });
+  }
+
+  Future<Null> _updateWishPriceInDB(String newprice) async{
+    await Firestore.instance
+    .collection('xpert_master')
+    .document(widget.userDocID)
+    .updateData({
+      'wish_price': newprice
+    }).whenComplete((){
+      print('Price updated');
+    });
+  }
+
+  Future<Null> _updateShoutPriceInDB(String newprice) async{
+    await Firestore.instance
+    .collection('xpert_master')
+    .document(widget.userDocID)
+    .updateData({
+      'shout_price': newprice
+    }).whenComplete((){
+      print('Price updated');
+    });
+  }
 
   Widget _currQuesPrice(String price) {
   return Container(
@@ -37,9 +70,14 @@ class _ChangePricePageState extends State<ChangePricePage> {
                 style: TextStyle(fontSize: 18.0)
               ),
               CupertinoSwitch(
-                value: true,
+                value: price=='0'?false:true,
                 onChanged: (value){
                   print(value);
+                  if(!value){
+                    _updateQuesPriceInDB('0').then((onValue){
+                      print('NULL PRICe updated!');
+                    });
+                  }
                 },
                 activeColor: Colors.green,
                 
@@ -98,9 +136,14 @@ class _ChangePricePageState extends State<ChangePricePage> {
                 style: TextStyle(fontSize: 18.0)
               ),
               CupertinoSwitch(
-                value: true,
+                value: price=='0'?false:true,
                 onChanged: (value){
                   print(value);
+                  if(!value){
+                    _updateWishPriceInDB('0').then((onValue){
+                      print('NULL PRICe updated!');
+                    });
+                  }
                 },
                 activeColor: Colors.green,
                 
@@ -158,9 +201,14 @@ class _ChangePricePageState extends State<ChangePricePage> {
                 style: TextStyle(fontSize: 18.0)
               ),
               CupertinoSwitch(
-                value: true,
+                value: price=='0'?false:true,
                 onChanged: (value){
                   print(value);
+                  if(!value){
+                    _updateShoutPriceInDB('0').then((onValue){
+                      print('NULL PRICe updated!');
+                    });
+                  }
                 },
                 activeColor: Colors.green,
                 
@@ -197,6 +245,13 @@ class _ChangePricePageState extends State<ChangePricePage> {
     ),
   );
 }
+
+@override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,21 +261,35 @@ class _ChangePricePageState extends State<ChangePricePage> {
           'Change Price'
         ),
       ),
-      body: ListView(
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.all(10.0),
-            child: _currQuesPrice(widget.questionPrice),
-          ),
-          Padding(
-            padding: EdgeInsets.all(10.0),
-            child: _currWishPrice(widget.wishPrice),
-          ),
-          Padding(
-            padding: EdgeInsets.all(10.0),
-            child: _currShoutoutPrice(widget.shoutPrice),
-          ),
-        ],
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: Firestore.instance.collection('xpert_master')
+        .document(widget.userDocID).snapshots(),
+        builder: (context, snapshot) {
+          var userDoc = snapshot.data;
+          if(!snapshot.hasData)
+          return Container();
+
+          print(userDoc["question_price"]);
+          print(userDoc["wish_price"]);
+          print(userDoc["shout_price"]);
+
+          return ListView(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.all(10.0),
+                child: _currQuesPrice(userDoc["question_price"]),
+              ),
+              Padding(
+                padding: EdgeInsets.all(10.0),
+                child: _currWishPrice(userDoc["wish_price"]),
+              ),
+              Padding(
+                padding: EdgeInsets.all(10.0),
+                child: _currShoutoutPrice(userDoc["shout_price"]),
+              ),
+            ],
+          );
+        }
       ),
     );
   }

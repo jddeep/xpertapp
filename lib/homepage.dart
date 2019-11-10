@@ -44,13 +44,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     List<DocumentSnapshot> userDocuments;
     await Firestore.instance
         .collection('xpert_master')
-        .document(widget.title) //jaideep-prasad
+        .document('aayu-sinha') //widget.title
         .collection('orders')
         .where('status', isEqualTo: 'xpert review')
         .getDocuments()
         .then((data) {
       userDocuments = data.documents;
-      
     }
             // (data) => print('grower ${data.documents[0]['name']}')
             );
@@ -60,7 +59,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void _rejectUpdateData(_orderDocID) async{
     await Firestore.instance
     .collection('xpert_master')
-    .document(widget.title)
+    .document('aayu-sinha') //widget.title
     .collection('orders')
     .document(_orderDocID)
     .updateData({
@@ -69,6 +68,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       print('Updated!');
     });
   }
+
+  
 
   @override
   void initState() {
@@ -98,7 +99,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       },
       child: Card(
         clipBehavior: Clip.none,
-        color: Colors.white,
+        color: Colors.orange,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: Stack(
                   children:<Widget>[
@@ -142,13 +143,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-              Expanded(
-                              child: company["message_type"]=='image'?
-                              Image(
+              company["message_type"]=='image'?
+              Container(
+                height: 200.0,
+                width: 200.0,
+                child: Image(
                   image: NetworkImage(company["message"]),
                   fit: BoxFit.contain,
-                ):
-                Padding(
+                ),
+              )
+              :
+              Expanded(
+                //               child: company["message_type"]=='image'?
+                //               Image(
+                //   image: NetworkImage(company["message"]),
+                //   fit: BoxFit.contain,
+                // ):
+                flex: 1,
+                child: Container(
+                  color: Colors.white,
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
                           company["message"],
@@ -160,176 +173,56 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ),
               ),
-              Stack(
-                children: <Widget>[
-                  Container(
-                      height: 50.0,
-                      decoration: BoxDecoration(
-                          color: Colors.orange,
-                          borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(10.0),
-                              bottomRight: Radius.circular(10.0))),
-                  ),
-                  Align(
-                      alignment: AlignmentDirectional.bottomStart,
-                      child: Row(
-                        children: <Widget>[
-                          IconTheme(
-                            data: IconThemeData(color: Colors.white, size: 25.0),
-                            child: Icon(Icons.lightbulb_outline),
-                          ),
-                          
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Text(
-                                                            'XPERT TIP',
-                                                            style: TextStyle(
-                                                                color: Colors.white,
-                                                                fontWeight: FontWeight.bold),
-                                                          ),
-                                                          Wrap(children: <Widget>[
-                                                            Text(
-                                                              
-                                                              company["tip"]??'This is a demo tip',
-                                                              maxLines: 4,
-                                                              softWrap: true,
-                                                              style: TextStyle(
-                                                                  color: Colors.white),
-                                                            ),
-                                                          ],
-                                                                                                                      
-                                                          ),
-                                                  ],
-                                                ),
-                        ],
-                      ),
-                  )
-                ],
-              )
+                  // Container(
+                  //     height: 50.0,
+                  //     decoration: BoxDecoration(
+                  //         color: Colors.orange,
+                  //         borderRadius: BorderRadius.only(
+                  //             bottomLeft: Radius.circular(10.0),
+                  //             bottomRight: Radius.circular(10.0))),
+                  // ),
+                  company["tip"]!=null?Container(
+                    height: 70.0,
+                      padding: EdgeInsets.all(6.0),
+                          child: company["tip"]!=null?Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              IconTheme(
+                                data: IconThemeData(color: Colors.white),
+                                child: Icon(Icons.lightbulb_outline),
+                              ),
+                              
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment.start,
+                                                      children: <Widget>[
+                                                        Text(
+                                                                'XPERT TIP',
+                                                                style: TextStyle(
+                                                                    color: Colors.white,),
+                                                              ),
+                                                              Wrap(children: <Widget>[
+                                                                Text(
+                                                                  
+                                                                  company["tip"]??'This is a demo tip',
+                                                                  maxLines: 4,
+                                                                  softWrap: true,
+                                                                  style: TextStyle(
+                                                                      color: Colors.white, fontSize: 12.0),
+                                                                ),
+                                                              ],
+                                                                                                                          
+                                                              ),
+                                                      ],
+                                                    ),
+                            ],
+                          ):Container(height: 1.0),
+                        ):Container(height: 0.0),
               
             ],
           ),
                     ),
           _isVisible
-            ?  Container(
-                    child: Center(
-                      child: Image(
-                        image: _isAccepted? AssetImage('assets/accept_stamp.png') : AssetImage('assets/do_later_stamp.png'),
-                      ),
-                    ),
-            ) : Container(),
-                  ],
-        ),
-      ),
-    );
-  }
-
-  Widget _xpertShoutoutCard(var company){
-    return GestureDetector(
-      onTap: () {
-        if (_isCardScrollable)
-            _isCardScrollable = false;
-          else {
-            _isCardScrollable = true;
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => DetailQuestionPage(
-                          incomingQuestion: company["message"],
-                        )));
-          }
-      },
-      child: Card(
-        clipBehavior: Clip.none,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Stack(
-                  children:<Widget>[ Opacity(
-                    opacity: _isVisible? 0.5:1.0,
-                                      child: Column(
-            children: <Widget>[
-              Stack(
-                children: <Widget>[
-                    Container(
-                      height: 65.0,
-                      decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(10.0),
-                              topRight: Radius.circular(10.0))),
-                    ),
-                    Align(
-                      alignment: AlignmentDirectional.topCenter,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                        'Give a shoutout for',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.0,),
-                      ),
-                      Text(
-                        'XPERT',
-                        // company["name"],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 30.0,
-                            fontWeight: FontWeight.bold),
-                      ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-              SizedBox(
-                height: 15.0,
-              ),
-              // _isVisible
-              //     ? Center(
-              //         child: IconTheme(
-              //           data: IconThemeData(
-              //               color: _isAccepted ? Colors.green : Colors.red,
-              //               size: 30.0),
-              //           child:
-              //               Icon(_isAccepted ? Icons.thumb_up : Icons.thumb_down),
-              //         ),
-              //       )
-              //     : Container(),
-              _isCardScrollable
-                    ? SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            company["message"],
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18.0,
-                            ),
-                          ),
-                        ))
-                    : Expanded(
-                        child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          company["message"],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.w300),
-                        ),
-                      )),
-              
-            ],
-          ),
-                  ),
-                  _isVisible
             ?  Container(
                     child: Center(
                       child: Image(
@@ -350,11 +243,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             _isCardScrollable = false;
           else {
             _isCardScrollable = true;
-            Navigator.pushReplacement(
+            print(questionAsked.documentID.toString());
+            Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => DetailQuestionPage(
                           incomingQuestion: questionAsked["message"],
+                          orderDocId: questionAsked.documentID,
                         )));
           }
       },
@@ -487,11 +382,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                         : 
                                               Row(
                                                 children: <Widget>[
-                                                  CircleAvatar(
+                                                  questionAsked["profile_image"]!=null?CircleAvatar(
                                                     radius: 20.0,
                                                     backgroundImage: NetworkImage(
                                                         questionAsked["profile_image"]),
-                                                  ),
+                                                  ):Container(height: 1.0,),
                                                   Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment.start,
@@ -580,11 +475,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             _isCardScrollable = false;
           else {
             _isCardScrollable = true;
-            Navigator.pushReplacement(
+            Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => DetailQuestionPage(
                           incomingQuestion: company["message"],
+                          orderDocId: company.documentID,
                         )));
           }
       },
@@ -621,7 +517,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               fontSize: 18.0,),
                         ),
                         Text(
-                          company["name"],
+                          company["for"], //earlier "name"
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: Colors.white,
@@ -768,11 +664,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             _isCardScrollable = false;
           else {
             _isCardScrollable = true;
-            Navigator.pushReplacement(
+            Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => DetailQuestionPage(
                           incomingQuestion: user["message"],
+                          orderDocId: user.documentID,
                         )));
           }
         // setState(() {
@@ -822,7 +719,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               fontSize: 18.0,),
                         ),
                         Text(
-                          user["name"],
+                          user["for"], // earlier "name"
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: Colors.white,
@@ -962,7 +859,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     CardController controller; //Use this to trigger swap.
-
+    print('Curr Doc Index: ' +_currDocIndex.toString());
     return new Scaffold(
       body: Column(
         children: <Widget>[
@@ -1000,7 +897,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ? StreamBuilder<DocumentSnapshot>(
                                 stream: Firestore.instance
                                     .collection('xpert_master')
-                                    .document(widget.title)// aparna-prasad
+                                    .document('aayu-sinha')// aparna-prasad
                                     .collection('orders')
                                     .document(_userDocs
                                         .elementAt(_currDocIndex)
@@ -1022,15 +919,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   orderDocId = userDocument.documentID;
                                   return _isCardScrollable
                                       ? (){
+                                        print('Mandatory user DOC: ' + userDocument["mandatory"].toString());
                                         if(userDocument["mandatory"].toString() == "yes"){
                                           _isMandatory = true;
+                                        }else{
+                                          _isMandatory = false;
                                         }
                                         if(userDocument["type"].toString()=="orange"){
                                           print('returning orange card');
                                           return _xpertIntroCard(userDocument); // mandatory should be "yes"
                                         }else{
                                           print('returning else');
-                                          _isMandatory = false;
                                         if(userDocument["type"].toString()=="wishes")
                                         return _wishCard(userDocument);
                                         else if(userDocument["type"].toString()=="endorsement")
@@ -1066,13 +965,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               cardBuilder: ((context, index){
                                         if(userDocument["mandatory"].toString() == "yes"){
                                           _isMandatory = true;
+                                        } else{
+                                          _isMandatory = false;
                                         }
                                         if(userDocument["type"].toString()=="orange"){
                                           print('returning orange card');
                                           return _xpertIntroCard(userDocument); // mandatory should be "yes"
                                         }else{
                                           print('returning else');
-                                          _isMandatory = false;
+                                          
                                         if(userDocument["type"].toString()=="wishes")
                                         return _wishCard(userDocument);
                                         else if(userDocument["type"].toString()=="endorsement")
@@ -1117,21 +1018,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               },
                                               swipeCompleteCallback:(CardSwipeOrientation orientation,
                                                       int index) {
+                                                        
                                                 /// Get orientation & index of swiped card!
                                                 if(_isSwipeCompleted) {
                                                                                          print('swipe completed!');
                                                 print('Users Length:' + '${_userDocs.length}');
                                                 print('$_isAccepted' + '$_isSwipeCompleted');
                                                 if(_isAccepted && _isSwipeCompleted){
+                                                  print('accepted');
                                                   Navigator.push(
                                                       context,
                                                       MaterialPageRoute(
                                                           builder: (context) =>
                                                               new CameraApp(
-                                                                  userDocument["message_type"]=="text"?
-                                                                  userDocument["message"]:'',
+                                                                  // userDocument["message_type"]=="text"?
+                                                                  userDocument["teleprompter_text"]??'No Teleprompter text',
                                                                       orderDocId,
-                                                                      widget.title)));
+                                                                      'aayu-sinha')));
 
                                                   print('right');
                                                 } else {
@@ -1228,3 +1131,4 @@ GestureDetector(
     );
   }
 }
+

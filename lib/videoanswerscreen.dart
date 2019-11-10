@@ -15,7 +15,8 @@ import 'package:file/local.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:xpert/audiotest.dart';
-import 'package:xpert/homepage.dart';
+import 'package:xpert/homepage2.dart';
+// import 'package:xpert/homepage.dart';
 
 class CameraExampleHome extends StatefulWidget {
   // List<CameraDescription> cameras;
@@ -63,9 +64,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   TextEditingController _controller = new TextEditingController();
   bool isReady = false;
   bool showBottom = true;
-  bool _paid = false;
+  bool _paid = true;
 
   List<CameraDescription> cameras;
+  List<CameraDescription> camerasDesc = new List();
 
   Future<String> uploadToStorage(String filePath) async {
     String url;
@@ -160,6 +162,20 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     });
   }
 
+  void _updateAcceptedStatus() async{
+    await Firestore.instance
+    .collection('xpert_master')
+    .document(widget.docId.toString())
+    .collection('orders')
+    .document(widget.orderDocId.toString())
+    .updateData({
+      'status': 'accepted',
+      'answer_type' : 'video'
+    }).whenComplete((){
+      print('Accepted status!');
+    });
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
@@ -174,25 +190,21 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
             alignment: AlignmentDirectional.topStart,
             child: Padding(
               padding: const EdgeInsets.only(top: 50.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      IconTheme(
-                        data: IconThemeData(color: Colors.red),
-                        child: isRecording?Icon(Icons.fiber_manual_record):Container(height: 1.0),
-                      ),
-                      Text(
-                _timeString,
-                style: TextStyle(color: Colors.white, fontSize: 20.0),
-              ),
-                    ],
-                  ),
+              child: 
+              //     Row(
+              //       children: <Widget>[
+              //         IconTheme(
+              //           data: IconThemeData(color: Colors.red),
+              //           child: isRecording?Icon(Icons.fiber_manual_record):Container(height: 1.0),
+              //         ),
+              //         Text(
+              //   _timeString,
+              //   style: TextStyle(color: Colors.white, fontSize: 20.0),
+              // ),
+              //       ],
+              //     ),
                   
                   _cameraTogglesRowWidget(),
-                ],
-              ),
             ),
           ),
           Align(
@@ -208,7 +220,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     Text('MARK ANSWER AS: ', style: TextStyle(color: Colors.black)),
-                    Text(_paid? "PAID" : "FREE", style: TextStyle(color: Colors.black)),
+                    Text("PAID", style: TextStyle(color: Colors.black)),
                     CupertinoSwitch(
                       value: _paid,
                       onChanged: (value){
@@ -253,6 +265,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                     color: Colors.red,
                                     onPressed: () {
                                       _startTimer();
+                                      // if(!isRecording)
+                                      // Navigator.pop(context);
                                     },
                                   ),
                                 ),
@@ -290,10 +304,17 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                       setState(() {
                                         showBottom = true;
                                       });
+                                      _updateAcceptedStatus();
                                       uploadToStorage(videoPath).then((url){
                                         _updateAnswerUrl(url);
                                       });
-                                    },
+                                      Navigator.pop(context);
+                    //                   Navigator.pushReplacement(
+                    // context,
+                    // MaterialPageRoute(
+                    //   builder: (context) => new MyHomePage2(),
+                    // ));                                    
+                    },
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(360.0)),
@@ -463,18 +484,19 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   Widget _toggleAudioWidget() {
     return Row(
       children: <Widget>[
-        Switch(
-            activeColor: Colors.amber,
-            activeTrackColor: Colors.amberAccent,
-            inactiveThumbColor: Colors.grey,
-            inactiveTrackColor: Colors.blueGrey,
+                    Text('TURN ON VIDEO', style: TextStyle(color: Colors.white),),
+        CupertinoSwitch(
+            activeColor: Colors.green,
+            // activeTrackColor: Colors.amberAccent,
+            // inactiveThumbColor: Colors.grey,
+            // inactiveTrackColor: Colors.blueGrey,
             value: onlyVideo,
             onChanged: (bool value) {
               print(value);
               setState(() {
                 onlyVideo = value;
                 if(!onlyVideo){
-                  Navigator.push(
+                  Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => AudioRecPage(
@@ -491,11 +513,11 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               // }
             },
           ),
-        IconButton(
-          icon: Icon(Icons.videocam),
-          color: Colors.white,
-          onPressed: () {},
-        )
+        // IconButton(
+        //   icon: Icon(Icons.videocam),
+        //   color: Colors.white,
+        //   onPressed: () {},
+        // )
       ],
     );
   }
@@ -594,22 +616,40 @@ static int cameraDir = 0;
       for(CameraDescription cameraDescription in cameras) {
         camerasDesc.add(cameraDescription);
       }
-      toggles.add( CircleAvatar(
-        backgroundColor: Colors.grey,
-              child: IconTheme(
-              data: IconThemeData(color: Colors.white),
-              child: IconButton(tooltip: 'Switch Camera',
-                onPressed:(){
-                    onNewCameraSelected(camerasDesc.elementAt(cameraDir));
-                    if(cameraDir == 0)
-                    cameraDir = 1;
-                    else
-                    cameraDir = 0;
-                },
-                icon: Icon(Icons.switch_camera),
+       return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          CircleAvatar(
+            backgroundColor: Colors.grey,
+                  child: IconTheme(
+                  data: IconThemeData(color: Colors.white),
+                  child: IconButton(tooltip: 'Switch Camera',
+                    onPressed:(){
+                        onNewCameraSelected(camerasDesc.elementAt(cameraDir));
+                        if(cameraDir == 0)
+                        cameraDir = 1;
+                        else
+                        cameraDir = 0;
+                    },
+                    icon: Icon(Icons.switch_camera),
+                  ),
+            ),
+          ),
+          Row(
+          children: <Widget>[
+            IconTheme(
+                            data: IconThemeData(color: Colors.red),
+                            child: isRecording?Icon(Icons.fiber_manual_record):Container(height: 1.0),
+                          ),
+                          Text(
+                _timeString,
+                style: TextStyle(color: Colors.white, fontSize: 20.0),
               ),
+          ],
         ),
-      ));
+        isRecording?Container(height: 1.0):_toggleAudioWidget()
+        ],
+      );
       // for (CameraDescription cameraDescription in cameras) {
       //   toggles.add(
       //     SizedBox(
@@ -629,10 +669,14 @@ static int cameraDir = 0;
       //     ),
       //   );
       // }
-      toggles.add(_toggleAudioWidget());
+      // toggles.add(
+        
+      // );
+      // toggles.add();
     }
+    
 
-    return Container(color: Colors.transparent, child: Row(children: toggles, mainAxisAlignment: MainAxisAlignment.end,));
+    // return Container(color: Colors.transparent, child: Row(children: toggles));
   }
 
   String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -671,7 +715,7 @@ static int cameraDir = 0;
       if (onlyVideo)
         onVideoRecordButtonPressed();
       else {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => AudioRecPage(

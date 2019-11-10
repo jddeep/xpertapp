@@ -3,6 +3,7 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xpert/homepage.dart';
+import 'package:xpert/homepage2.dart';
 import 'main.dart';
 import 'otpscreen.dart';
 import 'rejectedPage.dart';
@@ -11,8 +12,8 @@ import 'underReview_page.dart';
 import 'xpertinvitescreen.dart';
 
 class XpertWelcomePage extends StatefulWidget {
-  var cameras;
-  XpertWelcomePage(this.cameras);
+
+  XpertWelcomePage();
 
   @override
   _XpertWelcomePageState createState() => _XpertWelcomePageState();
@@ -98,6 +99,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
     final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeResend]) {
       this.verificationId = verId;
       print('sms code sent: ' + '+91' + _phoneNumberController.text);
+      
       // smsCodeDialog(context).then((value) {
       //   print('Signed in');
       // });
@@ -106,6 +108,12 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
     final PhoneVerificationCompleted verifiedSuccess = (AuthCredential user) {
       print('verified');
       isVerified = true;
+      // Navigator.push(context,
+      // MaterialPageRoute(builder: (context) => MyHomePage2())
+      // );
+      // Navigator.pushReplacement(context,
+      // MaterialPageRoute(builder: (context) => MyHomePage2()) // HomePage()
+      // );
       // FirebaseAuth.instance.signInWithCredential(user).then((authResult) async {
       //   if (authResult.additionalUserInfo.profile.isNotEmpty) {
 
@@ -268,7 +276,7 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => new OTPScreen(widget.cameras,
+                                  builder: (context) => new OTPScreen(
                                       signInWithPhoneNumber, _phoneNumberController.text),
                                 ));
                           },

@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as pathDart;
+import 'package:xpert/videoanswerscreen.dart';
+
 
 class AudioRecordingFragment extends StatefulWidget {
   final incomingQuestion;
@@ -77,6 +80,20 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
       'answer_type' : 'audio'
     }).whenComplete((){
       print('Updated!');
+    });
+  }
+
+  void _updateAcceptedStatus() async{
+    await Firestore.instance
+    .collection('xpert_master')
+    .document(widget.userDocId.toString())
+    .collection('orders')
+    .document(widget.orderDocId.toString())
+    .updateData({
+      'status': 'accepted',
+      'answer_type' : 'audio'
+    }).whenComplete((){
+      print('Accepted status!');
     });
   }
 
@@ -208,44 +225,48 @@ String _profImgUrl;
 
   /// Toggle recording audio
   Widget _toggleAudioWidget() {
-    return Row(
-      children: <Widget>[
-        Switch(
-            activeColor: Colors.white,
-            activeTrackColor: Colors.white24,
-            inactiveThumbColor: Colors.grey,
-            inactiveTrackColor: Colors.blueGrey,
-            value: onlyVideo,
-            onChanged: (bool value) {
-              print(value);
-              setState(() {
-                onlyVideo = value;
-                if(onlyVideo){
-                  Navigator.pop(context);
-        //           Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => Video(
-        //       incomingQuestion: widget.incomingQuestion,
-        //       userDocId: widget.userDocId,
-        //       orderDocId: widget.orderDocId,
-        //     ),
-        //   ),
-        // );
-                }
-              });
-              // if (controller != null) {
-              //   onNewCameraSelected(controller.description);
-              // }
-            },
-          ),
-        IconButton(
-          icon: Icon(Icons.videocam),
-          color: Colors.white,
-          onPressed: () {},
-        )
-      ],
-    );
+    return 
+        Row(
+          children: <Widget>[
+            Text('TURN ON VIDEO', style: TextStyle(color: Colors.white),),
+            CupertinoSwitch(
+                activeColor: Colors.white,
+                // activeTrackColor: Colors.white24,
+                // inactiveThumbColor: Colors.grey,
+                // inactiveTrackColor: Colors.blueGrey,
+                value: onlyVideo,
+                onChanged: (bool value) {
+                  print(value);
+                  setState(() {
+                    onlyVideo = value;
+                    if(onlyVideo){
+                      // Navigator.pop(context);
+                    Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => CameraExampleHome(
+                      incomingQuestion: widget.incomingQuestion,
+                      docId: widget.userDocId,
+                      orderDocId: widget.orderDocId,
+                    ))
+                    );
+            //           Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => Video(
+            //       incomingQuestion: widget.incomingQuestion,
+            //       userDocId: widget.userDocId,
+            //       orderDocId: widget.orderDocId,
+            //     ),
+            //   ),
+            // );
+                    }
+                  });
+                  // if (controller != null) {
+                  //   onNewCameraSelected(controller.description);
+                  // }
+                },
+    ),
+          ],
+        );
   }
   @override
   Widget build(BuildContext context) {
@@ -260,12 +281,19 @@ String _profImgUrl;
             _isRecording = snapshot.data;
             return Stack(
               children: <Widget>[
-                Container(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: _profImgUrl!=null?NetworkImage(_profImgUrl):
-                          AssetImage('assets/my_prof_pic.jpg'),
-                          fit: BoxFit.cover)),
+                Align(
+                  alignment: AlignmentDirectional.center,
+                                  child: Container(
+                    child: IconTheme(
+                      data: IconThemeData(color: Colors.grey, size: MediaQuery.of(context).size.width * 0.6),
+                      child: Icon(Icons.mic),
+                    ),
+                    // decoration: BoxDecoration(
+                    //     image: DecorationImage(
+                    //         image: _profImgUrl!=null?NetworkImage(_profImgUrl):
+                    //         AssetImage('assets/welcome1.png'),
+                    //         fit: BoxFit.contain)),
+                  ),
                 ),
                 Align(
                   alignment: AlignmentDirectional.topStart,
@@ -283,15 +311,15 @@ String _profImgUrl;
                       ValueListenableBuilder(
                           valueListenable: _time,
                           builder: (BuildContext context, String value, Widget child) {
-                            return Text(
+                            return _isRecording?Text(
                               _time.value, //_timeString,
                               style: TextStyle(color: Colors.white, fontSize: 20.0),
-                            );
+                            ):Container(height: 1.0,);
                           },
                         ),
                           ],
                         ),
-                        _toggleAudioWidget()
+                        _isRecording?Container(height:1.0):_toggleAudioWidget()
                       ],
                     ),
                   ),
@@ -337,9 +365,11 @@ String _profImgUrl;
                                       setState(() {
                                         showBottom = false;
                                       });
+                                      _updateAcceptedStatus();
                                       uploadToStorage().then((url){
                                         _updateAnswerUrl(url);
                                       });
+                                      Navigator.pop(context);      
                                     },
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
@@ -364,23 +394,41 @@ String _profImgUrl;
                                   )
                                 ],
                               ):
-                        Center(
-                          child: FloatingActionButton(
-                              backgroundColor: Colors.amber,
-                              child: _isRecording
-                                  ? new Icon(Icons.stop, size: 36.0)
-                                  : new Icon(Icons.mic, size: 36.0),
-                              disabledElevation: 0.0,
-                              onPressed: () {
-                                _isRecording ? stopRecording() : _startTimer();
-                              }),
-                        ),
-                        showBottom?Container(height: 1.0,):
-                        Center(
-                          child: _isRecording
-                              ? new Text('Stop', textScaleFactor: 1.5)
-                              : new Text('Record', textScaleFactor: 1.5),
-                        )
+                               Center(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      border: Border.all(
+                                          width: 4.0, color: Colors.white)),
+                                  child: IconButton(
+                                    icon: _isRecording
+                                        ? Icon(Icons.stop)
+                                        : Icon(Icons.fiber_manual_record),
+                                    iconSize: 30.0,
+                                    color: Colors.red,
+                                    onPressed: () {
+                                      _isRecording ? stopRecording() : _startTimer();
+                                    },
+                                  ),
+                                ),
+                              ),
+                        // Center(
+                        //   child: FloatingActionButton(
+                        //       backgroundColor: Colors.amber,
+                        //       child: _isRecording
+                        //           ? new Icon(Icons.stop, size: 36.0)
+                        //           : new Icon(Icons.mic, size: 36.0),
+                        //       disabledElevation: 0.0,
+                        //       onPressed: () {
+                        //         _isRecording ? stopRecording() : _startTimer();
+                        //       }),
+                        // ),
+                        // showBottom?Container(height: 1.0,):
+                        // Center(
+                        //   child: _isRecording
+                        //       ? new Text('Stop', textScaleFactor: 1.5)
+                        //       : new Text('Record', textScaleFactor: 1.5),
+                        // )
                       ],
                     ),
                   ),

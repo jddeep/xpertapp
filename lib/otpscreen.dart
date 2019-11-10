@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
+import 'package:xpert/homepage2.dart';
 import 'homepage.dart';
 import 'rejectedPage.dart';
 import 'underReview_page.dart';
@@ -10,11 +11,10 @@ import 'xpertinvitescreen.dart';
 
 class OTPScreen extends StatefulWidget {
   // int status;
-  var cameras;
   final Function signInCallback;
   String phoneNumber;
 
-  OTPScreen(this.cameras, this.signInCallback, this.phoneNumber);
+  OTPScreen(this.signInCallback, this.phoneNumber);
   @override
   _OTPScreenState createState() => _OTPScreenState();
 }
@@ -23,6 +23,7 @@ class _OTPScreenState extends State<OTPScreen> {
   TextEditingController _smsController = TextEditingController();
   FirebaseUser user;
   final dataBaseRef = Firestore.instance;
+  bool _isLoggedIn = true; // let's assume by default user is logged in
 
   _checkIntoMaster(FirebaseUser user) async {
     print('UID: ' + user.uid);
@@ -54,10 +55,11 @@ class _OTPScreenState extends State<OTPScreen> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => XpertInviteScreen(
-                          user: user, cameras: widget.cameras)),
+                          user: user,phoneNumber: widget.phoneNumber,)),
                 );
               } else {
-                if (docsRequest.documents[0].data['status'] == 'underReview') {
+                if (docsRequest.documents[0].data['status'] == 'pending' ||
+                docsRequest.documents[0].data['status'] == 'in-review') {
                   print("UnderReview Profile");
                   //todo: maybe pushReplacement
                   Navigator.pushReplacement(
@@ -86,13 +88,19 @@ class _OTPScreenState extends State<OTPScreen> {
                 .collection('xpert_master')
                 .document(docsMaster.documents[0].documentID)
                 .updateData({
-              'auth_id': user.uid, // maybe blank the phone number here
+              'auth_id': user.uid,
+              'mobile' : '' // maybe blank the phone number here (done)
             }).whenComplete(() {
               /// todo: maybe pushRepalcement
+              // Navigator.pushReplacement(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (context) => HomePage(user: user, title: docsMaster.documents[0].documentID,),
+              //     ));
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => HomePage(user: user, title: docsMaster.documents[0].documentID,),
+                    builder: (context) => MyHomePage2(userDocId: docsMaster.documents[0].documentID, user: user),
                   ));
             });
           }
@@ -101,11 +109,16 @@ class _OTPScreenState extends State<OTPScreen> {
         /// If auth_id matched to a document then need to push the user to the
         /// Home Page.
         /// todo: maybe pushRepalcement
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomePage(user: user, title: docsMaster.documents[0].documentID,),
-            ));
+        // Navigator.pushReplacement(
+        //     context,
+        //     MaterialPageRoute(
+        //       builder: (context) => HomePage(user: user, title: docsMaster.documents[0].documentID,),
+        //     ));
+            Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyHomePage2(userDocId: docsMaster.documents[0].documentID, user: user),
+                  ));
       }
     });
     
@@ -127,12 +140,26 @@ class _OTPScreenState extends State<OTPScreen> {
           _checkIntoMaster(_user);
       });
       
+    }else{
+      setState(() {
+        _isLoggedIn = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    
+    if(_isLoggedIn){
+      return Center(
+                                      child: Container(
+                                        height: 50.0,
+                                        width: 50.0,
+                                        child: CircularProgressIndicator(
+                                          backgroundColor: Colors.amber,
+                                        ),
+                                      ),
+                                    );
+    } else
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Column(

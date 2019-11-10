@@ -4,29 +4,80 @@ class RejectedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Container(
+      body: SingleChildScrollView(child: Container(
+        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.1),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text("We are sorry!",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 26.0),
+              Text(
+                'Your application is rejected',
+                style: TextStyle(fontSize: 20.0),
               ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  radius: 50.0,
+              Container(
+                width: MediaQuery.of(context).size.width,
+                color: Colors.grey,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(child: Text('XPERTS NEED TO CLEAR ATLEAST 3 GUIDELINES')),
+                  ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 14.0, right: 14.0),
-                child: Text("We  went through the information you provided. We regret to inform you that we feel we cannot accept you on-board",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 15.0),
+              SizedBox(height: 10.0),
+              ListTile(
+                leading: Icon(Icons.star_border),
+                title: Text('POPULAR', style: TextStyle(fontSize: 18.0)),
+                subtitle: Row(
+                  children: <Widget>[
+                    Expanded(child: Text('100K+ social media followers or wikipedia', style: TextStyle(color: Colors.grey))),
+                  ],
                 ),
               ),
+              Divider(height: 3.0, color: Colors.grey,),
+              SizedBox(height: 6.0),
+              ListTile(
+                leading: Icon(Icons.speaker_notes),
+                title: Text('IN THE NEWS', style: TextStyle(fontSize: 18.0)),
+                subtitle: Row(
+                  children: <Widget>[
+                    Expanded(child: Text('Has atleast 10 credible news mentions', style: TextStyle(color: Colors.grey))),
+                  ],
+                ),
+              ),
+              Divider(height: 3.0, color: Colors.grey,),
+              SizedBox(height: 6.0),
+              ListTile(
+                leading: Icon(Icons.person),
+                title: Text('AWARDED', style: TextStyle(fontSize: 18.0)),
+                subtitle: Row(
+                  children: <Widget>[
+                    Expanded(child: Text('Is recognized by industry bodies', style: TextStyle(color: Colors.grey))),
+                  ],
+                ),
+              ),
+              Divider(height: 3.0, color: Colors.grey,),
+              SizedBox(height: 6.0),
+              ListTile(
+                leading: Icon(Icons.mic),
+                title: Text('SPOKEN', style: TextStyle(fontSize: 18.0)),
+                subtitle: Row(
+                  children: <Widget>[
+                    Expanded(child: Text('Has spoken at famed conferences(TEDX)', style: TextStyle(color: Colors.grey))),
+                  ],
+                ),
+              ),
+              Divider(height: 3.0, color: Colors.grey,),
+              SizedBox(height: 6.0),
+              ListTile(
+                leading: Icon(Icons.receipt),
+                title: Text('SUCCESSFULLY PETITIONED', style: TextStyle(fontSize: 18.0)),
+                subtitle: Row(
+                  children: <Widget>[
+                    Expanded(child: Text('Their Xpert petition crosses 200+', style: TextStyle(color: Colors.grey))),
+                  ],
+                ),
+              ),
+              Divider(height: 3.0, color: Colors.grey,),
             ],
           ),
       ),),

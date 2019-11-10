@@ -1,4 +1,4 @@
-package com.releasemyad.xpert
+package chat.xpert.creator
 
 import android.os.Bundle
 

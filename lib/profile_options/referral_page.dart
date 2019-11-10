@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 
 class ReferralPage extends StatefulWidget {
+  final String refCode;
+  ReferralPage(this.refCode);
   @override
   _ReferralPageState createState() => _ReferralPageState();
 }
@@ -61,7 +63,7 @@ class _ReferralPageState extends State<ReferralPage> {
                                   child: Padding(
                     padding: const EdgeInsets.only(left: 4.0),
                     child: Text(
-                        'Request your referral to provide VIRAXP34 as invite code during sign-up',
+                        'Request your referral to provide' +widget.refCode+ 'as invite code during sign-up',
                         style: TextStyle(color: Colors.black)
                       ),
                   ),
@@ -101,7 +103,8 @@ class _ReferralPageState extends State<ReferralPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
-                          'VIRAXP34',
+                          widget.refCode,
+                          // 'VIRAXP34',
                           style: TextStyle(color: Colors.black, fontSize: 20.0)
                         ),
                         Container(
@@ -117,7 +120,7 @@ class _ReferralPageState extends State<ReferralPage> {
                             data: IconThemeData(color: Colors.white, size: 20.0),
                             child: IconButton(
                               onPressed: (){
-                                Share.share('Invite code: ' + 'VIRAXP34',
+                                Share.share('Invite code: ' + widget.refCode,
                           subject: 'Invite a friend via...');
                               },
                               icon: Icon(Icons.share),

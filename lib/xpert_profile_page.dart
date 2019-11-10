@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:xpert/profile_options/referral_page.dart';
 import 'profile_options/change_price_page.dart';
 import 'package:share/share.dart';
+import 'package:path/path.dart';
 import 'profile_options/payment_method_page.dart';
 import 'profile_options/xpert_settings_page.dart';
 
@@ -20,7 +22,7 @@ class XpertProfilePage extends StatefulWidget {
 
 class _XpertProfilePageState extends State<XpertProfilePage> {
   Future<File> imageFile;
-  FileImage profile_pic;
+  File _dp;
   String userName;
   String userShortBio;
   String userLongBio;
@@ -29,6 +31,8 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
   String earned;
   String requests;
   String chats;
+  String xpertLink;
+  String refCode;
   var questionPrice;
   var wishPrice;
   var shoutoutPrice;
@@ -48,6 +52,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
       this._userDoc = userDoc;
       });
     });
+    print('PROF USER ID: ' + widget.title +' USER DOC: ' + _userDoc.toString());
   }
 
   Future<DocumentSnapshot> _fetchUserProfileData() async{
@@ -55,18 +60,21 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
     await Firestore.instance.collection('xpert_master')
     .document(widget.title) // bhuvan-bam
     .get().then((_userDoc){
-      userName = _userDoc["xpert"];
+      xpertLink = 'www.xpert.tv/cr/';
+      userName = _userDoc["name"];
       userShortBio = _userDoc["short_bio"];
       userLongBio = _userDoc["long_bio"];
       profImgURL = _userDoc["profile_image"];
+      xpertLink+=_userDoc["slug"]; 
       questionPrice = _userDoc["question_price"];
       wishPrice = _userDoc["wish_price"];
       shoutoutPrice = _userDoc["shout_price"];
+      refCode = _userDoc["slug"];
       userDoc = _userDoc;
     });
     await Firestore.instance.collection('xpert_master')
     .document(widget.title) // bhuvan-bam
-    .collection('creator_settings')
+    .collection('creator-settings')
     .getDocuments()
     .then((_userDoc){
       userRating = _userDoc.documents[0].data["rating"];
@@ -79,41 +87,72 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
 
 
   //Open gallery
-  pickImageFromGallery(ImageSource source) {
-    setState(() {
-      imageFile = ImagePicker.pickImage(source: source);
+  Future pickImageFromGallery(ImageSource source) async{
+    await ImagePicker.pickImage(source: ImageSource.gallery).then((image) {    
+     setState(() {    
+       _dp = image;    
+     });    
+   });    
+  }
+
+  void _updateAnswerUrl(String url) async{
+    await Firestore.instance
+    .collection('xpert_master')
+    .document(widget.title)
+    .updateData({
+      'profile_image': url,
+    }).whenComplete((){
+      print('Updated Prof img!');
     });
   }
 
-  Widget showImage() {
-    return FutureBuilder<File>(
-      future: imageFile,
-      builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.data != null) {
-          return CircleAvatar(
-            radius: 30.0,
-            backgroundImage: FileImage(File(snapshot.data.path)),
-          );
-        } else {
-          return CircleAvatar( // default img when no dp is set.
-            radius: 30.0,
-            backgroundImage: AssetImage('assets/my_prof_pic.jpg'),
-            // backgroundImage: NetworkImage('https://avatars2.githubusercontent.com/u/43133646?s=400&v=4'),
-          );
-        }
-      },
-    );
-  }
+  Future uploadFile() async {
+    print('Path of file _dp: ' + _dp.path);  
+   StorageReference storageReference = FirebaseStorage.instance    
+       .ref()    
+       .child('profpics/${_dp.path}}');    
+   StorageUploadTask uploadTask = storageReference.putFile(_dp);    
+   await uploadTask.onComplete;    
+   print('File Uploaded');    
+   storageReference.getDownloadURL().then((fileURL) {    
+     setState(() {    
+       profImgURL = fileURL;
+       _updateAnswerUrl(profImgURL);    
+     });    
+   });    
+ }
+
+  // Widget showImage() {
+  //   return FutureBuilder<File>(
+  //     future: imageFile,
+  //     builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.done &&
+  //           snapshot.data != null) {
+  //         return CircleAvatar(
+  //           radius: 30.0,
+  //           backgroundImage: FileImage(File(snapshot.data.path)),
+  //         );
+  //       } else {
+  //         return Container(height: 1.0,);
+  //         // return CircleAvatar( // default img when no dp is set.
+  //         //   radius: 30.0,
+  //         //   backgroundImage: AssetImage('assets/my_prof_pic.jpg'),
+  //         //   // backgroundImage: NetworkImage('https://avatars2.githubusercontent.com/u/43133646?s=400&v=4'),
+  //         // );
+  //       }
+  //     },
+  //   );
+  // }
 
   Widget _showUserImagefromURL() {
-    if(profImgURL != null){
+    if(profImgURL != null && profImgURL.isNotEmpty){
       return CircleAvatar(
         radius: 30.0,
         backgroundImage: NetworkImage(profImgURL),
       );
     }else{
-      return showImage();
+      // return showImage();
+      return Container(height: 0.0,);
     }
   }
 
@@ -169,7 +208,9 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
           IconButton(
             icon: Icon(Icons.edit),
             onPressed: () {
-              pickImageFromGallery(ImageSource.gallery);
+              pickImageFromGallery(ImageSource.gallery).then((image){
+                uploadFile();
+              });
             },
           )
         ],
@@ -213,7 +254,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                       textAlign: TextAlign.start),
                       Row(
                         children: <Widget>[
-                          Text('www.xpert.tv/cr/jaideep-prasad',
+                          Text(xpertLink,
                           textAlign: TextAlign.start),
                           IconTheme(
                             data: IconThemeData(color: Colors.white),
@@ -294,7 +335,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                     textAlign: TextAlign.center,
                   ),
                   Text(
-                    'Chats',
+                    'Fulfilled', //Chats
                   )
                 ],
               ),
@@ -353,7 +394,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                       // Share.share('Share stuff from Xpert app',
                       //     subject: 'Invite a friend via...');
                       Navigator.push(context, 
-                      MaterialPageRoute(builder: (context)=> ReferralPage())
+                      MaterialPageRoute(builder: (context)=> ReferralPage(refCode))
                       );
                     },
                     title: Text('Refer A Friend',

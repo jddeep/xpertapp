@@ -76,6 +76,7 @@ class _EditPricePageState extends State<EditPricePage> {
   );
 }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,6 +145,7 @@ class _EditPricePageState extends State<EditPricePage> {
               child: Text('Update Price',
                   style: TextStyle(color: Colors.white, fontSize: 20)),
               onPressed: () {
+                print('Doc ID Price page: '+ widget.userDocID.toString() + 'text: ' + _priceTextController.text);
                 if(widget.pricetype.toString() == 'question'){
                   _updateQuesPriceInDB(_priceTextController.text)
                   .then((value){

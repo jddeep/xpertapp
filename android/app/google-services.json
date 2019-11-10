@@ -1,42 +1,87 @@
 {
   "project_info": {
-    "project_number": "482018174060",
-    "firebase_url": "https://xpert-duplicate.firebaseio.com",
-    "project_id": "xpert-duplicate",
-    "storage_bucket": "xpert-duplicate.appspot.com"
+    "project_number": "145930653143",
+    "firebase_url": "https://xpert-213209.firebaseio.com",
+    "project_id": "xpert-213209",
+    "storage_bucket": "xpert-213209.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:482018174060:android:6e7e01a68a9849404e2449",
+        "mobilesdk_app_id": "1:145930653143:android:640e396ac2c38c66d70f92",
         "android_client_info": {
-          "package_name": "com.releasemyad.xpert"
+          "package_name": "chat.xpert.creator"
         }
       },
       "oauth_client": [
         {
-          "client_id": "482018174060-365tqecqg638smossjv5881f468iiqmv.apps.googleusercontent.com",
+          "client_id": "145930653143-uhfqaidsfsfndrml47r4r6oe7eh5e5nt.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.releasemyad.xpert",
+            "package_name": "chat.xpert.creator",
             "certificate_hash": "3d956e5735dc3b0ea48e9be2debd1e1acce95d9d"
           }
         },
         {
-          "client_id": "482018174060-l1273bssaea8r8pkkq4tr4ndlq5a6vhj.apps.googleusercontent.com",
+          "client_id": "145930653143-a2s021pal22pk5vsgvg53u1fttq49h36.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAx8sGOmf6plq3N24WxOh35QR6BX4rD-QE"
+          "current_key": "AIzaSyAVBS7lX8VUFdvWjK01BeYTg7JiTqWYIl8"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "482018174060-l1273bssaea8r8pkkq4tr4ndlq5a6vhj.apps.googleusercontent.com",
+              "client_id": "145930653143-urjt0ifj1mqq16hmmf6n8p5d5msmfuef.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145930653143:android:4b11ade9ee3365d0",
+        "android_client_info": {
+          "package_name": "chat.xpert.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "145930653143-hobbsjs2chp0rh0jjgtojg58fkfhmi2b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "chat.xpert.user",
+            "certificate_hash": "3d956e5735dc3b0ea48e9be2debd1e1acce95d9d"
+          }
+        },
+        {
+          "client_id": "145930653143-0n7usjqjjabu6oj1v262g9so4kpqjgou.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "chat.xpert.user",
+            "certificate_hash": "2919f7d9060ec5ec62a79ca9e31b0b8cd8c24e10"
+          }
+        },
+        {
+          "client_id": "145930653143-a2s021pal22pk5vsgvg53u1fttq49h36.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVBS7lX8VUFdvWjK01BeYTg7JiTqWYIl8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "145930653143-urjt0ifj1mqq16hmmf6n8p5d5msmfuef.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
