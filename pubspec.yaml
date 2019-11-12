@@ -75,6 +75,12 @@ flutter:
   - assets/accept_stamp.png
   - assets/do_later_stamp.png
   - assets/reject_stamp.png
+  - assets/accept_icon.png
+  - assets/reject_icon.png
+  - assets/do_later_icon.png
+  - assets/accept_two.png
+  - assets/do_later_two.png
+  - assets/reject_two.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

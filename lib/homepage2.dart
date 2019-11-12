@@ -533,6 +533,7 @@ class _MyHomePage2State extends State<MyHomePage2>
   }
 
     void _rejectUpdateData(_orderDocID) async{
+      print('Reject func called id: ' + widget.userDocId.toString() + ' ' + _orderDocID.toString());
     await Firestore.instance
     .collection('xpert_master')
     .document(widget.userDocId) // 'duhita-banerjee'
@@ -897,16 +898,18 @@ class _MyHomePage2State extends State<MyHomePage2>
                       )); 
               },
               child: new Container(
+                padding: EdgeInsets.only(right: 14.0),
                   child: new Icon(
                 Icons.notifications,
                 color: Colors.white,
                 size: 30.0,
-              )),
+              )
+              ),
             ),
           ],
           title: Image.asset(
             'assets/xpert_icon.png',
-            height: 35,
+            height: 55,
           )),
       body: Stack(
         alignment: Alignment.topCenter,
@@ -967,6 +970,18 @@ class _MyHomePage2State extends State<MyHomePage2>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  // GestureDetector(
+                  //   child: Container(
+                  //     height: 50.0,
+                  //     decoration: BoxDecoration(
+                  //       image: DecorationImage(image: AssetImage('assets/reject_two.png'))
+                  //     ),
+                  //   ),
+                  //   onTap: (){
+                  //     if(_questionsCards.length != 0)
+                  //     swipeLeft(_item);
+                  //   },
+                  // ),
                   OutlineButton(
                     padding: EdgeInsets.all(6.0),
                     shape: CircleBorder(
@@ -974,9 +989,16 @@ class _MyHomePage2State extends State<MyHomePage2>
                     ),
                     child: IconTheme(
                       data: IconThemeData(color: Colors.red, size: 50.0),
-                      child: Icon(Icons.cancel),
+                      child: Icon(Icons.cancel)
                     ),
+                    // child: Container(
+                    //   height: 50.0,
+                    //   decoration: BoxDecoration(
+                    //     image: DecorationImage(image: AssetImage('assets/reject_icon.png'))
+                    //   ),
+                    // ),
                     onPressed: (){
+                      if(_questionsCards.length != 0)
                       swipeLeft(_item);
                     },
                   ),
@@ -989,8 +1011,15 @@ class _MyHomePage2State extends State<MyHomePage2>
                       data: IconThemeData(color: Colors.yellow, size: 40.0),
                       child: Icon(Icons.refresh),
                     ),
+                    // child: Container(
+                    //   height: 50.0,
+                    //   decoration: BoxDecoration(
+                    //     image: DecorationImage(image: AssetImage('assets/do_later_icon.png'))
+                    //   ),
+                    // ),
                     onPressed: (){
                       // todo refresh
+                      if(_questionsCards.length != 0)
                       doLaterPressed(_item);
                     },
                   ),
@@ -999,11 +1028,18 @@ class _MyHomePage2State extends State<MyHomePage2>
                     shape: CircleBorder(
                       side: BorderSide(width: 4.0, color: Colors.white,)
                     ),
+                    // child: Container(
+                    //   height: 50.0,
+                    //   decoration: BoxDecoration(
+                    //     image: DecorationImage(image: AssetImage('assets/accept_icon.png'))
+                    //   ),
+                    // ),
                     child: IconTheme(
                       data: IconThemeData(color: Colors.green, size: 50.0),
                       child: Icon(Icons.favorite),
                     ),
                     onPressed: (){
+                      if(_questionsCards.length != 0)
                       swipeRight(_item);
                     },
                   ),
