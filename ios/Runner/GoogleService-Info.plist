@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>145930653143-6g4njgb8vljicp1fask28otl6cvgb4kf.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.145930653143-6g4njgb8vljicp1fask28otl6cvgb4kf</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>145930653143-5mqvuqmsiuq0m22j7os76ngu4ke11ls2.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyC_Zh2Zw7LSt_EgI-MSS6YoC2ycZzavS94</string>
+	<key>GCM_SENDER_ID</key>
+	<string>145930653143</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>chat.xpert.creator</string>
+	<key>PROJECT_ID</key>
+	<string>xpert-213209</string>
+	<key>STORAGE_BUCKET</key>
+	<string>xpert-213209.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:145930653143:ios:d61efffe813393e8d70f92</string>
+	<key>DATABASE_URL</key>
+	<string>https://xpert-213209.firebaseio.com</string>
+</dict>
+</plist>
