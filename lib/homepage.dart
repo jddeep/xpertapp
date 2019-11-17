@@ -56,20 +56,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return userDocuments;
   }
 
-  void _rejectUpdateData(_orderDocID) async{
+  void _rejectUpdateData(_orderDocID) async {
     await Firestore.instance
-    .collection('xpert_master')
-    .document('aayu-sinha') //widget.title
-    .collection('orders')
-    .document(_orderDocID)
-    .updateData({
-      'status': _isMandatory? 'xpert review':'rejected'
-    }).whenComplete((){
+        .collection('xpert_master')
+        .document('aayu-sinha') //widget.title
+        .collection('orders')
+        .document(_orderDocID)
+        .updateData({
+      'status': _isMandatory ? 'xpert review' : 'rejected'
+    }).whenComplete(() {
       print('Updated!');
     });
   }
-
-  
 
   @override
   void initState() {
@@ -82,7 +80,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
   }
 
-  Widget _xpertIntroCard(var company){
+  Widget _xpertIntroCard(var company) {
     return GestureDetector(
       onTap: () {
         // if (_isCardScrollable)
@@ -102,77 +100,76 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         color: Colors.orange,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: Stack(
-                  children:<Widget>[
-                    
-                    Opacity(
-                      opacity: _isVisible? 0.5:1.0,
-                                          child: Column(
-            children: <Widget>[
-              Stack(
+          children: <Widget>[
+            Opacity(
+              opacity: _isVisible ? 0.5 : 1.0,
+              child: Column(
                 children: <Widget>[
-                  Container(
-                      height: 65.0,
-                      decoration: BoxDecoration(
-                          color: Colors.orange,
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(10.0),
-                              topRight: Radius.circular(10.0))),
-                  ),
-                  Align(
-                      alignment: AlignmentDirectional.topCenter,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                        company["orange_headline1"]??'Null',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.0,),
+                  Stack(
+                    children: <Widget>[
+                      Container(
+                        height: 65.0,
+                        decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(10.0),
+                                topRight: Radius.circular(10.0))),
                       ),
-                      Text(
-                        company["orange_headline2"]?? 'Null',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 30.0,
-                            fontWeight: FontWeight.bold),
-                      ),
-                        ],
-                      ),
-                  ),
-                ],
-              ),
-              company["message_type"]=='image'?
-              Container(
-                height: 200.0,
-                width: 200.0,
-                child: Image(
-                  image: NetworkImage(company["message"]),
-                  fit: BoxFit.contain,
-                ),
-              )
-              :
-              Expanded(
-                //               child: company["message_type"]=='image'?
-                //               Image(
-                //   image: NetworkImage(company["message"]),
-                //   fit: BoxFit.contain,
-                // ):
-                flex: 1,
-                child: Container(
-                  color: Colors.white,
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          company["message"],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.w300),
+                      Align(
+                        alignment: AlignmentDirectional.topCenter,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              company["orange_headline1"] ?? 'Null',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
+                              ),
+                            ),
+                            Text(
+                              company["orange_headline2"] ?? 'Null',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 30.0,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
-              ),
+                    ],
+                  ),
+                  company["message_type"] == 'image'
+                      ? Container(
+                          height: 200.0,
+                          width: 200.0,
+                          child: Image(
+                            image: NetworkImage(company["message"]),
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : Expanded(
+                          //               child: company["message_type"]=='image'?
+                          //               Image(
+                          //   image: NetworkImage(company["message"]),
+                          //   fit: BoxFit.contain,
+                          // ):
+                          flex: 1,
+                          child: Container(
+                            color: Colors.white,
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              company["message"],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.w300),
+                            ),
+                          ),
+                        ),
                   // Container(
                   //     height: 50.0,
                   //     decoration: BoxDecoration(
@@ -181,56 +178,63 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   //             bottomLeft: Radius.circular(10.0),
                   //             bottomRight: Radius.circular(10.0))),
                   // ),
-                  company["tip"]!=null?Container(
-                    height: 70.0,
-                      padding: EdgeInsets.all(6.0),
-                          child: company["tip"]!=null?Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              IconTheme(
-                                data: IconThemeData(color: Colors.white),
-                                child: Icon(Icons.lightbulb_outline),
-                              ),
-                              
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
-                                                      children: <Widget>[
-                                                        Text(
-                                                                'XPERT TIP',
-                                                                style: TextStyle(
-                                                                    color: Colors.white,),
-                                                              ),
-                                                              Wrap(children: <Widget>[
-                                                                Text(
-                                                                  
-                                                                  company["tip"]??'This is a demo tip',
-                                                                  maxLines: 4,
-                                                                  softWrap: true,
-                                                                  style: TextStyle(
-                                                                      color: Colors.white, fontSize: 12.0),
-                                                                ),
-                                                              ],
-                                                                                                                          
-                                                              ),
-                                                      ],
-                                                    ),
-                            ],
-                          ):Container(height: 1.0),
-                        ):Container(height: 0.0),
-              
-            ],
-          ),
-                    ),
-          _isVisible
-            ?  Container(
+                  company["tip"] != null
+                      ? Container(
+                          height: 70.0,
+                          padding: EdgeInsets.all(6.0),
+                          child: company["tip"] != null
+                              ? Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    IconTheme(
+                                      data: IconThemeData(color: Colors.white),
+                                      child: Icon(Icons.lightbulb_outline),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          'XPERT TIP',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        Wrap(
+                                          children: <Widget>[
+                                            Text(
+                                              company["tip"] ??
+                                                  'This is a demo tip',
+                                              maxLines: 4,
+                                              softWrap: true,
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12.0),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                )
+                              : Container(height: 1.0),
+                        )
+                      : Container(height: 0.0),
+                ],
+              ),
+            ),
+            _isVisible
+                ? Container(
                     child: Center(
                       child: Image(
-                        image: _isAccepted? AssetImage('assets/accept_stamp.png') : AssetImage('assets/do_later_stamp.png'),
+                        image: _isAccepted
+                            ? AssetImage('assets/accept_stamp.png')
+                            : AssetImage('assets/do_later_stamp.png'),
                       ),
                     ),
-            ) : Container(),
-                  ],
+                  )
+                : Container(),
+          ],
         ),
       ),
     );
@@ -240,18 +244,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: () {
         if (_isCardScrollable)
-            _isCardScrollable = false;
-          else {
-            _isCardScrollable = true;
-            print(questionAsked.documentID.toString());
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => DetailQuestionPage(
-                          incomingQuestion: questionAsked["message"],
-                          orderDocId: questionAsked.documentID,
-                        )));
-          }
+          _isCardScrollable = false;
+        else {
+          _isCardScrollable = true;
+          print(questionAsked.documentID.toString());
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => DetailQuestionPage(
+                        incomingQuestion: questionAsked["message"],
+                        orderDocId: questionAsked.documentID,
+                      )));
+        }
       },
       child: Card(
         clipBehavior: Clip.none,
@@ -260,8 +264,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: Stack(
           children: <Widget>[
             Opacity(
-              opacity: _isVisible? 0.5:1.0,
-                          child: Column(
+              opacity: _isVisible ? 0.5 : 1.0,
+              child: Column(
                 children: <Widget>[
                   Stack(
                     children: <Widget>[
@@ -344,145 +348,160 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       : Align(
                           alignment: AlignmentDirectional.bottomStart,
                           child: Container(
-                            child:
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: 8.0, left: 8.0, right: 4.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    _isPopularQuestion
-                                        ? Stack(
-                                            children: <Widget>[
-                                              CircleAvatar(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: 8.0, left: 8.0, right: 4.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  _isPopularQuestion
+                                      ? Stack(
+                                          children: <Widget>[
+                                            CircleAvatar(
+                                              radius: 25.0,
+                                              backgroundImage: AssetImage(
+                                                  'assets/profile_pic.jpg'),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10.0),
+                                              child: CircleAvatar(
                                                 radius: 25.0,
-                                                backgroundImage:
-                                                    AssetImage('assets/profile_pic.jpg'),
+                                                backgroundImage: AssetImage(
+                                                    'assets/profile_pic.jpg'),
                                               ),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.only(left: 10.0),
-                                                child: CircleAvatar(
-                                                  radius: 25.0,
-                                                  backgroundImage: AssetImage(
-                                                      'assets/profile_pic.jpg'),
-                                                ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 20.0),
+                                              child: CircleAvatar(
+                                                radius: 25.0,
+                                                backgroundImage: AssetImage(
+                                                    'assets/profile_pic.jpg'),
                                               ),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.only(left: 20.0),
-                                                child: CircleAvatar(
-                                                  radius: 25.0,
-                                                  backgroundImage: AssetImage(
-                                                      'assets/profile_pic.jpg'),
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : 
-                                              Row(
-                                                children: <Widget>[
-                                                  questionAsked["profile_image"]!=null?CircleAvatar(
+                                            ),
+                                          ],
+                                        )
+                                      : Row(
+                                          children: <Widget>[
+                                            questionAsked["profile_image"] !=
+                                                    null
+                                                ? CircleAvatar(
                                                     radius: 20.0,
                                                     backgroundImage: NetworkImage(
-                                                        questionAsked["profile_image"]),
-                                                  ):Container(height: 1.0,),
-                                                  Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.start,
-                                                    children: <Widget>[
-                                                      _isPopularQuestion
-                                                          ? Text(
-                                                              'VOTED BY',
-                                                              style: TextStyle(
-                                                                  color: Colors.grey,
-                                                                  fontSize: 12.0),
-                                                            )
-                                                          : Text(
-                                                              'ASKED BY',
-                                                              style: TextStyle(
-                                                                  color: Colors.grey,
-                                                                  fontSize: 9.0),
-                                                            ),
-                                                      _isPopularQuestion
-                                                          ? Row(
-                                                              children: <Widget>[
-                                                                Text(
-                                                                  '10,000 ',
-                                                                  style: TextStyle(
-                                                                      color: Colors.amber,
-                                                                      fontWeight:
-                                                                          FontWeight.bold,
-                                                                      fontSize: 22.0),
-                                                                ),
-                                                                Text(
-                                                                  'people',
-                                                                  style: TextStyle(
-                                                                      color: Colors.black,
-                                                                      fontWeight:
-                                                                          FontWeight.bold,
-                                                                      fontSize: 14.0),
-                                                                ),
-                                                              ],
-                                                            )
-                                                          : Text(
-                                                              questionAsked["name"],
-                                                              style: TextStyle(
-                                                                  color: Colors.black,
-                                                                  fontWeight:
-                                                                      FontWeight.bold,
-                                                                  fontSize: 14.0),
-                                                            ),
-                                                    ],
+                                                        questionAsked[
+                                                            "profile_image"]),
+                                                  )
+                                                : Container(
+                                                    height: 1.0,
                                                   ),
-                                                ],
-                                              ),
-                                              _isPopularQuestion
-                                                  ? Container()
-                                                  : Text(
-                                                      '₹'+questionAsked["amount"].toString(),
-                                                      style: TextStyle(
-                                                          color: Colors.amber,
-                                                          fontSize: 20.0),
-                                                    ),
-                                  ],
-                                ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                _isPopularQuestion
+                                                    ? Text(
+                                                        'VOTED BY',
+                                                        style: TextStyle(
+                                                            color: Colors.grey,
+                                                            fontSize: 12.0),
+                                                      )
+                                                    : Text(
+                                                        'ASKED BY',
+                                                        style: TextStyle(
+                                                            color: Colors.grey,
+                                                            fontSize: 9.0),
+                                                      ),
+                                                _isPopularQuestion
+                                                    ? Row(
+                                                        children: <Widget>[
+                                                          Text(
+                                                            '10,000 ',
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .amber,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 22.0),
+                                                          ),
+                                                          Text(
+                                                            'people',
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 14.0),
+                                                          ),
+                                                        ],
+                                                      )
+                                                    : Text(
+                                                        questionAsked["name"],
+                                                        style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 14.0),
+                                                      ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                  _isPopularQuestion
+                                      ? Container()
+                                      : Text(
+                                          '₹' +
+                                              questionAsked["amount"]
+                                                  .toString(),
+                                          style: TextStyle(
+                                              color: Colors.amber,
+                                              fontSize: 20.0),
+                                        ),
+                                ],
                               ),
+                            ),
                           ),
                         ),
                 ],
               ),
             ),
             _isVisible
-            ?  Container(
+                ? Container(
                     child: Center(
                       child: Image(
-                        image: _isAccepted? AssetImage('assets/accept_stamp.png') :
-                        _isMandatory? AssetImage('assets/do_later_stamp.png') : AssetImage('assets/reject_stamp.png'),
+                        image: _isAccepted
+                            ? AssetImage('assets/accept_stamp.png')
+                            : _isMandatory
+                                ? AssetImage('assets/do_later_stamp.png')
+                                : AssetImage('assets/reject_stamp.png'),
                       ),
                     ),
-            ) : Container(),
+                  )
+                : Container(),
           ],
         ),
       ),
     );
   }
 
-  Widget _endorsementCard(var company){
+  Widget _endorsementCard(var company) {
     return GestureDetector(
       onTap: () {
         if (_isCardScrollable)
-            _isCardScrollable = false;
-          else {
-            _isCardScrollable = true;
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => DetailQuestionPage(
-                          incomingQuestion: company["message"],
-                          orderDocId: company.documentID,
-                        )));
-          }
+          _isCardScrollable = false;
+        else {
+          _isCardScrollable = true;
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => DetailQuestionPage(
+                        incomingQuestion: company["message"],
+                        orderDocId: company.documentID,
+                      )));
+        }
       },
       child: Card(
         clipBehavior: Clip.none,
@@ -491,8 +510,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: Stack(
           children: <Widget>[
             Opacity(
-              opacity: _isVisible?0.5:1.0,
-                          child: Column(
+              opacity: _isVisible ? 0.5 : 1.0,
+              child: Column(
                 children: <Widget>[
                   Stack(
                     children: <Widget>[
@@ -510,20 +529,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                          'Give a shoutout for',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.0,),
-                        ),
-                        Text(
-                          company["for"], //earlier "name"
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 30.0,
-                              fontWeight: FontWeight.bold),
-                        ),
+                              'Give a shoutout for',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
+                              ),
+                            ),
+                            Text(
+                              company["for"], //earlier "name"
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 30.0,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
@@ -588,90 +608,94 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       : Align(
                           alignment: AlignmentDirectional.bottomStart,
                           child: Container(
-                            child: 
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: 8.0, left: 8.0, right: 4.0),
-                                child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: 8.0, left: 8.0, right: 4.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: <Widget>[
-                                          Row(
-                                            children: <Widget>[
-                                              Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: <Widget>[
-                                                  Text(
-                                                          'REQUESTED BY',
-                                                          style: TextStyle(
-                                                              color: Colors.grey,
-                                                              fontSize: 9.0),
-                                                        ),
-                                                        Text(
-                                                          company["name"],
-                                                          style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight:
-                                                                  FontWeight.bold,
-                                                              fontSize: 14.0),
-                                                        ),
-                                                ],
-                                              ),
-                                              IconTheme(
-                                                data: IconThemeData(color: Colors.amber, size: 8.0),
-                                                child: Icon(Icons.info_outline),
-                                              )
-                                            ],
+                                          Text(
+                                            'REQUESTED BY',
+                                            style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 9.0),
                                           ),
-                                          _isPopularQuestion
-                                              ? Container()
-                                              : Padding(
-                                                padding: EdgeInsets.only(left: 4.0),
-                                                child:Text(
-                                                  '₹'+company["amount"].toString(),
-                                                  style: TextStyle(
-                                                      color: Colors.amber,
-                                                      fontSize: 20.0),
-                                                ),
-                                              ),
+                                          Text(
+                                            company["name"],
+                                            style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14.0),
+                                          ),
                                         ],
                                       ),
+                                      IconTheme(
+                                        data: IconThemeData(
+                                            color: Colors.amber, size: 8.0),
+                                        child: Icon(Icons.info_outline),
+                                      )
+                                    ],
+                                  ),
+                                  _isPopularQuestion
+                                      ? Container()
+                                      : Padding(
+                                          padding: EdgeInsets.only(left: 4.0),
+                                          child: Text(
+                                            '₹' + company["amount"].toString(),
+                                            style: TextStyle(
+                                                color: Colors.amber,
+                                                fontSize: 20.0),
+                                          ),
+                                        ),
+                                ],
                               ),
+                            ),
                           ),
                         ),
                 ],
               ),
             ),
             _isVisible
-            ?  Container(
+                ? Container(
                     child: Center(
                       child: Image(
-                        image: _isAccepted? AssetImage('assets/accept_stamp.png') :
-                         _isMandatory? AssetImage('assets/do_later_stamp.png') : AssetImage('assets/reject_stamp.png'),
+                        image: _isAccepted
+                            ? AssetImage('assets/accept_stamp.png')
+                            : _isMandatory
+                                ? AssetImage('assets/do_later_stamp.png')
+                                : AssetImage('assets/reject_stamp.png'),
                       ),
                     ),
-            ) : Container(),
+                  )
+                : Container(),
           ],
         ),
       ),
     );
   }
 
-  Widget _wishCard(var user){
+  Widget _wishCard(var user) {
     return GestureDetector(
       onTap: () {
         if (_isCardScrollable)
-            _isCardScrollable = false;
-          else {
-            _isCardScrollable = true;
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => DetailQuestionPage(
-                          incomingQuestion: user["message"],
-                          orderDocId: user.documentID,
-                        )));
-          }
+          _isCardScrollable = false;
+        else {
+          _isCardScrollable = true;
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => DetailQuestionPage(
+                        incomingQuestion: user["message"],
+                        orderDocId: user.documentID,
+                      )));
+        }
         // setState(() {
         //   if (_isCardScrollable)
         //     _isCardScrollable = false;
@@ -693,8 +717,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: Stack(
           children: <Widget>[
             Opacity(
-              opacity: _isVisible?0.5:1.0,
-                          child: Column(
+              opacity: _isVisible ? 0.5 : 1.0,
+              child: Column(
                 children: <Widget>[
                   Stack(
                     children: <Widget>[
@@ -712,47 +736,48 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                          'Record a wish for',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.0,),
-                        ),
-                        Text(
-                          user["for"], // earlier "name"
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 30.0,
-                              fontWeight: FontWeight.bold),
-                        ),
+                              'Record a wish for',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
+                              ),
+                            ),
+                            Text(
+                              user["for"], // earlier "name"
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 30.0,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
                       Align(
                         alignment: AlignmentDirectional.topEnd,
                         child: DropdownButtonHideUnderline(
-                                                child: DropdownButton<String>(
-                              value: dropdownValue,
-                              icon: Icon(Icons.arrow_drop_down),
-                              iconSize: 24,
-                              iconEnabledColor: Colors.white,
-                              iconDisabledColor: Colors.white,
-                              style: TextStyle(color: Colors.amber),
-                              onChanged: (String newValue) {
-                                setState(() {
-                                  dropdownValue = newValue;
-                                });
-                              },
-                              items: <String>['', 'Delete', 'Report']
-                                  .map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                            ),
+                          child: DropdownButton<String>(
+                            value: dropdownValue,
+                            icon: Icon(Icons.arrow_drop_down),
+                            iconSize: 24,
+                            iconEnabledColor: Colors.white,
+                            iconDisabledColor: Colors.white,
+                            style: TextStyle(color: Colors.amber),
+                            onChanged: (String newValue) {
+                              setState(() {
+                                dropdownValue = newValue;
+                              });
+                            },
+                            items: <String>['', 'Delete', 'Report']
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
                           ),
+                        ),
                       ),
                     ],
                   ),
@@ -789,65 +814,68 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       : Align(
                           alignment: AlignmentDirectional.bottomStart,
                           child: Container(
-                            child: 
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: 8.0, left: 8.0, right: 4.0),
-                                child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: 8.0, left: 8.0, right: 4.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: <Widget>[
-                                          Row(
-                                            children: <Widget>[
-                                              Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: <Widget>[
-                                                  Text(
-                                                          'REQUESTED BY',
-                                                          style: TextStyle(
-                                                              color: Colors.grey,
-                                                              fontSize: 9.0),
-                                                        ),
-                                                        Text(
-                                                          user["name"],
-                                                          style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight:
-                                                                  FontWeight.bold,
-                                                              fontSize: 14.0),
-                                                        ),
-                                                ],
-                                              ),
-                                            ],
+                                          Text(
+                                            'REQUESTED BY',
+                                            style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 9.0),
                                           ),
-                                          _isPopularQuestion
-                                              ? Container()
-                                              : Padding(
-                                                padding: EdgeInsets.only(left: 4.0),
-                                                child:Text(
-                                                  '₹'+user["amount"].toString(),
-                                                  style: TextStyle(
-                                                      color: Colors.amber,
-                                                      fontSize: 20.0),
-                                                ),
-                                              ),
+                                          Text(
+                                            user["name"],
+                                            style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14.0),
+                                          ),
                                         ],
                                       ),
+                                    ],
+                                  ),
+                                  _isPopularQuestion
+                                      ? Container()
+                                      : Padding(
+                                          padding: EdgeInsets.only(left: 4.0),
+                                          child: Text(
+                                            '₹' + user["amount"].toString(),
+                                            style: TextStyle(
+                                                color: Colors.amber,
+                                                fontSize: 20.0),
+                                          ),
+                                        ),
+                                ],
                               ),
+                            ),
                           ),
                         ),
                 ],
               ),
             ),
             _isVisible
-            ?  Container(
+                ? Container(
                     child: Center(
                       child: Image(
-                        image: _isAccepted? AssetImage('assets/accept_stamp.png') :
-                         _isMandatory? AssetImage('assets/do_later_stamp.png') : AssetImage('assets/reject_stamp.png'),
+                        image: _isAccepted
+                            ? AssetImage('assets/accept_stamp.png')
+                            : _isMandatory
+                                ? AssetImage('assets/do_later_stamp.png')
+                                : AssetImage('assets/reject_stamp.png'),
                       ),
                     ),
-            ) : Container(),
+                  )
+                : Container(),
           ],
         ),
       ),
@@ -859,7 +887,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     CardController controller; //Use this to trigger swap.
-    print('Curr Doc Index: ' +_currDocIndex.toString());
+    print('Curr Doc Index: ' + _currDocIndex.toString());
     return new Scaffold(
       body: Column(
         children: <Widget>[
@@ -893,11 +921,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     height: MediaQuery.of(context).size.height * 0.6,
                     child: _allQuestionsDone
                         ? Container()
-                        : _userDocs != null && _userDocs.length !=0
+                        : _userDocs != null && _userDocs.length != 0
                             ? StreamBuilder<DocumentSnapshot>(
                                 stream: Firestore.instance
                                     .collection('xpert_master')
-                                    .document('aayu-sinha')// aparna-prasad
+                                    .document('aayu-sinha') // aparna-prasad
                                     .collection('orders')
                                     .document(_userDocs
                                         .elementAt(_currDocIndex)
@@ -918,29 +946,42 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   var userDocument = snapshot.data;
                                   orderDocId = userDocument.documentID;
                                   return _isCardScrollable
-                                      ? (){
-                                        print('Mandatory user DOC: ' + userDocument["mandatory"].toString());
-                                        if(userDocument["mandatory"].toString() == "yes"){
-                                          _isMandatory = true;
-                                        }else{
-                                          _isMandatory = false;
+                                      ? () {
+                                          print('Mandatory user DOC: ' +
+                                              userDocument["mandatory"]
+                                                  .toString());
+                                          if (userDocument["mandatory"]
+                                                  .toString() ==
+                                              "yes") {
+                                            _isMandatory = true;
+                                          } else {
+                                            _isMandatory = false;
+                                          }
+                                          if (userDocument["type"].toString() ==
+                                              "orange") {
+                                            print('returning orange card');
+                                            return _xpertIntroCard(
+                                                userDocument); // mandatory should be "yes"
+                                          } else {
+                                            print('returning else');
+                                            if (userDocument["type"]
+                                                    .toString() ==
+                                                "wishes")
+                                              return _wishCard(userDocument);
+                                            else if (userDocument["type"]
+                                                    .toString() ==
+                                                "endorsement")
+                                              return _endorsementCard(
+                                                  userDocument);
+                                            else
+                                              return _questionCard(
+                                                  userDocument);
+                                          }
                                         }
-                                        if(userDocument["type"].toString()=="orange"){
-                                          print('returning orange card');
-                                          return _xpertIntroCard(userDocument); // mandatory should be "yes"
-                                        }else{
-                                          print('returning else');
-                                        if(userDocument["type"].toString()=="wishes")
-                                        return _wishCard(userDocument);
-                                        else if(userDocument["type"].toString()=="endorsement")
-                                        return _endorsementCard(userDocument);
-                                        else
-                                        return _questionCard(userDocument);
-                                        }
-                                      }
                                       : Transform.scale(
                                           scale: 1 / 0.68,
-                                          child: TinderSwapCard(animDuration: 5,
+                                          child: TinderSwapCard(
+                                              animDuration: 5,
                                               orientation:
                                                   AmassOrientation.BOTTOM,
                                               totalNum: 6,
@@ -962,25 +1003,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                       .size
                                                       .width *
                                                   0.9,
-                                              cardBuilder: ((context, index){
-                                        if(userDocument["mandatory"].toString() == "yes"){
-                                          _isMandatory = true;
-                                        } else{
-                                          _isMandatory = false;
-                                        }
-                                        if(userDocument["type"].toString()=="orange"){
-                                          print('returning orange card');
-                                          return _xpertIntroCard(userDocument); // mandatory should be "yes"
-                                        }else{
-                                          print('returning else');
-                                          
-                                        if(userDocument["type"].toString()=="wishes")
-                                        return _wishCard(userDocument);
-                                        else if(userDocument["type"].toString()=="endorsement")
-                                        return _endorsementCard(userDocument);
-                                        else
-                                        return _questionCard(userDocument);
-                                        }
+                                              cardBuilder: ((context, index) {
+                                                if (userDocument["mandatory"]
+                                                        .toString() ==
+                                                    "yes") {
+                                                  _isMandatory = true;
+                                                } else {
+                                                  _isMandatory = false;
+                                                }
+                                                if (userDocument["type"]
+                                                        .toString() ==
+                                                    "orange") {
+                                                  print(
+                                                      'returning orange card');
+                                                  return _xpertIntroCard(
+                                                      userDocument); // mandatory should be "yes"
+                                                } else {
+                                                  print('returning else');
+
+                                                  if (userDocument["type"]
+                                                          .toString() ==
+                                                      "wishes")
+                                                    return _wishCard(
+                                                        userDocument);
+                                                  else if (userDocument["type"]
+                                                          .toString() ==
+                                                      "endorsement")
+                                                    return _endorsementCard(
+                                                        userDocument);
+                                                  else
+                                                    return _questionCard(
+                                                        userDocument);
+                                                }
                                               }),
                                               // cardBuilder: (context, index) => Card(
                                               //       child: Image.asset('${welcomeImages[index]}'),
@@ -992,7 +1046,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                   (DragUpdateDetails details,
                                                       Alignment align) {
                                                 /// Get swiping card's alignment
-                                                
+
                                                 print(align.x);
 
                                                 if (align.x > 1 &&
@@ -1002,57 +1056,64 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 } else if (align.x < -1) {
                                                   _isVisible = true;
                                                   _isAccepted = false;
-                                                  if(align.x.abs() >= 3.2){
+                                                  if (align.x.abs() >= 3.2) {
                                                     print('leftSwipComp');
                                                     _isSwipeCompleted = true;
-                                                    
                                                   }
                                                   print('left');
                                                   //Card is LEFT swiping
                                                 } else if (align.x >= 3.2) {
                                                   _isSwipeCompleted = true;
                                                   print('rightSwipComp');
-                                                } else if(align.x.abs()>=0 && align.x.abs() <=1){
+                                                } else if (align.x.abs() >= 0 &&
+                                                    align.x.abs() <= 1) {
                                                   _isVisible = false;
                                                 }
                                               },
-                                              swipeCompleteCallback:(CardSwipeOrientation orientation,
+                                              swipeCompleteCallback:
+                                                  (CardSwipeOrientation
+                                                          orientation,
                                                       int index) {
-                                                        
                                                 /// Get orientation & index of swiped card!
-                                                if(_isSwipeCompleted) {
-                                                                                         print('swipe completed!');
-                                                print('Users Length:' + '${_userDocs.length}');
-                                                print('$_isAccepted' + '$_isSwipeCompleted');
-                                                if(_isAccepted && _isSwipeCompleted){
-                                                  print('accepted');
-                                                  Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              new CameraApp(
-                                                                  // userDocument["message_type"]=="text"?
-                                                                  userDocument["teleprompter_text"]??'No Teleprompter text',
-                                                                      orderDocId,
-                                                                      'aayu-sinha')));
+                                                if (_isSwipeCompleted) {
+                                                  print('swipe completed!');
+                                                  print('Users Length:' +
+                                                      '${_userDocs.length}');
+                                                  print('$_isAccepted' +
+                                                      '$_isSwipeCompleted');
+                                                  if (_isAccepted &&
+                                                      _isSwipeCompleted) {
+                                                    print('accepted');
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                new CameraApp(
+                                                                    // userDocument["message_type"]=="text"?
+                                                                    userDocument[
+                                                                            "teleprompter_text"] ??
+                                                                        'No Teleprompter text',
+                                                                    orderDocId,
+                                                                    'aayu-sinha')));
 
-                                                  print('right');
-                                                } else {
-                                                  _rejectUpdateData(orderDocId);
-                                                  print('rejected');
-                                                }
-                                                _isVisible = false;
-                                                _isSwipeCompleted = false;
-                                                
+                                                    print('right');
+                                                  } else {
+                                                    _rejectUpdateData(
+                                                        orderDocId);
+                                                    print('rejected');
+                                                  }
+                                                  _isVisible = false;
+                                                  _isSwipeCompleted = false;
+
                                                   setState(() {
                                                     _currDocIndex++;
                                                     if (_currDocIndex >=
-                                                    _userDocs.length) {
-                                                    _allQuestionsDone = true;
+                                                        _userDocs.length) {
+                                                      _allQuestionsDone = true;
                                                     }
                                                   });
-                                                }}
-                                              ),
+                                                }
+                                              }),
                                         );
                                 })
                             : Container()),
@@ -1072,58 +1133,56 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               GestureDetector(
-  child: Container(
-   width:50,
-   height: 50,
-   decoration: BoxDecoration(
-    //  color: Colors.black,
-     image: DecorationImage(
-       image:AssetImage("assets/chat_icon.png"), 
-       fit:BoxFit.cover
-     ),
-   ),
-  ),onTap:(){
-   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => BroadcastPage()));
-                
-  }
-),
-GestureDetector(
-  child: Container(
-   width:50,
-   height: 50,
-   decoration: BoxDecoration(
-    //  color: Colors.black,
-     image: DecorationImage(
-       image:AssetImage("assets/cards_icon.png"), 
-       fit:BoxFit.cover
-     ),
-   ),
-  ),onTap:(){
-  //  Navigator.push(context,
-  //                     MaterialPageRoute(builder: (context) => BroadcastPage()));
-                
-  }
-),
-GestureDetector(
-  child: Container(
-   width:50,
-   height: 50,
-   decoration: BoxDecoration(
-    //  color: Colors.black,
-     image: DecorationImage(
-       image:AssetImage("assets/user_prof_icon.png"), 
-       fit:BoxFit.cover
-     ),
-   ),
-  ),onTap:(){
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => XpertProfilePage(widget.user, widget.title),
-                      )); 
-  }
-)
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      //  color: Colors.black,
+                      image: DecorationImage(
+                          image: AssetImage("assets/chat_icon.png"),
+                          fit: BoxFit.cover),
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => BroadcastPage()));
+                  }),
+              GestureDetector(
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      //  color: Colors.black,
+                      image: DecorationImage(
+                          image: AssetImage("assets/cards_icon.png"),
+                          fit: BoxFit.cover),
+                    ),
+                  ),
+                  onTap: () {
+                    //  Navigator.push(context,
+                    //                     MaterialPageRoute(builder: (context) => BroadcastPage()));
+                  }),
+              GestureDetector(
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      //  color: Colors.black,
+                      image: DecorationImage(
+                          image: AssetImage("assets/user_prof_icon.png"),
+                          fit: BoxFit.cover),
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              XpertProfilePage(widget.user, widget.title),
+                        ));
+                  })
             ],
           )
         ],
@@ -1131,4 +1190,3 @@ GestureDetector(
     );
   }
 }
-

@@ -507,13 +507,12 @@ class _MyHomePage2State extends State<MyHomePage2>
   static bool isRejected = false;
   static bool isDoLater = false;
   bool _isMandatory = false;
-  
 
   List<Widget> _questionsCards = [];
 
   Future<List<DocumentSnapshot>> _getWebOrders() async {
     List<DocumentSnapshot> d = new List();
-         //[" Question 1", "Question 2", "Question 3", "Question 4"];
+    //[" Question 1", "Question 2", "Question 3", "Question 4"];
 
     await Firestore.instance
         .collection('xpert_master')
@@ -532,47 +531,49 @@ class _MyHomePage2State extends State<MyHomePage2>
     return d;
   }
 
-    void _rejectUpdateData(_orderDocID) async{
-      print('Reject func called id: ' + widget.userDocId.toString() + ' ' + _orderDocID.toString());
+  void _rejectUpdateData(_orderDocID) async {
+    print('Reject func called id: ' +
+        widget.userDocId.toString() +
+        ' ' +
+        _orderDocID.toString());
     await Firestore.instance
-    .collection('xpert_master')
-    .document(widget.userDocId) // 'duhita-banerjee'
-    // .document('aayush-sinha') //widget.title
-    .collection('orders')
-    .document(_orderDocID)
-    .updateData({
-      'status': _isMandatory? 'xpert review':'rejected'
-    }).whenComplete((){
+        .collection('xpert_master')
+        .document(widget.userDocId) // 'duhita-banerjee'
+        // .document('aayush-sinha') //widget.title
+        .collection('orders')
+        .document(_orderDocID)
+        .updateData({
+      'status': _isMandatory ? 'xpert review' : 'rejected'
+    }).whenComplete(() {
       print('Updated!');
       _isMandatory = false;
     });
   }
 
-  void _doLater(_orderDocID) async{
+  void _doLater(_orderDocID) async {
     await Firestore.instance
-    .collection('xpert_master')
-    .document(widget.userDocId) // 'duhita-banerjee'
-    // .document('aayush-sinha') //widget.title
-    .collection('orders')
-    .document(_orderDocID)
-    .updateData({
-      'status': 'xpert review'
-    }).whenComplete((){
+        .collection('xpert_master')
+        .document(widget.userDocId) // 'duhita-banerjee'
+        // .document('aayush-sinha') //widget.title
+        .collection('orders')
+        .document(_orderDocID)
+        .updateData({'status': 'xpert review'}).whenComplete(() {
       print('Updated!');
     });
   }
 
   _createCardList(List<DocumentSnapshot> data) {
-    print('MEDIAQUERY HEIGHT: ' + MediaQuery.of(context).size.height.toString());
+    print(
+        'MEDIAQUERY HEIGHT: ' + MediaQuery.of(context).size.height.toString());
     print('MEDIAQUERY WIDTH: ' + MediaQuery.of(context).size.width.toString());
-    
+
     List<Widget> _cards = [];
     timeDilation = 0.4;
 
-    double initialBottom = MediaQuery.of(context).size.height/48.8; // 15.0
+    double initialBottom = MediaQuery.of(context).size.height / 48.8; // 15.0
     var dataLength = data.length;
     // double backCardPosition = initialBottom + (dataLength - 1) * 10 + 10;
-    double backCardWidth = -(MediaQuery.of(context).size.width/36.0); // -10.0
+    double backCardWidth = -(MediaQuery.of(context).size.width / 36.0); // -10.0
     print(data.length);
     int c = 0;
     for (var item in data) {
@@ -636,14 +637,14 @@ class _MyHomePage2State extends State<MyHomePage2>
     super.initState();
     _getWebOrders().then((_data) {
       setState(() {
-        print('ORDERS LENGTH: ' +_data.length.toString());
+        print('ORDERS LENGTH: ' + _data.length.toString());
         orders = _data;
       });
       // _createCardList(_data);
-      print('ORDERS LENGTH: ' +orders.length.toString());
+      print('ORDERS LENGTH: ' + orders.length.toString());
     });
     _buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 1000), vsync: this);
+        duration: new Duration(milliseconds: 1400), vsync: this);
 
     // rotate = new Tween<double>(
     //   begin: -0.0,
@@ -694,10 +695,10 @@ class _MyHomePage2State extends State<MyHomePage2>
     // );
   }
 
-  void initAnimation(){
+  void initAnimation() {
     rotate = new Tween<double>(
       begin: -0.0,
-      end: -(MediaQuery.of(context).size.width/9.0), // -40.0
+      end: -(MediaQuery.of(context).size.width / 9.0), // -40.0
     ).animate(
       new CurvedAnimation(
         parent: _buttonController,
@@ -725,8 +726,8 @@ class _MyHomePage2State extends State<MyHomePage2>
       ),
     );
     bottom = new Tween<double>(
-      begin: MediaQuery.of(context).size.width/24.0, // 15.0
-      end: MediaQuery.of(context).size.width/3.6, //100.0
+      begin: MediaQuery.of(context).size.width / 24.0, // 15.0
+      end: MediaQuery.of(context).size.width / 3.6, //100.0
     ).animate(
       new CurvedAnimation(
         parent: _buttonController,
@@ -734,8 +735,8 @@ class _MyHomePage2State extends State<MyHomePage2>
       ),
     );
     width = new Tween<double>(
-      begin: MediaQuery.of(context).size.width/18.0, // 20.0
-      end: MediaQuery.of(context).size.width/14.4, //25.0
+      begin: MediaQuery.of(context).size.width / 18.0, // 20.0
+      end: MediaQuery.of(context).size.width / 14.4, //25.0
     ).animate(
       new CurvedAnimation(
         parent: _buttonController,
@@ -762,15 +763,14 @@ class _MyHomePage2State extends State<MyHomePage2>
       //todo
       orders.remove(txt);
       _questionsCards.removeLast();
-      if(txt.data['mandatory']=='yes')
-      _isMandatory = true;
+      if (txt.data['mandatory'] == 'yes') _isMandatory = true;
       _rejectUpdateData(txt.documentID);
       print(orders);
     });
     isRejected = false;
   }
 
-  doLaterPressed(var txt){
+  doLaterPressed(var txt) {
     isRejected = true;
     isDoLater = true;
     if (flag == 1)
@@ -780,7 +780,6 @@ class _MyHomePage2State extends State<MyHomePage2>
       });
     _swipeAnimation().whenComplete(() {
       setState(() {
-
         _doLater(txt.documentID);
         orders.remove(txt);
       });
@@ -803,7 +802,8 @@ class _MyHomePage2State extends State<MyHomePage2>
       context,
       MaterialPageRoute(
         builder: (context) => CameraExampleHome(
-          incomingQuestion: txt.data['teleprompter_text']??'No teleprompter text', // teleprompter_text
+          incomingQuestion: txt.data['teleprompter_text'] ??
+              'No teleprompter text', // teleprompter_text
           docId: widget.userDocId,
           // docId: 'aayush-sinha',
           orderDocId: txt.documentID,
@@ -822,19 +822,24 @@ class _MyHomePage2State extends State<MyHomePage2>
         // selectedData.add(txt);
       });
     _swipeAnimation().whenComplete(() {
-        orders.remove(txt);
+      
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => CameraExampleHome(
-            incomingQuestion: txt.data['teleprompter_text']??'No teleprompter text', // teleprompter_text
+            incomingQuestion: txt.data['teleprompter_text'] ??
+                'No teleprompter text', // teleprompter_text
             docId: widget.userDocId,
             // docId: 'aayush-sinha',
-          orderDocId: txt.documentID,
+            orderDocId: txt.documentID,
           ),
         ),
       );
       isAccepted = false;
+      orders.remove(txt);
+      _questionsCards.removeLast();
+      print('SWIPE ORDERS LEN: ' + orders.length.toString());
+      
     });
 
     // addImg(txt);
@@ -849,24 +854,41 @@ class _MyHomePage2State extends State<MyHomePage2>
       });
     _swipeAnimation().whenComplete(() {
       setState(() {
-        if(txt.data['mandatory']=='yes')
-      _isMandatory = true;
+        if (txt.data['mandatory'] == 'yes') _isMandatory = true;
 
         _rejectUpdateData(txt.documentID);
         orders.remove(txt);
+        if(orders.length == 0)
+        _questionsCards = new List();
       });
       isRejected = false;
     });
+  }
+
+  Widget _noCardLeftRefresh() {
+    _getWebOrders().then((_data) {
+      setState(() {
+        print('ORDERS LENGTH: ' + _data.length.toString());
+        orders = _data;
+      });
+      // _createCardList(_data);
+      print('ORDERS LENGTH: ' + orders.length.toString());
+    });
+    return Center(
+        child: Container(
+          height: 0.0,
+        ),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
     timeDilation = 0.4;
     initAnimation();
-    double initialBottom = MediaQuery.of(context).size.height/48.8; // 15.0
+    double initialBottom = MediaQuery.of(context).size.height / 48.8; // 15.0
     var dataLength = orders.length;
     double backCardPosition = initialBottom + (dataLength - 1) * 10 + 10;
-    double backCardWidth = -(MediaQuery.of(context).size.width/36.0); // -10.0
+    double backCardWidth = -(MediaQuery.of(context).size.width / 36.0); // -10.0
     _createCardList(orders);
 
     return Scaffold(
@@ -880,10 +902,10 @@ class _MyHomePage2State extends State<MyHomePage2>
               onPressed: () {
                 //todo
                 Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => XpertProfilePage(widget.user, widget.userDocId)
-                      )); 
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            XpertProfilePage(widget.user, widget.userDocId)));
               },
             ),
           ),
@@ -892,19 +914,18 @@ class _MyHomePage2State extends State<MyHomePage2>
               onTap: () {
                 //todo
                 Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => NotificationPage(),
-                      )); 
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationPage(),
+                    ));
               },
               child: new Container(
-                padding: EdgeInsets.only(right: 14.0),
+                  padding: EdgeInsets.only(right: 14.0),
                   child: new Icon(
-                Icons.notifications,
-                color: Colors.white,
-                size: 30.0,
-              )
-              ),
+                    Icons.notifications,
+                    color: Colors.white,
+                    size: 30.0,
+                  )),
             ),
           ],
           title: Image.asset(
@@ -912,12 +933,11 @@ class _MyHomePage2State extends State<MyHomePage2>
             height: 55,
           )),
       body: Stack(
-        alignment: Alignment.topCenter,
+        alignment: Alignment.bottomCenter,
         children: <Widget>[
-          Center(
-            child: _questionsCards.length > 0
-                ? new Stack(
-                    alignment: AlignmentDirectional.center,
+           _questionsCards.length > 0
+                ? Stack(
+                    alignment: Alignment.center,
                     // children: _questionsCards,
                     children: orders.map((item) {
                       if (orders.indexOf(item) == dataLength - 1) {
@@ -946,8 +966,11 @@ class _MyHomePage2State extends State<MyHomePage2>
                           swipeLeft,
                         );
                       } else {
-                        backCardPosition = backCardPosition - 18;
-                        backCardWidth = backCardWidth + 10;
+                        double bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height* 0.03:15;
+                        backCardPosition = backCardPosition - bkdist;
+                        // MediaQuery.of(context).size.height > 640? MediaQuery.of(context).size.height* 0.04
+                        // :MediaQuery.of(context).size.height* 0.04;
+                        backCardWidth = backCardWidth + 50;
 
                         return cardDemoDummy(
                             item.data, //.data['message'],
@@ -960,89 +983,124 @@ class _MyHomePage2State extends State<MyHomePage2>
                             context);
                       }
                     }).toList())
-                : new Text("No Card Left",
-                    style: new TextStyle(color: Colors.white, fontSize: 50.0)),
-          ),
-          Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.04,
-            child: Container(
+                : _noCardLeftRefresh(),
+                  // return Center(child:Text("No Card Left",
+                  //   style: new TextStyle(color: Colors.white, fontSize: 50.0)));
+                    
+          
+          Container(
               // color:  Color.fromRGBO(106, 94, 175, 1.0),
+              padding: const EdgeInsets.only(bottom: 10.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  // GestureDetector(
-                  //   child: Container(
-                  //     height: 50.0,
-                  //     decoration: BoxDecoration(
-                  //       image: DecorationImage(image: AssetImage('assets/reject_two.png'))
-                  //     ),
+                  Padding(
+                    padding: EdgeInsets.only(right: 6.0),
+                    child: GestureDetector(
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.18,
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: AssetImage('assets/reject_two.png'))),
+                      ),
+                      onTap: () {
+                        if (_questionsCards.length != 0) swipeLeft(_item);
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(right: 0.0, left: 0.0),
+                    child: GestureDetector(
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.18,
+                        height: MediaQuery.of(context).size.height * 0.07,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: AssetImage('assets/do_later_two.png'))),
+                      ),
+                      onTap: () {
+                        if (_questionsCards.length != 0) doLaterPressed(_item);
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 6.0),
+                    child: GestureDetector(
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.18,
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: AssetImage('assets/accept_two.png'))),
+                      ),
+                      onTap: () {
+                        if (_questionsCards.length != 0) swipeRight(_item);
+                      },
+                    ),
+                  ),
+                  // OutlineButton(
+                  //   padding: EdgeInsets.all(6.0),
+                  //   shape: CircleBorder(
+                  //     side: BorderSide(width: 4.0, color: Colors.white,)
                   //   ),
-                  //   onTap: (){
+                  //   child: IconTheme(
+                  //     data: IconThemeData(color: Colors.red, size: 50.0),
+                  //     child: Icon(Icons.cancel)
+                  //   ),
+                  //   // child: Container(
+                  //   //   height: 50.0,
+                  //   //   decoration: BoxDecoration(
+                  //   //     image: DecorationImage(image: AssetImage('assets/reject_icon.png'))
+                  //   //   ),
+                  //   // ),
+                  //   onPressed: (){
                   //     if(_questionsCards.length != 0)
                   //     swipeLeft(_item);
                   //   },
                   // ),
-                  OutlineButton(
-                    padding: EdgeInsets.all(6.0),
-                    shape: CircleBorder(
-                      side: BorderSide(width: 4.0, color: Colors.white,)
-                    ),
-                    child: IconTheme(
-                      data: IconThemeData(color: Colors.red, size: 50.0),
-                      child: Icon(Icons.cancel)
-                    ),
-                    // child: Container(
-                    //   height: 50.0,
-                    //   decoration: BoxDecoration(
-                    //     image: DecorationImage(image: AssetImage('assets/reject_icon.png'))
-                    //   ),
-                    // ),
-                    onPressed: (){
-                      if(_questionsCards.length != 0)
-                      swipeLeft(_item);
-                    },
-                  ),
-                  OutlineButton(
-                    padding: EdgeInsets.all(6.0),
-                    shape: CircleBorder(
-                      side: BorderSide(width: 4.0, color: Colors.white,)
-                    ),
-                    child: IconTheme(
-                      data: IconThemeData(color: Colors.yellow, size: 40.0),
-                      child: Icon(Icons.refresh),
-                    ),
-                    // child: Container(
-                    //   height: 50.0,
-                    //   decoration: BoxDecoration(
-                    //     image: DecorationImage(image: AssetImage('assets/do_later_icon.png'))
-                    //   ),
-                    // ),
-                    onPressed: (){
-                      // todo refresh
-                      if(_questionsCards.length != 0)
-                      doLaterPressed(_item);
-                    },
-                  ),
-                  OutlineButton(
-                    padding: EdgeInsets.all(6.0),
-                    shape: CircleBorder(
-                      side: BorderSide(width: 4.0, color: Colors.white,)
-                    ),
-                    // child: Container(
-                    //   height: 50.0,
-                    //   decoration: BoxDecoration(
-                    //     image: DecorationImage(image: AssetImage('assets/accept_icon.png'))
-                    //   ),
-                    // ),
-                    child: IconTheme(
-                      data: IconThemeData(color: Colors.green, size: 50.0),
-                      child: Icon(Icons.favorite),
-                    ),
-                    onPressed: (){
-                      if(_questionsCards.length != 0)
-                      swipeRight(_item);
-                    },
-                  ),
+                  // OutlineButton(
+                  //   padding: EdgeInsets.all(6.0),
+                  //   shape: CircleBorder(
+                  //     side: BorderSide(width: 4.0, color: Colors.white,)
+                  //   ),
+                  //   child: IconTheme(
+                  //     data: IconThemeData(color: Colors.yellow, size: 40.0),
+                  //     child: Icon(Icons.refresh),
+                  //   ),
+                  //   // child: Container(
+                  //   //   height: 50.0,
+                  //   //   decoration: BoxDecoration(
+                  //   //     image: DecorationImage(image: AssetImage('assets/do_later_icon.png'))
+                  //   //   ),
+                  //   // ),
+                  //   onPressed: (){
+                  //     // todo refresh
+                  //     if(_questionsCards.length != 0)
+                  //     doLaterPressed(_item);
+                  //   },
+                  // ),
+                  // OutlineButton(
+                  //   padding: EdgeInsets.all(6.0),
+                  //   shape: CircleBorder(
+                  //     side: BorderSide(width: 4.0, color: Colors.white,)
+                  //   ),
+                  //   // child: Container(
+                  //   //   height: 50.0,
+                  //   //   decoration: BoxDecoration(
+                  //   //     image: DecorationImage(image: AssetImage('assets/accept_icon.png'))
+                  //   //   ),
+                  //   // ),
+                  //   child: IconTheme(
+                  //     data: IconThemeData(color: Colors.green, size: 50.0),
+                  //     child: Icon(Icons.favorite),
+                  //   ),
+                  //   onPressed: (){
+                  //     if(_questionsCards.length != 0)
+                  //     swipeRight(_item);
+                  //   },
+                  // ),
                   // new FlatButton(
                   //     padding: new EdgeInsets.all(0.0),
                   //     onPressed: () {
@@ -1090,7 +1148,7 @@ class _MyHomePage2State extends State<MyHomePage2>
                 ],
               ),
             ),
-          ),
+          // ),
         ],
       ),
     );

@@ -7,7 +7,6 @@ class VideoAnswer extends StatefulWidget {
 }
 
 class _VideoAnswerState extends State<VideoAnswer> {
-
   List<CameraDescription> cameras;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -15,7 +14,7 @@ class _VideoAnswerState extends State<VideoAnswer> {
   bool isReady = false;
   bool showCamera = false;
 
-   @override
+  @override
   void initState() {
     super.initState();
     setupCameras();
@@ -35,6 +34,7 @@ class _VideoAnswerState extends State<VideoAnswer> {
       isReady = true;
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return null;

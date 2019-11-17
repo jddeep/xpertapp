@@ -42,6 +42,8 @@ dependencies:
   firebase_auth:
   sliding_up_panel:
   firebase_storage: ^3.0.6
+  clipboard_manager: ^0.0.1
+  fluttertoast:
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +83,15 @@ flutter:
   - assets/accept_two.png
   - assets/do_later_two.png
   - assets/reject_two.png
+  - assets/upi.png
+  - assets/paytm.jpeg
+  - assets/pricing.png
+  - assets/logout.png
+  - assets/refer_a_friend.png
+  - assets/transactions.png
+  - assets/in_refer_page.png
+  - assets/def_prof_pic.png
+  - assets/view_transactions.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

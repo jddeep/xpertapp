@@ -5,7 +5,10 @@ import 'package:xpert/videoanswerscreen.dart';
 class DetailQuestionPage extends StatefulWidget {
   final incomingQuestion;
   final orderDocId;
-  DetailQuestionPage({this.incomingQuestion, this.orderDocId,});
+  DetailQuestionPage({
+    this.incomingQuestion,
+    this.orderDocId,
+  });
   @override
   _DetailQuestionPageState createState() => _DetailQuestionPageState();
 }
@@ -20,12 +23,12 @@ class _DetailQuestionPageState extends State<DetailQuestionPage> {
           data: IconThemeData(color: Colors.white),
           child: IconButton(
             icon: Icon(Icons.arrow_back),
-            onPressed: (){
+            onPressed: () {
               Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => new HomePage(),
-                    ));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => new HomePage(),
+                  ));
             },
           ),
         ),
@@ -53,14 +56,13 @@ class _DetailQuestionPageState extends State<DetailQuestionPage> {
               child: Text('Proceed',
                   style: TextStyle(color: Colors.white, fontSize: 20)),
               onPressed: () {
-                                                  Navigator.pushReplacement(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              new CameraApp(
-                                                                  widget.incomingQuestion,
-                                                                      widget.orderDocId,
-                                                                      'aayu-sinha')));
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => new CameraApp(
+                            widget.incomingQuestion,
+                            widget.orderDocId,
+                            'aayu-sinha')));
                 // Navigator.pushReplacement(
                 //     context,
                 //     MaterialPageRoute(

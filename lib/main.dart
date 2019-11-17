@@ -13,17 +13,16 @@ List<CameraDescription> cameras;
 bool isLoggedIn = false;
 
 Future<Null> main() async {
-  
   try {
     WidgetsFlutterBinding.ensureInitialized();
     // cameras = await availableCameras();
-    
+
   } on CameraException catch (e) {
     print(e);
   }
-  if (await FirebaseAuth.instance.currentUser() != null){
+  if (await FirebaseAuth.instance.currentUser() != null) {
     print('LOGGED IN: ' + FirebaseAuth.instance.currentUser().toString());
-      isLoggedIn = true;
+    isLoggedIn = true;
   }
   runApp(MyApp());
 }
@@ -86,42 +85,40 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'XPERT',
-      debugShowCheckedModeBanner: false,
-      theme:
-          ThemeData(primarySwatch: Colors.yellow, brightness: Brightness.dark),
-      // home: Builder(
-      //   builder: (context) => IntroViewsFlutter(
-      //     pages,
-      //     showNextButton: false,
-      //     showBackButton: false,
-      //     onTapDoneButton: () {
-      //       if(!isLoggedIn){
-      //       Navigator.pushReplacement(
-      //         context,
-      //         MaterialPageRoute(
-      //           builder: (context) => XpertWelcomePage(cameras),
-      //         ), //MaterialPageRoute
-      //       );
-      //       } else{
-      //         Navigator.pushReplacement(context,
-      //         MaterialPageRoute(
-      //           builder: (context)=> OTPScreen(cameras, null, '')
-      //         )
-      //         );
-      //       }
-      //       // Navigator.pop(context);
-      //     },
-      //     pageButtonTextStyles: TextStyle(
-      //       color: Colors.white,
-      //       fontSize: 18.0,
-      //     ),
-      //   ), //IntroViewsFlutter
-      // ),
-      home: isLoggedIn? OTPScreen(null, '')
-      :
-      XpertWelcomePage()
-      // home: MyHomePage2(user: null, userDocId: null,)
-    );
+        title: 'XPERT',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+            primarySwatch: Colors.yellow, brightness: Brightness.dark),
+        // home: Builder(
+        //   builder: (context) => IntroViewsFlutter(
+        //     pages,
+        //     showNextButton: false,
+        //     showBackButton: false,
+        //     onTapDoneButton: () {
+        //       if(!isLoggedIn){
+        //       Navigator.pushReplacement(
+        //         context,
+        //         MaterialPageRoute(
+        //           builder: (context) => XpertWelcomePage(cameras),
+        //         ), //MaterialPageRoute
+        //       );
+        //       } else{
+        //         Navigator.pushReplacement(context,
+        //         MaterialPageRoute(
+        //           builder: (context)=> OTPScreen(cameras, null, '')
+        //         )
+        //         );
+        //       }
+        //       // Navigator.pop(context);
+        //     },
+        //     pageButtonTextStyles: TextStyle(
+        //       color: Colors.white,
+        //       fontSize: 18.0,
+        //     ),
+        //   ), //IntroViewsFlutter
+        // ),
+        home: isLoggedIn ? OTPScreen(null, '') : XpertWelcomePage()
+        // home: MyHomePage2(user: null, userDocId: null,)
+        );
   }
 }

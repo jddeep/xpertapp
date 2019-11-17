@@ -12,11 +12,10 @@ class XpertInviteScreen extends StatefulWidget {
   FirebaseUser user;
   String phoneNumber;
 
-  XpertInviteScreen(
-      {
-      this.phoneNumber,
-      @required this.user,
-      });
+  XpertInviteScreen({
+    this.phoneNumber,
+    @required this.user,
+  });
   @override
   _XpertInviteScreenState createState() => _XpertInviteScreenState();
 }
@@ -73,19 +72,19 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
       'sname': sname,
       'shandle': shandle,
       'sfollowers': sfollowers,
-      'profession' : profession,
-      'invite_code' : inviteCode,
+      'profession': profession,
+      'invite_code': inviteCode,
       'source': source,
       'status': status,
     });
   }
 
-  Future<List<DocumentSnapshot>> _getProfessionList() async{
+  Future<List<DocumentSnapshot>> _getProfessionList() async {
     List<DocumentSnapshot> _docs;
     await Firestore.instance
-    .collection('profession')
-    .getDocuments()
-    .then((docs){
+        .collection('profession')
+        .getDocuments()
+        .then((docs) {
       _docs = docs.documents;
     });
     return _docs;
@@ -96,12 +95,12 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
     // TODO: implement initState
     super.initState();
     _phoneNumberController.text = widget.phoneNumber;
-    _getProfessionList().then((docs){
-      for(int i=0; i<docs.length;i++){
-        _professions.add(docs[i].documentID.toString());
+    _getProfessionList().then((docs) {
+      for (int i = 0; i < docs.length; i++) {
+        _professions.add(docs[i].data['sname'].toString());
       }
       setState(() {
-        print('Profs length: '+ _professions.length.toString());
+        print('Profs length: ' + _professions.length.toString());
         _professions.add('Other');
       });
     });
@@ -200,13 +199,12 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         Container(
                           width: 240,
                           child: TextField(
-                            
                             controller: _phoneNumberController,
                             decoration: InputDecoration(
                               hintText: 'Enter your phone number',
                               hintStyle: TextStyle(color: Colors.white),
                             ),
-                            onChanged: (value){
+                            onChanged: (value) {
                               _mobile = value;
                             },
                             keyboardType: TextInputType.number,
@@ -290,10 +288,10 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                                   print(newValue);
                                   // newContact.favoriteColor = newValue;
                                   _profession = newValue;
-                                  if(_profession == 'Other')
-                                  _isProfOther = true;
+                                  if (_profession == 'Other')
+                                    _isProfOther = true;
                                   else
-                                  _isProfOther = false;
+                                    _isProfOther = false;
 
                                   state.didChange(newValue);
                                 });
@@ -312,18 +310,21 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         );
                       },
                     ),
-                    _isProfOther?TextFormField(
-                      onChanged: (value) {
-                        setState(() {
-                          _profession = value;
-                        });
-                      },
-                      decoration: const InputDecoration(
-                        labelText: 'Other Profession',
-                        alignLabelWithHint: true
-                      ),
-                      keyboardType: TextInputType.text,
-                    ):SizedBox(height: 1.0,),
+                    _isProfOther
+                        ? TextFormField(
+                            onChanged: (value) {
+                              setState(() {
+                                _profession = value;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                                labelText: 'Other Profession',
+                                alignLabelWithHint: true),
+                            keyboardType: TextInputType.text,
+                          )
+                        : SizedBox(
+                            height: 1.0,
+                          ),
                     TextFormField(
                       onChanged: (value) {
                         setState(() {
@@ -331,9 +332,8 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                         });
                       },
                       decoration: const InputDecoration(
-                        labelText: 'Invite Code(Optional)',
-                        alignLabelWithHint: true
-                      ),
+                          labelText: 'Invite Code(Optional)',
+                          alignLabelWithHint: true),
                       keyboardType: TextInputType.text,
                     ),
                   ],

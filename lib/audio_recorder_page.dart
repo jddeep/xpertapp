@@ -5,16 +5,18 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audio_recorder/audio_recorder.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as pathDart;
 import 'package:xpert/videoanswerscreen.dart';
-
 
 class AudioRecordingFragment extends StatefulWidget {
   final incomingQuestion;
   final userDocId;
   final orderDocId;
-  AudioRecordingFragment({this.incomingQuestion, this.userDocId, this.orderDocId, key}) : super(key: key);
+  AudioRecordingFragment(
+      {this.incomingQuestion, this.userDocId, this.orderDocId, key})
+      : super(key: key);
   @override
   _AudioRecordingFragmentState createState() => _AudioRecordingFragmentState();
 }
@@ -25,13 +27,15 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
   File defaultAudioFile;
   bool showBottom = false;
   bool onlyVideo = false;
+  bool isUploading = false;
 
-  Future<String> _getProfImg() async{
+  Future<String> _getProfImg() async {
     String profImgUrl;
     await Firestore.instance
-    .collection('xpert_master')
-    .document(widget.userDocId.toString())
-    .get().then((doc){
+        .collection('xpert_master')
+        .document(widget.userDocId.toString())
+        .get()
+        .then((doc) {
       profImgUrl = doc.data["profile_image"];
     });
     return profImgUrl;
@@ -67,32 +71,45 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
     return url;
   }
 
-  void _updateAnswerUrl(String url) async{
-    print('URL: ' + url + 'DOCID: ' + widget.userDocId.toString() + 'orderDociID ' + widget.orderDocId.toString());
+  void _updateAnswerUrl(String url) async {
+    print('URL: ' +
+        url +
+        'DOCID: ' +
+        widget.userDocId.toString() +
+        'orderDociID ' +
+        widget.orderDocId.toString());
     await Firestore.instance
-    .collection('xpert_master')
-    .document(widget.userDocId.toString())
-    .collection('orders')
-    .document(widget.orderDocId.toString())
-    .updateData({
+        .collection('xpert_master')
+        .document(widget.userDocId.toString())
+        .collection('orders')
+        .document(widget.orderDocId.toString())
+        .updateData({
       'answer_url': url,
       'status': 'delivered',
-      'answer_type' : 'audio'
-    }).whenComplete((){
+      'answer_type': 'audio'
+    }).whenComplete(() {
       print('Updated!');
+      isUploading = false;
+      Navigator.pop(context);
+      Fluttertoast.showToast(
+                                          msg: "Audio uploaded!",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIos: 1,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
     });
   }
 
-  void _updateAcceptedStatus() async{
+  void _updateAcceptedStatus() async {
     await Firestore.instance
-    .collection('xpert_master')
-    .document(widget.userDocId.toString())
-    .collection('orders')
-    .document(widget.orderDocId.toString())
-    .updateData({
-      'status': 'accepted',
-      'answer_type' : 'audio'
-    }).whenComplete((){
+        .collection('xpert_master')
+        .document(widget.userDocId.toString())
+        .collection('orders')
+        .document(widget.orderDocId.toString())
+        .updateData(
+            {'status': 'accepted', 'answer_type': 'audio'}).whenComplete(() {
       print('Accepted status!');
     });
   }
@@ -210,64 +227,85 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
       print(e);
     }
   }
-String _profImgUrl;
-@override
+
+  String _profImgUrl;
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getProfImg().then((url){
+    _getProfImg().then((url) {
       setState(() {
         _profImgUrl = url;
       });
-      
     });
   }
 
   /// Toggle recording audio
   Widget _toggleAudioWidget() {
-    return 
-        Row(
-          children: <Widget>[
-            Text('TURN ON VIDEO', style: TextStyle(color: Colors.white),),
-            CupertinoSwitch(
-                activeColor: Colors.white,
-                // activeTrackColor: Colors.white24,
-                // inactiveThumbColor: Colors.grey,
-                // inactiveTrackColor: Colors.blueGrey,
-                value: onlyVideo,
-                onChanged: (bool value) {
-                  print(value);
-                  setState(() {
-                    onlyVideo = value;
-                    if(onlyVideo){
-                      // Navigator.pop(context);
-                    Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => CameraExampleHome(
-                      incomingQuestion: widget.incomingQuestion,
-                      docId: widget.userDocId,
-                      orderDocId: widget.orderDocId,
-                    ))
-                    );
-            //           Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => Video(
-            //       incomingQuestion: widget.incomingQuestion,
-            //       userDocId: widget.userDocId,
-            //       orderDocId: widget.orderDocId,
-            //     ),
-            //   ),
-            // );
-                    }
-                  });
-                  // if (controller != null) {
-                  //   onNewCameraSelected(controller.description);
-                  // }
-                },
-    ),
-          ],
-        );
+    return showBottom && !_isRecording?Container(height:0.0):
+    Row(
+      children: <Widget>[
+        Text(
+          'TURN ON VIDEO',
+          style: TextStyle(color: Colors.white, fontSize: 17.0,
+          shadows: <Shadow>[
+            Shadow(
+              offset: Offset(0.0, 0.0),
+              blurRadius: 3.0,
+              color: Colors.black
+            ),
+            Shadow(
+              offset: Offset(0.0, 0.0),
+              blurRadius: 8.0,
+              color: Colors.black
+            ),
+          ]
+          ),
+        ),
+        Container(
+          height: 20.0,
+          child: CupertinoSwitch(
+            activeColor: Colors.white,
+            // activeTrackColor: Colors.white24,
+            // inactiveThumbColor: Colors.grey,
+            // inactiveTrackColor: Colors.blueGrey,
+            value: onlyVideo,
+            onChanged: (bool value) {
+              print(value);
+              setState(() {
+                onlyVideo = value;
+                if (onlyVideo) {
+                  // Navigator.pop(context);
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => CameraExampleHome(
+                                incomingQuestion: widget.incomingQuestion,
+                                docId: widget.userDocId,
+                                orderDocId: widget.orderDocId,
+                              )));
+                  //           Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => Video(
+                  //       incomingQuestion: widget.incomingQuestion,
+                  //       userDocId: widget.userDocId,
+                  //       orderDocId: widget.orderDocId,
+                  //     ),
+                  //   ),
+                  // );
+                }
+              });
+              // if (controller != null) {
+              //   onNewCameraSelected(controller.description);
+              // }
+            },
+          ),
+        ),
+      ],
+    );
   }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
@@ -279,13 +317,27 @@ String _profImgUrl;
             return Container();
           default:
             _isRecording = snapshot.data;
-            return Stack(
+            return isUploading?
+            Scaffold(
+      body: Center(
+        child: Container(
+          height: 50.0,
+          width: 50.0,
+          child: CircularProgressIndicator(
+            backgroundColor: Colors.amber,
+          ),
+        ),
+      )
+    )
+            :Stack(
               children: <Widget>[
                 Align(
                   alignment: AlignmentDirectional.center,
-                                  child: Container(
+                  child: Container(
                     child: IconTheme(
-                      data: IconThemeData(color: Colors.grey, size: MediaQuery.of(context).size.width * 0.6),
+                      data: IconThemeData(
+                          color: Colors.grey,
+                          size: MediaQuery.of(context).size.width * 0.6),
                       child: Icon(Icons.mic),
                     ),
                     // decoration: BoxDecoration(
@@ -305,21 +357,32 @@ String _profImgUrl;
                         Row(
                           children: <Widget>[
                             IconTheme(
-                            data: IconThemeData(color: Colors.red),
-                            child: _isRecording?Icon(Icons.fiber_manual_record):Container(height: 1.0),
-                      ),
-                      ValueListenableBuilder(
-                          valueListenable: _time,
-                          builder: (BuildContext context, String value, Widget child) {
-                            return _isRecording?Text(
-                              _time.value, //_timeString,
-                              style: TextStyle(color: Colors.white, fontSize: 20.0),
-                            ):Container(height: 1.0,);
-                          },
-                        ),
+                              data: IconThemeData(color: Colors.red),
+                              child: _isRecording
+                                  ? Icon(Icons.fiber_manual_record)
+                                  : Container(height: 1.0),
+                            ),
+                            ValueListenableBuilder(
+                              valueListenable: _time,
+                              builder: (BuildContext context, String value,
+                                  Widget child) {
+                                return _isRecording
+                                    ? Text(
+                                        _time.value, //_timeString,
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20.0),
+                                      )
+                                    : Container(
+                                        height: 1.0,
+                                      );
+                              },
+                            ),
                           ],
                         ),
-                        _isRecording?Container(height:1.0):_toggleAudioWidget()
+                        _isRecording
+                            ? Container(height: 1.0)
+                            : _toggleAudioWidget()
                       ],
                     ),
                   ),
@@ -344,8 +407,8 @@ String _profImgUrl;
                                     color: Colors.white, fontSize: 16.0)),
                           ),
                         ),
-                        showBottom?
-                        Row(
+                        showBottom
+                            ? Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
                                 children: <Widget>[
@@ -360,16 +423,16 @@ String _profImgUrl;
                                   ),
                                   FlatButton(
                                     onPressed: () {
-
-                                      print("videoPath: ${defaultAudioFile.path}");
+                                      print(
+                                          "videoPath: ${defaultAudioFile.path}");
                                       setState(() {
                                         showBottom = false;
+                                        isUploading = true;
                                       });
                                       _updateAcceptedStatus();
-                                      uploadToStorage().then((url){
+                                      uploadToStorage().then((url) {
                                         _updateAnswerUrl(url);
                                       });
-                                      Navigator.pop(context);      
                                     },
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
@@ -393,8 +456,8 @@ String _profImgUrl;
                                     ),
                                   )
                                 ],
-                              ):
-                               Center(
+                              )
+                            : Center(
                                 child: Container(
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(20.0),
@@ -407,7 +470,9 @@ String _profImgUrl;
                                     iconSize: 30.0,
                                     color: Colors.red,
                                     onPressed: () {
-                                      _isRecording ? stopRecording() : _startTimer();
+                                      _isRecording
+                                          ? stopRecording()
+                                          : _startTimer();
                                     },
                                   ),
                                 ),

@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audio_recorder/audio_recorder.dart';
@@ -25,7 +26,8 @@ class CameraExampleHome extends StatefulWidget {
   var orderDocId;
   var docId;
 
-  CameraExampleHome({this.incomingQuestion, this.orderDocId, this.docId, localFileSystem})
+  CameraExampleHome(
+      {this.incomingQuestion, this.orderDocId, this.docId, localFileSystem})
       : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
@@ -65,6 +67,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   bool isReady = false;
   bool showBottom = true;
   bool _paid = true;
+  bool isUploading = false;
 
   List<CameraDescription> cameras;
   List<CameraDescription> camerasDesc = new List();
@@ -145,33 +148,46 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       }
     }
   }
-  
-  void _updateAnswerUrl(String url) async{
-    print('URL: ' + url + 'DOCID: ' + widget.docId.toString() + 'orderDociID ' + widget.orderDocId.toString());
+
+  void _updateAnswerUrl(String url) async {
+    print('URL: ' +
+        url +
+        'DOCID: ' +
+        widget.docId.toString() +
+        'orderDociID ' +
+        widget.orderDocId.toString());
     await Firestore.instance
-    .collection('xpert_master')
-    .document(widget.docId.toString())
-    .collection('orders')
-    .document(widget.orderDocId.toString())
-    .updateData({
+        .collection('xpert_master')
+        .document(widget.docId.toString())
+        .collection('orders')
+        .document(widget.orderDocId.toString())
+        .updateData({
       'answer_url': url,
       'status': 'delivered',
-      'answer_type' : 'video'
-    }).whenComplete((){
+      'answer_type': 'video'
+    }).whenComplete(() {
       print('Updated!');
+      isUploading = false;
+      Navigator.pop(context);
+      Fluttertoast.showToast(
+                                          msg: "Video uploaded!",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIos: 1,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
     });
   }
 
-  void _updateAcceptedStatus() async{
+  void _updateAcceptedStatus() async {
     await Firestore.instance
-    .collection('xpert_master')
-    .document(widget.docId.toString())
-    .collection('orders')
-    .document(widget.orderDocId.toString())
-    .updateData({
-      'status': 'accepted',
-      'answer_type' : 'video'
-    }).whenComplete((){
+        .collection('xpert_master')
+        .document(widget.docId.toString())
+        .collection('orders')
+        .document(widget.orderDocId.toString())
+        .updateData(
+            {'status': 'accepted', 'answer_type': 'video'}).whenComplete(() {
       print('Accepted status!');
     });
   }
@@ -179,10 +195,34 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return isUploading?
+    Scaffold(
+      body: Center(
+        child: Container(
+          height: 50.0,
+          width: 50.0,
+          child: CircularProgressIndicator(
+            backgroundColor: Colors.amber,
+          ),
+        ),
+      )
+    )
+    :
+    Scaffold(
       key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
+          // Positioned(
+          //   top: 100.0,
+          //             child: Opacity(
+
+          //     opacity: 0.5,
+          //     child: Container(width: MediaQuery.of(context).size.width,
+          //     height: MediaQuery.of(context).size.height * 0.1,
+          //     color: Colors.black,
+          //     ),
+          //   ),
+          // ),
           Container(
             child: _cameraPreviewWidget(),
           ),
@@ -190,20 +230,20 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
             alignment: AlignmentDirectional.topStart,
             child: Padding(
               padding: const EdgeInsets.only(top: 50.0),
-              child: 
-              //     Row(
-              //       children: <Widget>[
-              //         IconTheme(
-              //           data: IconThemeData(color: Colors.red),
-              //           child: isRecording?Icon(Icons.fiber_manual_record):Container(height: 1.0),
-              //         ),
-              //         Text(
-              //   _timeString,
-              //   style: TextStyle(color: Colors.white, fontSize: 20.0),
-              // ),
-              //       ],
-              //     ),
-                  
+              child:
+                  //     Row(
+                  //       children: <Widget>[
+                  //         IconTheme(
+                  //           data: IconThemeData(color: Colors.red),
+                  //           child: isRecording?Icon(Icons.fiber_manual_record):Container(height: 1.0),
+                  //         ),
+                  //         Text(
+                  //   _timeString,
+                  //   style: TextStyle(color: Colors.white, fontSize: 20.0),
+                  // ),
+                  //       ],
+                  //     ),
+
                   _cameraTogglesRowWidget(),
             ),
           ),
@@ -212,32 +252,33 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                !showBottom? Container(
-                  decoration: BoxDecoration(
-                      color: Colors.grey
-                   ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    Text('MARK ANSWER AS: ', style: TextStyle(color: Colors.black)),
-                    Text("PAID", style: TextStyle(color: Colors.black)),
-                    CupertinoSwitch(
-                      value: _paid,
-                      onChanged: (value){
-                        setState(() {
-                         _paid = value;
-                        });
-                      },
-                    ),
-                  ],
-                )
-                ):Container(),
+                !showBottom
+                    ? Container(
+                        decoration: BoxDecoration(color: Colors.grey),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            Text('MARK ANSWER AS: ',
+                                style: TextStyle(color: Colors.black)),
+                            Text("PAID", style: TextStyle(color: Colors.black)),
+                            CupertinoSwitch(
+                              value: _paid,
+                              onChanged: (value) {
+                                setState(() {
+                                  _paid = value;
+                                });
+                              },
+                            ),
+                          ],
+                        ))
+                    : Container(),
                 Container(
                     decoration: BoxDecoration(
                         color: Colors.black54,
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(14.0),
-                            topRight: Radius.circular(14.0))),
+                        // borderRadius: BorderRadius.only(
+                        //     topLeft: Radius.circular(14.0),
+                        //     topRight: Radius.circular(14.0))
+                            ),
                     child: showBottom
                         ? Wrap(
                             children: <Widget>[
@@ -291,6 +332,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                 children: <Widget>[
                                   IconButton(
                                     icon: Icon(Icons.refresh),
+                                    iconSize: 40.0,
                                     onPressed: () {
                                       setState(() {
                                         // onResumeButtonPressed();
@@ -298,42 +340,47 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                       });
                                     },
                                   ),
-                                  FlatButton(
-                                    onPressed: () {
-                                      print("videoPath: $videoPath");
-                                      setState(() {
-                                        showBottom = true;
-                                      });
-                                      _updateAcceptedStatus();
-                                      uploadToStorage(videoPath).then((url){
-                                        _updateAnswerUrl(url);
-                                      });
-                                      Navigator.pop(context);
-                    //                   Navigator.pushReplacement(
-                    // context,
-                    // MaterialPageRoute(
-                    //   builder: (context) => new MyHomePage2(),
-                    // ));                                    
-                    },
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(360.0)),
-                                    color: Colors.white,
-                                    child: Row(
-                                      children: <Widget>[
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            "Tap to send",
-                                            style:
-                                                TextStyle(color: Colors.black),
+                                  Padding(
+                                    padding: EdgeInsets.only(left:10.0),
+                                    child: FlatButton(
+                                      
+                                      onPressed: () {
+                                        print("videoPath: $videoPath");
+                                        setState(() {
+                                          isUploading = true;
+                                          showBottom = true;
+                                        });
+                                        _updateAcceptedStatus();
+                                        uploadToStorage(videoPath).then((url) {
+                                          _updateAnswerUrl(url);
+                                        });
+                                        
+                                        //                   Navigator.pushReplacement(
+                                        // context,
+                                        // MaterialPageRoute(
+                                        //   builder: (context) => new MyHomePage2(),
+                                        // ));
+                                      },
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(360.0)),
+                                      color: Colors.white,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Text(
+                                              "Tap to send",
+                                              style:
+                                                  TextStyle(color: Colors.black, fontSize: 18.0),
+                                            ),
                                           ),
-                                        ),
-                                        Icon(
-                                          Icons.send,
-                                          color: Colors.amber,
-                                        ),
-                                      ],
+                                          Icon(
+                                            Icons.send,
+                                            color: Colors.amber,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   )
                                 ],
@@ -482,10 +529,28 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   /// Toggle recording audio
   Widget _toggleAudioWidget() {
-    return Row(
+    return !showBottom && !isRecording?Container(height: 0.0,):Row(
       children: <Widget>[
-                    Text('TURN ON VIDEO', style: TextStyle(color: Colors.white),),
-        CupertinoSwitch(
+        Text(
+          'TURN ON VIDEO',
+          style: TextStyle(color: Colors.white, fontSize: 17.0,
+          shadows: <Shadow>[
+            Shadow(
+              offset: Offset(0.0, 0.0),
+              blurRadius: 3.0,
+              color: Colors.black
+            ),
+            Shadow(
+              offset: Offset(0.0, 0.0),
+              blurRadius: 8.0,
+              color: Colors.black
+            ),
+          ]
+          ),
+        ),
+        Container(
+          height: 20.0,
+          child: CupertinoSwitch(
             activeColor: Colors.green,
             // activeTrackColor: Colors.amberAccent,
             // inactiveThumbColor: Colors.grey,
@@ -495,17 +560,17 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               print(value);
               setState(() {
                 onlyVideo = value;
-                if(!onlyVideo){
+                if (!onlyVideo) {
                   Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AudioRecPage(
-              incomingQuestion: widget.incomingQuestion,
-              userDocId: widget.docId,
-              orderDocId: widget.orderDocId,
-            ),
-          ),
-        );
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AudioRecPage(
+                        incomingQuestion: widget.incomingQuestion,
+                        userDocId: widget.docId,
+                        orderDocId: widget.orderDocId,
+                      ),
+                    ),
+                  );
                 }
               });
               // if (controller != null) {
@@ -513,6 +578,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               // }
             },
           ),
+        ),
         // IconButton(
         //   icon: Icon(Icons.videocam),
         //   color: Colors.white,
@@ -602,52 +668,62 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       ],
     );
   }
-static int cameraDir = 0;
+
+  static int cameraDir = 0;
+
   /// Display a row of toggle to select the camera (or a message if no camera is available).
   Widget _cameraTogglesRowWidget() {
     final List<Widget> toggles = <Widget>[];
-    
+
     // List<CameraDescription> cameras;
 
     if (cameras == null) {
       return const Text('No camera found');
     } else {
       List<CameraDescription> camerasDesc = new List();
-      for(CameraDescription cameraDescription in cameras) {
+      for (CameraDescription cameraDescription in cameras) {
         camerasDesc.add(cameraDescription);
       }
-       return Row(
+      return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          CircleAvatar(
-            backgroundColor: Colors.grey,
-                  child: IconTheme(
-                  data: IconThemeData(color: Colors.white),
-                  child: IconButton(tooltip: 'Switch Camera',
-                    onPressed:(){
-                        onNewCameraSelected(camerasDesc.elementAt(cameraDir));
-                        if(cameraDir == 0)
-                        cameraDir = 1;
-                        else
-                        cameraDir = 0;
-                    },
-                    icon: Icon(Icons.switch_camera),
-                  ),
+          Padding(
+            padding: const EdgeInsets.only(left:16.0),
+            child: CircleAvatar(
+              backgroundColor: Colors.grey,
+              radius: 20.0,
+              child: IconTheme(
+                data: IconThemeData(color: Colors.white),
+                child: IconButton(
+                  tooltip: 'Switch Camera',
+                  iconSize: 25.0,
+                  onPressed: () {
+                    onNewCameraSelected(camerasDesc.elementAt(cameraDir));
+                    if (cameraDir == 0)
+                      cameraDir = 1;
+                    else
+                      cameraDir = 0;
+                  },
+                  icon: Icon(Icons.switch_camera),
+                ),
+              ),
             ),
           ),
           Row(
-          children: <Widget>[
-            IconTheme(
-                            data: IconThemeData(color: Colors.red),
-                            child: isRecording?Icon(Icons.fiber_manual_record):Container(height: 1.0),
-                          ),
-                          Text(
+            children: <Widget>[
+              IconTheme(
+                data: IconThemeData(color: Colors.red),
+                child: isRecording
+                    ? Icon(Icons.fiber_manual_record)
+                    : Container(height: 1.0),
+              ),
+              Text(
                 _timeString,
                 style: TextStyle(color: Colors.white, fontSize: 20.0),
               ),
-          ],
-        ),
-        isRecording?Container(height: 1.0):_toggleAudioWidget()
+            ],
+          ),
+          isRecording ? Container(height: 1.0) : _toggleAudioWidget()
         ],
       );
       // for (CameraDescription cameraDescription in cameras) {
@@ -670,11 +746,10 @@ static int cameraDir = 0;
       //   );
       // }
       // toggles.add(
-        
+
       // );
       // toggles.add();
     }
-    
 
     // return Container(color: Colors.transparent, child: Row(children: toggles));
   }
