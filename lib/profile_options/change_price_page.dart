@@ -45,6 +45,7 @@ class _ChangePricePageState extends State<ChangePricePage> {
   Widget _currQuesPrice(String price) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.25,
+      width: MediaQuery.of(context).size.width * 0.9,
       child: Card(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
@@ -120,6 +121,7 @@ class _ChangePricePageState extends State<ChangePricePage> {
   Widget _currWishPrice(String price) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.25,
+      width: MediaQuery.of(context).size.width * 0.9,
       child: Card(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
@@ -195,6 +197,7 @@ class _ChangePricePageState extends State<ChangePricePage> {
   Widget _currShoutoutPrice(String price) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.25,
+      width: MediaQuery.of(context).size.width * 0.9,
       child: Card(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
@@ -241,7 +244,7 @@ class _ChangePricePageState extends State<ChangePricePage> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                      left: MediaQuery.of(context).size.width * 0.3),
+                      left: MediaQuery.of(context).size.width * 0.18),
                   child: IconTheme(
                     data: IconThemeData(color: Colors.white),
                     child: IconButton(

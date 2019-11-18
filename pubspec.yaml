@@ -92,6 +92,7 @@ flutter:
   - assets/in_refer_page.png
   - assets/def_prof_pic.png
   - assets/view_transactions.png
+  - assets/notification_screen.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

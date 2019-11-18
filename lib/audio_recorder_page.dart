@@ -414,6 +414,7 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                                 children: <Widget>[
                                   IconButton(
                                     icon: Icon(Icons.refresh),
+                                    iconSize: 40.0,
                                     onPressed: () {
                                       setState(() {
                                         // onResumeButtonPressed();
@@ -421,38 +422,41 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                                       });
                                     },
                                   ),
-                                  FlatButton(
-                                    onPressed: () {
-                                      print(
-                                          "videoPath: ${defaultAudioFile.path}");
-                                      setState(() {
-                                        showBottom = false;
-                                        isUploading = true;
-                                      });
-                                      _updateAcceptedStatus();
-                                      uploadToStorage().then((url) {
-                                        _updateAnswerUrl(url);
-                                      });
-                                    },
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(360.0)),
-                                    color: Colors.white,
-                                    child: Row(
-                                      children: <Widget>[
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            "Tap to send",
-                                            style:
-                                                TextStyle(color: Colors.black),
+                                  Padding(
+                                    padding: EdgeInsets.only(left:10.0),
+                                    child: FlatButton(
+                                      onPressed: () {
+                                        print(
+                                            "videoPath: ${defaultAudioFile.path}");
+                                        setState(() {
+                                          showBottom = false;
+                                          isUploading = true;
+                                        });
+                                        _updateAcceptedStatus();
+                                        uploadToStorage().then((url) {
+                                          _updateAnswerUrl(url);
+                                        });
+                                      },
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(360.0)),
+                                      color: Colors.white,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Text(
+                                              "Tap to send",
+                                              style:
+                                                  TextStyle(color: Colors.black, fontSize: 18.0),
+                                            ),
                                           ),
-                                        ),
-                                        Icon(
-                                          Icons.send,
-                                          color: Colors.amber,
-                                        ),
-                                      ],
+                                          Icon(
+                                            Icons.send,
+                                            color: Colors.amber,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   )
                                 ],

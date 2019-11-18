@@ -18,6 +18,15 @@ class _NotificationPageState extends State<NotificationPage> {
                 title: Text('Discover your Impact'),
               ),
               body: Container(
+                margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.17),
+                decoration: BoxDecoration(
+                  image: DecorationImage(image: AssetImage(
+                    'assets/notification_screen.png',
+
+                  ),
+                  fit: BoxFit.contain
+                  )
+                ),
                 // child: ListView(
                 //   children: <Widget>[
                 //     ListTile(
