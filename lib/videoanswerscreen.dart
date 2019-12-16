@@ -687,7 +687,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Padding(
+          isRecording?Container(height: 0.0,):
+          !showBottom && !isRecording?Container(height: 0.0,):Padding(
             padding: const EdgeInsets.only(left:16.0),
             child: CircleAvatar(
               backgroundColor: Colors.grey,

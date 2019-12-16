@@ -13,6 +13,8 @@ class EditPayMethod extends StatefulWidget {
 
 class _EditPayMethodState extends State<EditPayMethod> {
   bool _upiCheckerVal = true;
+  bool _isPaytmEnabled = false;
+  TextEditingController _paytmController = new TextEditingController();
   TextEditingController _upiIdController = new TextEditingController();
 
   Future<Null> _updatePaymentType(String paytype, String payid) async {
@@ -39,6 +41,7 @@ class _EditPayMethodState extends State<EditPayMethod> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Edit Payment Method'),
@@ -69,6 +72,7 @@ class _EditPayMethodState extends State<EditPayMethod> {
                             onChanged: (value) {
                               setState(() {
                                 _upiCheckerVal = value;
+                                _isPaytmEnabled = false;
                               });
                             },
                             activeColor: Colors.amber,
@@ -89,7 +93,7 @@ class _EditPayMethodState extends State<EditPayMethod> {
                       ],
                     ),
                   ),
-                  TextField(
+                  !_isPaytmEnabled?TextField(
                     controller: _upiIdController,
                     autofocus: false,
                     keyboardType: TextInputType.text,
@@ -98,7 +102,7 @@ class _EditPayMethodState extends State<EditPayMethod> {
                       hintText: 'Enter your UPI ID',
                       hintStyle: TextStyle(color: Colors.grey),
                     ),
-                  ),
+                  ):Container(height: 2.0,),
                   Divider(
                     height: 5.0,
                     color: Colors.grey,
@@ -116,6 +120,7 @@ class _EditPayMethodState extends State<EditPayMethod> {
                             onChanged: (value) {
                               setState(() {
                                 _upiCheckerVal = !value;
+                                _isPaytmEnabled = true;
                               });
                             },
                             activeColor: Colors.amber,
@@ -135,6 +140,23 @@ class _EditPayMethodState extends State<EditPayMethod> {
                                 TextStyle(color: Colors.black, fontSize: 20.0))
                       ],
                     ),
+                  ),
+                  _isPaytmEnabled?TextField(
+                    controller: _paytmController,
+                    autofocus: false,
+                    keyboardType: TextInputType.text,
+                    style: TextStyle(color: Colors.black, fontSize: 20.0),
+                    decoration: InputDecoration.collapsed(
+                      hintText: 'Enter your Paytm ID or number',
+                      hintStyle: TextStyle(color: Colors.grey),
+                    ),
+                  ):Container(height: 2.0,),
+                  Divider(
+                    height: 5.0,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(
+                    height: 5.0,
                   ),
                   Text('NOTE:',
                       style: TextStyle(
@@ -159,7 +181,7 @@ class _EditPayMethodState extends State<EditPayMethod> {
                   );
                 });
               else
-                _updatePaymentType('paytm', null).then((onValue){
+                _updatePaymentType('paytm', _paytmController.text).then((onValue){
                   Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (context)=> ManageBankPage(userDocId: widget.userDocId, creatorDocId: widget.creatorSetDocId,))
                   );

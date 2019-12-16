@@ -17,7 +17,8 @@ Positioned cardDemoDummy(
   var dropdownValue = '';
   bool _allQuestionsDone = false;
   return new Positioned(
-    bottom: 100.0 + bottom,
+    bottom: screenSize.height*0.13 + bottom,
+    // bottom: (screenSize.height <= 640.0?screenSize.height*0.13:100.0) + bottom,
     top: 100.0,
     // right: flag == 0 ? right != 0.0 ? right : null : null,
     //left: flag == 1 ? right != 0.0 ? right : null : null,
