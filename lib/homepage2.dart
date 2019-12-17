@@ -550,6 +550,25 @@ class _MyHomePage2State extends State<MyHomePage2>
     });
   }
 
+  void _acceptUpdateData(_orderDocID) async{
+    print('Accept func called id: ' +
+        widget.userDocId.toString() +
+        ' ' +
+        _orderDocID.toString());
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId) // 'duhita-banerjee'
+        // .document('aayush-sinha') //widget.title
+        .collection('orders')
+        .document(_orderDocID)
+        .updateData({
+      'status': 'accepted'
+    }).whenComplete(() {
+      print('Updated!');
+      _isMandatory = false;
+    });
+  }
+
   void _doLater(_orderDocID) async {
     await Firestore.instance
         .collection('xpert_master')
@@ -822,7 +841,6 @@ class _MyHomePage2State extends State<MyHomePage2>
         // selectedData.add(txt);
       });
     _swipeAnimation().whenComplete(() {
-      
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -835,9 +853,14 @@ class _MyHomePage2State extends State<MyHomePage2>
           ),
         ),
       );
+      print('Swipe right question cards: ' + _questionsCards.length.toString());
+
       isAccepted = false;
       orders.remove(txt);
       _questionsCards.removeLast();
+      if(_questionsCards.length == 0){
+        _acceptUpdateData(txt.documentID);
+    }
       print('SWIPE ORDERS LEN: ' + orders.length.toString());
       
     });
@@ -866,6 +889,9 @@ class _MyHomePage2State extends State<MyHomePage2>
   }
 
   Widget _noCardLeftRefresh() {
+    print('No card refr meth called');
+    print(_questionsCards.length);
+    print(orders.length);
     _getWebOrders().then((_data) {
       setState(() {
         print('ORDERS LENGTH: ' + _data.length.toString());
@@ -966,7 +992,13 @@ class _MyHomePage2State extends State<MyHomePage2>
                           swipeLeft,
                         );
                       } else {
-                        double bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height* 0.03:15;
+                        double bkdist;
+                        print('QUESTION CARDS LENGTH: '+ _questionsCards.length.toString());
+                        if(_questionsCards.length > 2)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/58.0:MediaQuery.of(context).size.height/68.0;
+                        else
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/20.0:MediaQuery.of(context).size.height/30.0;
+                        // double bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height* 0.03:15;
                         backCardPosition = backCardPosition - bkdist;
                         // MediaQuery.of(context).size.height > 640? MediaQuery.of(context).size.height* 0.04
                         // :MediaQuery.of(context).size.height* 0.04;

@@ -168,15 +168,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }).whenComplete(() {
       print('Updated!');
       isUploading = false;
-      Navigator.pop(context);
-      Fluttertoast.showToast(
-                                          msg: "Video uploaded!",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.BOTTOM,
-                                          timeInSecForIos: 1,
-                                          backgroundColor: Colors.grey,
-                                          textColor: Colors.white,
-                                          fontSize: 16.0);
+      // Navigator.pop(context);
+      // Fluttertoast.showToast(
+      //                                     msg: "Video uploaded!",
+      //                                     toastLength: Toast.LENGTH_SHORT,
+      //                                     gravity: ToastGravity.BOTTOM,
+      //                                     timeInSecForIos: 1,
+      //                                     backgroundColor: Colors.grey,
+      //                                     textColor: Colors.white,
+      //                                     fontSize: 16.0);
     });
   }
 
@@ -195,20 +195,20 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
-    return isUploading?
-    Scaffold(
-      body: Center(
-        child: Container(
-          height: 50.0,
-          width: 50.0,
-          child: CircularProgressIndicator(
-            backgroundColor: Colors.amber,
-          ),
-        ),
-      )
-    )
-    :
-    Scaffold(
+    // return isUploading?
+    // Scaffold(
+    //   body: Center(
+    //     child: Container(
+    //       height: 50.0,
+    //       width: 50.0,
+    //       child: CircularProgressIndicator(
+    //         backgroundColor: Colors.amber,
+    //       ),
+    //     ),
+    //   )
+    // )
+    // :
+    return Scaffold(
       key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
@@ -351,9 +351,20 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                           showBottom = true;
                                         });
                                         _updateAcceptedStatus();
+                                        
                                         uploadToStorage(videoPath).then((url) {
                                           _updateAnswerUrl(url);
                                         });
+                                        Navigator.pop(context);
+                                        Fluttertoast.showToast(
+                                          msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
+                                          toastLength: Toast.LENGTH_LONG,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIos: 2,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
+                                        
                                         
                                         //                   Navigator.pushReplacement(
                                         // context,

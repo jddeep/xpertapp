@@ -90,15 +90,15 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
     }).whenComplete(() {
       print('Updated!');
       isUploading = false;
-      Navigator.pop(context);
-      Fluttertoast.showToast(
-                                          msg: "Audio uploaded!",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.BOTTOM,
-                                          timeInSecForIos: 1,
-                                          backgroundColor: Colors.grey,
-                                          textColor: Colors.white,
-                                          fontSize: 16.0);
+      // Navigator.pop(context);
+      // Fluttertoast.showToast(
+      //                                     msg: "Audio uploaded!",
+      //                                     toastLength: Toast.LENGTH_SHORT,
+      //                                     gravity: ToastGravity.BOTTOM,
+      //                                     timeInSecForIos: 1,
+      //                                     backgroundColor: Colors.grey,
+      //                                     textColor: Colors.white,
+      //                                     fontSize: 16.0);
     });
   }
 
@@ -317,19 +317,19 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
             return Container();
           default:
             _isRecording = snapshot.data;
-            return isUploading?
-            Scaffold(
-      body: Center(
-        child: Container(
-          height: 50.0,
-          width: 50.0,
-          child: CircularProgressIndicator(
-            backgroundColor: Colors.amber,
-          ),
-        ),
-      )
-    )
-            :Stack(
+    //         return isUploading?
+    //         Scaffold(
+    //   body: Center(
+    //     child: Container(
+    //       height: 50.0,
+    //       width: 50.0,
+    //       child: CircularProgressIndicator(
+    //         backgroundColor: Colors.amber,
+    //       ),
+    //     ),
+    //   )
+    // )
+            return Stack(
               children: <Widget>[
                 Align(
                   alignment: AlignmentDirectional.center,
@@ -350,7 +350,7 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                 Align(
                   alignment: AlignmentDirectional.topStart,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 26.0),
+                    padding: const EdgeInsets.only(top: 50.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
@@ -436,6 +436,15 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                                         uploadToStorage().then((url) {
                                           _updateAnswerUrl(url);
                                         });
+                                        Navigator.pop(context);
+                                        Fluttertoast.showToast(
+                                          msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
+                                          toastLength: Toast.LENGTH_LONG,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIos: 2,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
                                       },
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
