@@ -168,6 +168,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }).whenComplete(() {
       print('Updated!');
       isUploading = false;
+      _updateFulfilledStatus();
       // Navigator.pop(context);
       // Fluttertoast.showToast(
       //                                     msg: "Video uploaded!",
@@ -178,6 +179,29 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       //                                     textColor: Colors.white,
       //                                     fontSize: 16.0);
     });
+  }
+
+  void _updateFulfilledStatus() async{
+    var creatorsetDocId;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.docId.toString()) // bhuvan-bam
+        .collection('creator-settings')
+        .getDocuments()
+        .then((_userDoc){
+          creatorsetDocId = _userDoc.documents[0].documentID;
+        }).whenComplete(() async{
+          await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.docId.toString())
+        .collection('creator-settings')
+        .document(creatorsetDocId.toString())
+        .updateData(
+            {'fulfilled': FieldValue.increment(1)}).whenComplete(() {
+      print('Fulfilled updated!');
+    });
+        });
+    
   }
 
   void _updateAcceptedStatus() async {

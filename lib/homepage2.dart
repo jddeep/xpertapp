@@ -473,6 +473,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xpert/activeCard.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
+import 'package:xpert/chat_screen.dart';
 import 'package:xpert/notofication_page.dart';
 import 'package:xpert/videoanswerscreen.dart';
 import 'package:xpert/xpert_profile_page.dart';
@@ -841,6 +842,13 @@ class _MyHomePage2State extends State<MyHomePage2>
         // selectedData.add(txt);
       });
     _swipeAnimation().whenComplete(() {
+      if(txt.data["type"] == 'bot_training'){
+        Navigator.push(context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(botPicUrl: txt.data["profile_pic"], incomingData: txt.data, orderDocId: txt.documentID, userId: widget.userDocId)
+        )
+        );
+      }else
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -994,10 +1002,20 @@ class _MyHomePage2State extends State<MyHomePage2>
                       } else {
                         double bkdist;
                         print('QUESTION CARDS LENGTH: '+ _questionsCards.length.toString());
-                        if(_questionsCards.length > 2)
-                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/58.0:MediaQuery.of(context).size.height/68.0;
-                        else
+                        if(_questionsCards.length < 3)
                         bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/20.0:MediaQuery.of(context).size.height/30.0;
+                        else if(_questionsCards.length <=7)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/43.0:MediaQuery.of(context).size.height/53.0;
+                        else if(_questionsCards.length <=14)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/53.0:MediaQuery.of(context).size.height/63.0;
+                        else if(_questionsCards.length <= 20)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/58.0:MediaQuery.of(context).size.height/68.0;
+                        else if(_questionsCards.length <= 50)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/60.0:MediaQuery.of(context).size.height/70.0;
+                        else if(_questionsCards.length <= 70)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/63.0:MediaQuery.of(context).size.height/73.0;
+                        else
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/67.0:MediaQuery.of(context).size.height/77.0;
                         // double bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height* 0.03:15;
                         backCardPosition = backCardPosition - bkdist;
                         // MediaQuery.of(context).size.height > 640? MediaQuery.of(context).size.height* 0.04

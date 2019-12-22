@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:xpert/edit_profile_page.dart';
 import 'package:xpert/profile_options/edit_payment_method.dart';
 import 'package:xpert/profile_options/referral_page.dart';
 import 'package:xpert/xpertWelcome.dart';
@@ -276,9 +277,12 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
             IconButton(
               icon: Icon(Icons.edit),
               onPressed: () {
-                pickImageFromGallery(ImageSource.gallery).then((image) {
-                  uploadFile();
-                });
+                // pickImageFromGallery(ImageSource.gallery).then((image) {
+                //   uploadFile();
+                // });
+                Navigator.push(context,
+                MaterialPageRoute(builder: (context)=>EditProfilePage(docID: widget.title,))
+                );
               },
             )
           ],
@@ -291,7 +295,14 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  _showUserImagefromURL(context),
+                  GestureDetector(
+                    child: _showUserImagefromURL(context),
+                    onTap: (){
+                  pickImageFromGallery(ImageSource.gallery).then((image) {
+                  uploadFile();
+                });
+                    },
+                    ),
                   Padding(
                     padding: const EdgeInsets.only(left: 10.0),
                     child: Column(
@@ -466,27 +477,28 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                 color: Colors.white,
                 child: ListView(
                   children: <Widget>[
-                    ListTile(
-                      leading: Container(
-                        height: 50.0,
-                        width: 40.0,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage('assets/pricing.png'))),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ChangePricePage(
-                                    widget.title,
-                                    questionPrice,
-                                    wishPrice,
-                                    shoutoutPrice)));
-                      },
-                      title: Text('Change Price',
-                          style: TextStyle(color: Colors.black)),
-                    ),
+                    // Change Price hidden for now //
+                    // ListTile(
+                    //   leading: Container(
+                    //     height: 50.0,
+                    //     width: 40.0,
+                    //     decoration: BoxDecoration(
+                    //         image: DecorationImage(
+                    //             image: AssetImage('assets/pricing.png'))),
+                    //   ),
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //             builder: (context) => ChangePricePage(
+                    //                 widget.title,
+                    //                 questionPrice,
+                    //                 wishPrice,
+                    //                 shoutoutPrice)));
+                    //   },
+                    //   title: Text('Change Price',
+                    //       style: TextStyle(color: Colors.black)),
+                    // ),
                     ListTile(
                       leading: Container(
                         height: 50.0,

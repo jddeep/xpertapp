@@ -19,12 +19,12 @@ Positioned cardDemoDummy(
   return new Positioned(
     bottom: screenSize.height*0.13 + bottom,
     // bottom: (screenSize.height <= 640.0?screenSize.height*0.13:100.0) + bottom,
-    top: screenSize.height*0.02,
+    top: incomingData['type'] =='bot_training'?screenSize.height*0.1:screenSize.height*0.02,
     // right: flag == 0 ? right != 0.0 ? right : null : null,
     //left: flag == 1 ? right != 0.0 ? right : null : null,
     child: new Card(
       color: Colors.transparent,
-      elevation: 4.0,
+      // elevation: 4.0,
       child: new Container(
         alignment: Alignment.center,
         width: screenSize.width * 0.9,
@@ -36,16 +36,142 @@ Positioned cardDemoDummy(
           // color: new Color.fromRGBO(121, 114, 173, 1.0),
           borderRadius: new BorderRadius.circular(15.0),
         ),
-        child: new Column(
+        child: incomingData['type']=='bot_training'?
+        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Stack(
+                              children: <Widget>[
+                                Container(
+                                  padding: EdgeInsets.only(top:8.0, left: 8.0, right: 8.0, bottom: 2.0),
+                              width: screenSize.width * 0.9,
+                              height: screenSize.height * 0.22,
+                              decoration: new BoxDecoration(
+                                color: Colors.amber,
+                                borderRadius: new BorderRadius.only(
+                                    topLeft: new Radius.circular(15.0),
+                                    topRight: new Radius.circular(15.0)),
+                                // image: img,
+                              ),
+                              child: Center(
+                                child:Text(
+                                                  'Chat with me',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 26.0,
+                                                  ),
+                                                )
+                              ),
+                                ),
+                                
+                              ],
+                            ),
+                            Expanded(
+                              child: Container(
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                   children: <Widget>[
+                                     Text(
+                                       'Name',
+                                       style: TextStyle(color: Colors.grey, fontSize: 17.0),
+
+                                     ),
+                                     Text('Jaideep', style: TextStyle(color: Colors.black, fontSize: 22.0,)),
+                                     Text(
+                                       'Role',
+                                       style: TextStyle(color: Colors.grey, fontSize: 17.0),
+
+                                     ),
+                                     Text('Die Hard Fan', style: TextStyle(color: Colors.black, fontSize: 20.0,)),
+                                   Text(
+                                       'Goal',
+                                       style: TextStyle(color: Colors.grey, fontSize: 17.0),
+
+                                     ),
+                                     Text('Wants to get motivated', style: TextStyle(color: Colors.black, fontSize: 17.0,))
+                                   ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              height: screenSize.height/8,
+                                    decoration: new BoxDecoration(
+                                      color: incomingData['type'] == 'orange'
+                                          ? Colors.amber
+                                          : Colors.white,
+                                      borderRadius: new BorderRadius.only(
+                                          bottomLeft: new Radius.circular(15.0),
+                                          bottomRight: new Radius.circular(15.0)),
+                                      // image: img,
+                                    ),
+                                    padding: EdgeInsets.all(6.0),
+                                                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        IconTheme(
+                                          data: IconThemeData(
+                                              color:
+                                                  incomingData['type'] == 'orange'
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                              size: 20.0),
+                                          child: Icon(Icons.lightbulb_outline),
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                              'XPERT TIP',
+                                              style: TextStyle(
+                                                  color: incomingData['type'] ==
+                                                          'orange'
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                  fontSize: 20.0),
+                                            ),
+                                            Container(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.8,
+                                              child: Text(
+                                                incomingData["tip"] ??
+                                                    '',
+                                                maxLines: 3,
+                                                textAlign: TextAlign.start,
+                                                softWrap: true,
+                                                style: TextStyle(
+                                                    color: incomingData['type'] ==
+                                                            'orange'
+                                                        ? Colors.white
+                                                        : Colors.black,
+                                                    fontSize: 14.0),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                            )
+                          ],
+                        )
+        : Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             new Container(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.only(top:8.0, left: 8.0, right: 8.0, bottom: 2.0),
               width: screenSize.width * 0.9,
               // height: screenSize.height * 0.85,
               // width: screenSize.width / 1.2 + cardWidth,
               height: incomingData['type'] == 'question'?
-              screenSize.height * 0.1
+              screenSize.height * 0.12
               :screenSize.height * 0.22,
               decoration: new BoxDecoration(
                 color: Colors.amber,
@@ -103,7 +229,7 @@ Positioned cardDemoDummy(
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 33.0,
+                                      fontSize: 50.0,
                                       fontWeight: FontWeight.bold),
                                 )
                               : incomingData['type'] == 'endorsement'
@@ -115,7 +241,7 @@ Positioned cardDemoDummy(
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 33.0,
+                                          fontSize: 50.0,
                                           fontWeight: FontWeight.bold),
                                     )
                                   : incomingData['type'] == 'orange'
@@ -127,7 +253,7 @@ Positioned cardDemoDummy(
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               color: Colors.white,
-                                              fontSize: 33.0,
+                                              fontSize: 40.0,
                                               fontWeight: FontWeight.bold),
                                         )
                                       : Text(
@@ -308,14 +434,14 @@ Positioned cardDemoDummy(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        IconTheme(
-                          data: IconThemeData(
-                              color: incomingData['type'] == 'orange'
-                                  ? Colors.white
-                                  : Colors.black,
-                              size: 20.0),
-                          child: Icon(Icons.lightbulb_outline),
-                        ),
+                        // IconTheme(
+                        //   data: IconThemeData(
+                        //       color: incomingData['type'] == 'orange'
+                        //           ? Colors.white
+                        //           : Colors.black,
+                        //       size: 20.0),
+                        //   child: Icon(Icons.lightbulb_outline),
+                        // ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[

@@ -117,8 +117,8 @@ class MyApp extends StatelessWidget {
         //     ),
         //   ), //IntroViewsFlutter
         // ),
-        home: isLoggedIn ? OTPScreen(null, '') : XpertWelcomePage()
-        // home: MyHomePage2(user: null, userDocId: 'test-paul',)
+        // home: isLoggedIn ? OTPScreen(null, '') : XpertWelcomePage()
+        home: MyHomePage2(user: null, userDocId: 'aayushi-test',)
         );
   }
 }
