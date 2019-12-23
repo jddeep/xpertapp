@@ -216,6 +216,29 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     });
   }
 
+  void _createNewOrder(String url) async{
+
+    Map<String, dynamic> order = new Map();
+    order["message"] = widget.incomingQuestion;
+    order["answer_url"] = url;
+    order["answer_type"] = "video";
+    order["status"] = "delivered";
+
+
+    DocumentReference newOrderDoc = Firestore.instance.collection('xpert_master')
+          .document(widget.docId)
+          .collection('orders')
+          .document();
+
+    await Firestore.instance.runTransaction((transaction) async{
+      await transaction.set(newOrderDoc, order);
+      
+    }).whenComplete((){
+      isUploading = false;
+      print("New order added with doc id: " + newOrderDoc.documentID);
+    });
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
@@ -374,11 +397,18 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                           isUploading = true;
                                           showBottom = true;
                                         });
-                                        _updateAcceptedStatus();
+                                        if(widget.orderDocId != null){
+                                          _updateAcceptedStatus();
                                         
                                         uploadToStorage(videoPath).then((url) {
                                           _updateAnswerUrl(url);
                                         });
+                                        }else{
+                                          uploadToStorage(videoPath).then((url){
+                                            _createNewOrder(url);
+                                          });
+                                        }
+                                        
                                         Navigator.pop(context);
                                         Fluttertoast.showToast(
                                           msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",

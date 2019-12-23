@@ -12,6 +12,7 @@ import 'package:xpert/edit_profile_page.dart';
 import 'package:xpert/profile_options/edit_payment_method.dart';
 import 'package:xpert/profile_options/referral_page.dart';
 import 'package:xpert/xpertWelcome.dart';
+import 'create_question_page.dart';
 import 'profile_options/change_price_page.dart';
 import 'package:share/share.dart';
 import 'package:path/path.dart';
@@ -382,12 +383,16 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
             ),
             MaterialButton(
               minWidth: MediaQuery.of(context).size.width * 0.9,
-              onPressed: () {},
-              color: Colors.grey,
+              onPressed: () {
+                Navigator.push(context,
+                MaterialPageRoute(builder: (context)=> CreateQuestionPage(userDocId: widget.title))
+                );
+              },
+              color: Colors.amber,
               padding: EdgeInsets.all(8.0),
               textColor: Colors.white,
               child: Text(
-                'AWAITING INTRO VIDEO',
+                'ADD A NEW ANSWER',
                 textAlign: TextAlign.center,
               ),
             ),

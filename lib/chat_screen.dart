@@ -26,8 +26,8 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
 
-    String imageUrl;
-    File imageFile;
+  String imageUrl;
+  File imageFile;
   bool isLoading;
   static bool isSending = false;
   bool _isAudioRecording = false;
@@ -37,6 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController textEditingController = new TextEditingController();
   final ScrollController listScrollController = new ScrollController();
   final FocusNode focusNode = new FocusNode();
+  var width;
 
   bool isMe = false;
   int messageCounter = 0;
@@ -177,9 +178,10 @@ if(result.documents.length == 0){
     Container botMessage = message==""?Container(height:0.0):
     Container(
       margin: EdgeInsets.only(
-              top: 8.0,
-              bottom: 8.0,
-              right: 40.0
+              top: MediaQuery.of(context).size.height * 0.015, //8.0
+              bottom: MediaQuery.of(context).size.height * 0.015, // 8.0
+              right: MediaQuery.of(context).size.width * 0.30, // 80.0
+              left: MediaQuery.of(context).size.width * 0.012
             ),
       padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
       width: MediaQuery.of(context).size.width * 0.75,
@@ -247,9 +249,6 @@ if(result.documents.length == 0){
                                   ),
                                 ),
                               ),
-                              width: MediaQuery.of(context).size.width * 0.65,
-                              height: MediaQuery.of(context).size.height * 0.3,
-                              // padding: EdgeInsets.all(70.0),
                               decoration: BoxDecoration(
                                 color: Colors.grey,
                                 borderRadius: BorderRadius.all(
@@ -282,9 +281,10 @@ if(result.documents.length == 0){
     :
     Container(
       margin: EdgeInsets.only(
-              top: 8.0,
-              bottom: 8.0,
-              left: 80.0,
+              top: MediaQuery.of(context).size.height * 0.015, //8.0
+              bottom: MediaQuery.of(context).size.height * 0.015, //8.0
+              left: MediaQuery.of(context).size.width * 0.30, // 80.0
+              right: MediaQuery.of(context).size.width * 0.012
             ),
       padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
       width: MediaQuery.of(context).size.width * 0.75,
@@ -314,6 +314,7 @@ if(result.documents.length == 0){
     // MAP of two containers together
     return Container(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           botMessage,
           responseMsg
@@ -331,7 +332,7 @@ if(result.documents.length == 0){
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.0),
-      height: 70.0,
+      height: MediaQuery.of(context).size.height * 0.1,
       color: Colors.white,
       child: Row(
         children: <Widget>[
@@ -373,18 +374,21 @@ if(result.documents.length == 0){
                     children: <Widget>[
                       Container(
                         width: MediaQuery.of(context).size.width * 0.4,
-                        child: TextField(
-                        textCapitalization: TextCapitalization.sentences,
-                        controller: textEditingController,
-                        minLines: 1,
-                        maxLines: 6,
-                        onChanged: (value) {},
-                        style: TextStyle(color: Colors.black),
-                        decoration: InputDecoration.collapsed(
-                          hintText: 'Aa',
-                          hintStyle: TextStyle(color: Colors.grey)
-                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 4.0),
+                          child: TextField(
+                          textCapitalization: TextCapitalization.sentences,
+                          controller: textEditingController,
+                          minLines: 1,
+                          maxLines: 6,
+                          onChanged: (value) {},
+                          style: TextStyle(color: Colors.black),
+                          decoration: InputDecoration.collapsed(
+                            hintText: 'Aa',
+                            hintStyle: TextStyle(color: Colors.grey)
+                          ),
                 ),
+                        ),
                       ),
                 IconButton(
             icon: Icon(Icons.send),
@@ -398,7 +402,6 @@ if(result.documents.length == 0){
           )
                     ],
                   ),
-                  
                   )
               :(Text('Thanks for training!', style: TextStyle(color: Colors.black))),
           ),
@@ -494,7 +497,7 @@ if(result.documents.length == 0){
 
   @override
   Widget build(BuildContext context) {
-    isMe = false;
+    width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       appBar: AppBar(
