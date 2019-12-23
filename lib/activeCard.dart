@@ -1,7 +1,6 @@
 import 'dart:math';
 
 // import 'package:animation_exp/SwipeAnimation/detail.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 Positioned cardDemo(

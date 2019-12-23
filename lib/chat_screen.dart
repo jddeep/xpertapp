@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:audio_recorder/audio_recorder.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:path/path.dart' as pathDart;
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'fullphoto.dart';
 
@@ -27,6 +30,9 @@ class _ChatScreenState extends State<ChatScreen> {
     File imageFile;
   bool isLoading;
   static bool isSending = false;
+  bool _isAudioRecording = false;
+  String tempFilename = "TempRecording";
+  File defaultAudioFile;
 
   final TextEditingController textEditingController = new TextEditingController();
   final ScrollController listScrollController = new ScrollController();
@@ -67,6 +73,23 @@ class _ChatScreenState extends State<ChatScreen> {
       //   isLoading = false;
       // });
       Fluttertoast.showToast(msg: 'This file is not an image');
+    });
+  }
+
+  Future uploadAudioFile(var intent) async{
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    StorageReference reference = FirebaseStorage.instance.ref().child(fileName);
+    StorageUploadTask uploadTask = reference.putFile(defaultAudioFile);
+    StorageTaskSnapshot storageTaskSnapshot = await uploadTask.onComplete;
+    storageTaskSnapshot.ref.getDownloadURL().then((downloadUrl) {
+      imageUrl = downloadUrl;
+      isSending = true;
+       onSendMessage(imageUrl, 'audio', intent);
+    }, onError: (err) {
+      // setState(() {
+      //   isLoading = false;
+      // });
+      Fluttertoast.showToast(msg: 'This file is not an audio');
     });
   }
 
@@ -322,7 +345,9 @@ if(result.documents.length == 0){
             icon: Icon(Icons.mic),
             iconSize: 25.0,
             color: Colors.grey,
-            onPressed: () {}
+            onPressed: () {
+              _isAudioRecording?stopRecording():startRecording();
+            }
           ),
           IconButton(
             icon: Icon(Icons.add_photo_alternate),
@@ -421,6 +446,50 @@ if(result.documents.length == 0){
     super.initState();
     _fetchBotIntentMessages();
     _fetchXpertResponseDocuments();
+  }
+
+  startRecording() async {
+    try {
+      Directory docDir = await getApplicationDocumentsDirectory();
+      String newFilePath = pathDart.join(docDir.path, this.tempFilename);
+      File tempAudioFile = File(newFilePath + '.m4a');
+      // Scaffold.of(context).showSnackBar(new SnackBar(
+      //   content: new Text("Recording."),
+      //   duration: Duration(milliseconds: 1400),
+      // ));
+      if (await tempAudioFile.exists()) {
+        await tempAudioFile.delete();
+      }
+      if (await AudioRecorder.hasPermissions) {
+        await AudioRecorder.start(
+            path: newFilePath, audioOutputFormat: AudioOutputFormat.AAC);
+      } else {
+        Fluttertoast.showToast(msg: "Error! Audio recorder lacks permissions.", backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
+      }
+      bool isRecording = await AudioRecorder.isRecording;
+      setState(() {
+        Recording(duration: new Duration(), path: newFilePath);
+        Fluttertoast.showToast(msg: 'Recording: ' + isRecording.toString(), backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
+        _isAudioRecording = isRecording;
+        defaultAudioFile = tempAudioFile;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  stopRecording() async {
+    await AudioRecorder.stop();
+    bool isRecording = await AudioRecorder.isRecording;
+
+    Directory docDir = await getApplicationDocumentsDirectory();
+
+    setState(() {
+      _isAudioRecording = isRecording;
+      Fluttertoast.showToast(msg: 'Recorded: ' + defaultAudioFile.path, backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
+      defaultAudioFile =
+          File(pathDart.join(docDir.path, this.tempFilename + '.m4a'));
+    });
   }
 
   @override
