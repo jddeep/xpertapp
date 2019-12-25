@@ -14,10 +14,7 @@ import 'package:audio_recorder/audio_recorder.dart';
 // import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:intl/intl.dart' show DateFormat;
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:xpert/audiotest.dart';
-import 'package:xpert/homepage2.dart';
-// import 'package:xpert/homepage.dart';
 
 class CameraExampleHome extends StatefulWidget {
   // List<CameraDescription> cameras;
@@ -62,6 +59,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   bool onlyVideo = true;
   Recording _recording = new Recording();
   bool isRecording = false;
+  bool isChatVideo = false;
   Random random = new Random();
   TextEditingController _controller = new TextEditingController();
   bool isReady = false;
@@ -201,7 +199,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       print('Fulfilled updated!');
     });
         });
-    
   }
 
   void _updateAcceptedStatus() async {
@@ -257,7 +254,18 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     // :
     return Scaffold(
       key: _scaffoldKey,
-      body: Stack(
+      body: isChatVideo?
+      Center(
+        child: Container(
+                                  width: 40.0,
+                                  height: 40.0,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+                                  ),
+                                ),
+      )
+      :
+      Stack(
         children: <Widget>[
           // Positioned(
           //   top: 100.0,
@@ -403,14 +411,25 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                         uploadToStorage(videoPath).then((url) {
                                           _updateAnswerUrl(url);
                                         });
-                                        }else{
+                                        } else if(widget.orderDocId==null && widget.docId == null){
+                                          setState(() {
+                                            isChatVideo = true;
+                                          });
+                                          uploadToStorage(videoPath).then((url){
+                                            Navigator.pop(context, url);
+                                            isChatVideo = false;
+                                          });
+                                        }
+                                        else{
                                           uploadToStorage(videoPath).then((url){
                                             _createNewOrder(url);
                                           });
                                         }
                                         
-                                        Navigator.pop(context);
-                                        Fluttertoast.showToast(
+                                        
+                                        if(widget.orderDocId != null){
+                                          Navigator.pop(context);
+                                          Fluttertoast.showToast(
                                           msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
                                           toastLength: Toast.LENGTH_LONG,
                                           gravity: ToastGravity.BOTTOM,
@@ -418,6 +437,16 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                           backgroundColor: Colors.grey,
                                           textColor: Colors.white,
                                           fontSize: 16.0);
+                                        }else{
+                                          Fluttertoast.showToast(
+                                          msg: "Thanks! Sending your video message...",  
+                                          toastLength: Toast.LENGTH_LONG,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIos: 2,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
+                                        }
                                         
                                         
                                         //                   Navigator.pushReplacement(

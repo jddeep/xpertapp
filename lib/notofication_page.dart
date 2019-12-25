@@ -22,7 +22,6 @@ class _NotificationPageState extends State<NotificationPage> {
                 decoration: BoxDecoration(
                   image: DecorationImage(image: AssetImage(
                     'assets/notification_screen.png',
-
                   ),
                   fit: BoxFit.contain
                   )

@@ -48,6 +48,9 @@ dependencies:
   firebase_analytics:
   cached_network_image:
   photo_view:
+  audioplayer:
+  webview_flutter:
+  scoped_model:
 
 dev_dependencies:
   flutter_test:

@@ -9,6 +9,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path/path.dart' as pathDart;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:xpert/chat_audio_player.dart';
+import 'package:xpert/global.dart';
+import 'package:xpert/videoanswerscreen.dart';
+import 'package:xpert/web_video_view.dart';
 
 import 'fullphoto.dart';
 
@@ -24,9 +28,10 @@ class ChatScreen extends StatefulWidget {
   _ChatScreenState createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
 
   String imageUrl;
+  String audioUrl;
   File imageFile;
   bool isLoading;
   static bool isSending = false;
@@ -83,9 +88,10 @@ class _ChatScreenState extends State<ChatScreen> {
     StorageUploadTask uploadTask = reference.putFile(defaultAudioFile);
     StorageTaskSnapshot storageTaskSnapshot = await uploadTask.onComplete;
     storageTaskSnapshot.ref.getDownloadURL().then((downloadUrl) {
-      imageUrl = downloadUrl;
+      audioUrl = downloadUrl;
       isSending = true;
-       onSendMessage(imageUrl, 'audio', intent);
+      print('The audioUrl is: ' +audioUrl);
+      onSendMessage(audioUrl, 'audio', intent);
     }, onError: (err) {
       // setState(() {
       //   isLoading = false;
@@ -95,7 +101,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void onSendMessage(String content, String type, var intent) async{
-    // type: 0 = text, 1 = image, 2 = sticker
     if (content.trim() != '') {
       textEditingController.clear();
 
@@ -208,19 +213,22 @@ if(result.documents.length == 0){
 
     Container responseMsg = response==""?isSending?
     Container(
-      margin: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.12),
+      margin: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height * 0.015, //8.0
+              bottom: MediaQuery.of(context).size.height * 0.015, //8.0
+              left: MediaQuery.of(context).size.width * 0.30, // 80.0
+              right: MediaQuery.of(context).size.width * 0.012
+            ),
       child: Container(
+        padding: const EdgeInsets.all(5.0),
+
                               child: Center(
                                 child: Container(
-                                  width: 40.0,
-                                  height: 40.0,
                                   child: CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
                                   ),
                                 ),
                               ),
-                              width: MediaQuery.of(context).size.width * 0.6,
-                              height: MediaQuery.of(context).size.height * 0.1,
                               // padding: EdgeInsets.all(70.0),
                               decoration: BoxDecoration(
                                 color: Colors.grey,
@@ -232,6 +240,72 @@ if(result.documents.length == 0){
     )
     :
     Container(height:0.0)
+    :
+    rsptype=="video"?
+    Container(
+      margin: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height * 0.015, //8.0
+              bottom: MediaQuery.of(context).size.height * 0.015, //8.0
+              left: MediaQuery.of(context).size.width * 0.30, // 80.0
+              right: MediaQuery.of(context).size.width * 0.012
+            ),
+            // padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
+      width: MediaQuery.of(context).size.width * 0.75,
+      decoration: BoxDecoration(
+        color: Colors.amber,
+        borderRadius: BorderRadius.all(Radius.circular(15.0),
+              ),
+      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                Text('Video message', style: (TextStyle(fontSize: 20.0)),
+                ),
+                IconButton(
+                    color: Colors.white,
+                    icon: Icon(Icons.play_arrow),
+                    iconSize: 30.0,
+                    onPressed: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> WebViewContainer(response.toString())));
+                    },
+                  ),
+              ],
+            ),
+    )
+    :
+    rsptype=="audio"?
+    Container(
+      margin: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height * 0.015, //8.0
+              bottom: MediaQuery.of(context).size.height * 0.015, //8.0
+              left: MediaQuery.of(context).size.width * 0.30, // 80.0
+              right: MediaQuery.of(context).size.width * 0.012
+            ),
+            // padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
+      width: MediaQuery.of(context).size.width * 0.75,
+      decoration: BoxDecoration(
+        color: Colors.amber,
+        borderRadius: BorderRadius.all(Radius.circular(15.0),
+              ),
+      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                Text('Audio message', style: (TextStyle(fontSize: 20.0)),
+                ),
+                IconButton(
+                    color: Colors.white,
+                    icon: Icon(Icons.play_arrow),
+                    iconSize: 30.0,
+                    onPressed: (){
+                      Navigator.push(context,
+    MaterialPageRoute(builder: (context)=> ChatAudioPlayer(audioUrl: response.toString(),))
+    );
+                    },
+                  ),
+              ],
+            ),
+    )
     :
     rsptype=="image"?
     Container(
@@ -255,6 +329,8 @@ if(result.documents.length == 0){
                                   Radius.circular(8.0),
                                 ),
                               ),
+                              width: MediaQuery.of(context).size.width * 0.65,
+                            height: MediaQuery.of(context).size.height * 0.3,
                             ),
                             errorWidget: (context, url, error) => Material(
                               child: Text('Image Not available', textAlign: TextAlign.center),
@@ -340,7 +416,17 @@ if(result.documents.length == 0){
             icon: Icon(Icons.videocam),
             iconSize: 25.0,
             color: Colors.grey,
-            onPressed: () {}
+            onPressed: () async{
+              await Navigator.push(context,
+              MaterialPageRoute(builder: (context)=> CameraExampleHome(incomingQuestion: "", docId: null, orderDocId: null,))
+              ).then((url){
+                setState(() {
+             isSending = true;
+           });
+           print('Returned video URL: ' + url);
+           onSendMessage(url, 'video', intents[messageCounter]);
+              });
+            }
           ),
           IconButton(
             icon: Icon(Icons.mic),
@@ -449,7 +535,27 @@ if(result.documents.length == 0){
     super.initState();
     _fetchBotIntentMessages();
     _fetchXpertResponseDocuments();
+    WidgetsBinding.instance.addObserver(this);
   }
+
+      // @override
+      // void didChangeAppLifecycleState(AppLifecycleState state) async{
+      //   switch(state){
+      // case AppLifecycleState.inactive:
+      // case AppLifecycleState.paused:
+      // case AppLifecycleState.suspending:
+      // case AppLifecycleState.resumed:
+      //    if(CHAT_URL != null){
+      //      print('Returned video URL: ' + CHAT_URL);
+      //      setState(() {
+      //        isSending = true;
+      //      });
+      //      onSendMessage(CHAT_URL, 'video', intents[messageCounter]);
+      //      CHAT_URL=null;
+      //    }
+      //    break;
+      //   }
+      // }
 
   startRecording() async {
     try {
@@ -472,7 +578,8 @@ if(result.documents.length == 0){
       bool isRecording = await AudioRecorder.isRecording;
       setState(() {
         Recording(duration: new Duration(), path: newFilePath);
-        Fluttertoast.showToast(msg: 'Recording: ' + isRecording.toString(), backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
+        print('Recording: '+ isRecording.toString());
+        Fluttertoast.showToast(msg: 'Recording Your Audio message! Tap the Mic button again to stop.', backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
         _isAudioRecording = isRecording;
         defaultAudioFile = tempAudioFile;
       });
@@ -489,9 +596,12 @@ if(result.documents.length == 0){
 
     setState(() {
       _isAudioRecording = isRecording;
-      Fluttertoast.showToast(msg: 'Recorded: ' + defaultAudioFile.path, backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
+      print('Recorded file: ' + defaultAudioFile.path);
+      Fluttertoast.showToast(msg: 'Recorded your message!', backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
       defaultAudioFile =
           File(pathDart.join(docDir.path, this.tempFilename + '.m4a'));
+          uploadAudioFile(intents[messageCounter]);
+          isSending = true;
     });
   }
 
