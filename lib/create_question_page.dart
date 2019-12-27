@@ -34,7 +34,7 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
                   controller: _questionController,
                   keyboardType: TextInputType.text,
                   decoration: InputDecoration.collapsed(
-                    hintText: 'Start typing your question',
+                    hintText: 'Start typing a question you would like to answer here',
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 25.0)
                   ),
                 ),
@@ -44,7 +44,7 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
               minWidth: double.infinity,
               height: 60,
               color: Colors.amber,
-              child: Text('START RECORDING',
+              child: Text('RECORD ANSWER',
                   style: TextStyle(color: Colors.white, fontSize: 20)),
               onPressed: () {
                 Navigator.pushReplacement(context,

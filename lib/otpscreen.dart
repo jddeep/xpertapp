@@ -6,7 +6,7 @@ import 'package:xpert/homepage2.dart';
 import 'homepage.dart';
 import 'rejectedPage.dart';
 import 'underReview_page.dart';
-import 'xpertWelcome.dart';
+import 'mobile_login_page.dart';
 import 'xpertinvitescreen.dart';
 
 class OTPScreen extends StatefulWidget {
@@ -33,7 +33,7 @@ class _OTPScreenState extends State<OTPScreen> {
         .getDocuments()
         .then((docsMaster) {
       print('auth id check' + docsMaster.documents.toList().toString());
-      if (docsMaster.documents.length == 0) {
+      if (docsMaster.documents.length == 0 && widget.phoneNumber!=null && widget.phoneNumber.isNotEmpty) {
         /// if auth_id doesn't match with any documents
         /// in xpert_master collection then check phoneNumeber of that user.
         dataBaseRef
@@ -43,7 +43,15 @@ class _OTPScreenState extends State<OTPScreen> {
             .then((docsMaster) {
           print('mobilecheck' + docsMaster.documents.toList().toString());
           if (docsMaster.documents.length == 0) {
+            //email check
             dataBaseRef
+            .collection('xpert_master')
+            .where('email', isEqualTo: user.email)
+            .getDocuments()
+            .then((docsMaster){
+               print('emailcheck' + docsMaster.documents.toList().toString());
+              if(docsMaster.documents.length == 0){
+                dataBaseRef
                 .collection('invite_requests')
                 .where('auth_id', isEqualTo: user.uid)
                 .getDocuments()
@@ -83,6 +91,36 @@ class _OTPScreenState extends State<OTPScreen> {
                 }
               }
             });
+              } else{
+                ///auth_id doesn't match but email matched then update authId
+            ///in xpert_master collection and push the user to Home Page.
+            dataBaseRef
+                .collection('xpert_master')
+                .document(docsMaster.documents[0].documentID)
+                .updateData({
+              'auth_id': user.uid,
+              'email': '',
+              'mobile': ''
+            }).whenComplete(() {
+              /// todo: maybe pushRepalcement
+              // Navigator.pushReplacement(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (context) => HomePage(user: user, title: docsMaster.documents[0].documentID,),
+              //     ));
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyHomePage2(
+                        userDocId: docsMaster.documents[0].documentID,
+                        user: user),
+                  ));
+            });
+              }
+            });
+
+            
+            
           } else {
             ///auth_id doesn't match but phoneNumber matched then update authId
             ///in xpert_master collection and push the user to Home Page.
@@ -91,7 +129,8 @@ class _OTPScreenState extends State<OTPScreen> {
                 .document(docsMaster.documents[0].documentID)
                 .updateData({
               'auth_id': user.uid,
-              'mobile': '' // maybe blank the phone number here (done)
+              'mobile': '',
+              'email': ''
             }).whenComplete(() {
               /// todo: maybe pushRepalcement
               // Navigator.pushReplacement(
@@ -118,6 +157,7 @@ class _OTPScreenState extends State<OTPScreen> {
         //     MaterialPageRoute(
         //       builder: (context) => HomePage(user: user, title: docsMaster.documents[0].documentID,),
         //     ));
+        print(docsMaster.documents.length.toString() + docsMaster.documents[0].documentID + user.email);
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -140,7 +180,7 @@ class _OTPScreenState extends State<OTPScreen> {
     if (widget.signInCallback == null && widget.phoneNumber.isEmpty) {
       print('checking current user');
       _checkCurrentUser().then((_user) {
-        print('USER UID' + '${_user.uid}');
+        print('USER UID' + '${_user.uid}' + '${_user.email}');
         _checkIntoMaster(_user);
       });
     } else {

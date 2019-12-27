@@ -12,14 +12,14 @@ import 'underReview_page.dart';
 
 import 'xpertinvitescreen.dart';
 
-class XpertWelcomePage extends StatefulWidget {
-  XpertWelcomePage();
+class XpertMobileLoginPage extends StatefulWidget {
+  XpertMobileLoginPage();
 
   @override
-  _XpertWelcomePageState createState() => _XpertWelcomePageState();
+  _XpertMobileLoginPageState createState() => _XpertMobileLoginPageState();
 }
 
-class _XpertWelcomePageState extends State<XpertWelcomePage> {
+class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
   TextEditingController _smsCodeController = TextEditingController();
   TextEditingController _phoneNumberController = TextEditingController();
   String phoneNo;
@@ -27,68 +27,6 @@ class _XpertWelcomePageState extends State<XpertWelcomePage> {
   String verificationId;
 
   bool isVerified = false;
-
-  // _checkMaster() async{
-  //   await Firestore.instance.collection('xpert_master')
-  //   .where('mobile',isEqualTo: _phoneNumberController.text)
-  //   .getDocuments().then((docs){
-  //     if(docs.documents.length==0){
-
-  //     }
-  //   });
-  // }
-
-  // _checkPhone() async {
-  //   await Firestore.instance
-  //       .collection('invite_requests')
-  //       .where('mobile', isEqualTo: _phoneNumberController.text)
-  //       .getDocuments()
-  //       .then((docs) {
-  //     if (docs.documents.length == 0) {
-  //       print("This No is not registered before in database");
-  //       verifyPhone().whenComplete(() {
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder: (context) => OTPScreen(
-  //                 cameras, signInWithPhoneNumber), // Not registerd yet
-  //           ),
-  //         );
-  //       });
-  //     } else {
-  //       if (docs.documents[0].data['status'] == 'underReview') {
-  //         print("UnderReview Profile");
-  //         verifyPhone();
-  //         Navigator.pushReplacement(
-  //             context,
-  //             MaterialPageRoute(
-  //               builder: (context) => OTPScreen(
-  //                   cameras, signInWithPhoneNumber, 0), //UnderReview Profile
-  //             ));
-  //       } else if (docs.documents[0].data['status'] == 'rejected') {
-  //         print("Rejected Profile");
-  //         verifyPhone();
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder: (context) => OTPScreen(
-  //                 cameras, signInWithPhoneNumber, -1), //Rejected Profile
-  //           ),
-  //         );
-  //       } else if (docs.documents[0].data['status'] == 'accepted') {
-  //         print("Accepted profile");
-  //         verifyPhone();
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder: (context) => OTPScreen(
-  //                 cameras, signInWithPhoneNumber, 1), //Accepted Profile
-  //           ),
-  //         );
-  //       }
-  //     }
-  //   });
-  // }
 
     _checkIntoMaster(FirebaseUser user) async {
     print('UID: ' + user.uid);

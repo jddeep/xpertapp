@@ -22,6 +22,7 @@ class XpertInviteScreen extends StatefulWidget {
 
 class _XpertInviteScreenState extends State<XpertInviteScreen> {
   TextEditingController _phoneNumberController = TextEditingController();
+  var _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isProfOther = false;
   List<String> _professions = new List();
@@ -95,6 +96,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
     // TODO: implement initState
     super.initState();
     _phoneNumberController.text = widget.phoneNumber;
+    _emailController.text = widget.user.email;
     _getProfessionList().then((docs) {
       for (int i = 0; i < docs.length; i++) {
         _professions.add(docs[i].data['sname'].toString());
@@ -171,6 +173,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                       ],
                     ),
                     new TextFormField(
+                      controller: _emailController,
                       onChanged: (value) {
                         setState(() {
                           _email = value;
@@ -363,7 +366,7 @@ class _XpertInviteScreenState extends State<XpertInviteScreen> {
                     firstname: _fname,
                     lastname: _lname,
                     mobile: _phoneNumberController.text,
-                    email: _email,
+                    email: _emailController.text, //_email
                     sname: _sname,
                     shandle: _shandle,
                     sfollowers: _sfollowers,

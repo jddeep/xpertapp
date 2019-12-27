@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_recorder/audio_recorder.dart';
@@ -9,6 +10,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path/path.dart' as pathDart;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:video_player/video_player.dart';
 import 'package:xpert/chat_audio_player.dart';
 import 'package:xpert/global.dart';
 import 'package:xpert/videoanswerscreen.dart';
@@ -36,8 +38,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
   bool isLoading;
   static bool isSending = false;
   bool _isAudioRecording = false;
-  String tempFilename = "TempRecording";
+  String tempFilename = DateTime.now().millisecondsSinceEpoch.toString(); //"TempRecording"
   File defaultAudioFile;
+  VideoPlayerController videoController;
+  Future<void> _initializeVideoPlayerFuture;
 
   final TextEditingController textEditingController = new TextEditingController();
   final ScrollController listScrollController = new ScrollController();
@@ -46,20 +50,27 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
 
   bool isMe = false;
   int messageCounter = 0;
+  List<bool> onScreenLoading;
+  List<bool> onScreenQuestionsShow;
   List<String> messages = new List();
   List<String> intents = new List();
   List<DocumentSnapshot> scripts = new List();
-  List<DocumentSnapshot> responses = new List();
+  // List<DocumentSnapshot> responses = new List();
   List<String> liveResponses = new List();
   List<String> responseTypes = new List();
 
    Future getImage(var intent) async {
     imageFile = await ImagePicker.pickImage(source: ImageSource.gallery);
+    String path;
 
     if (imageFile != null) {
+      path = imageFile.path;
       setState(() {
-        isLoading = true;
-        isSending = true;
+        setState(() {
+          isSending = true;
+                liveResponses.add(path);
+              responseTypes.add('image');
+              });
       });
       uploadFile(intent);
     }
@@ -73,6 +84,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     storageTaskSnapshot.ref.getDownloadURL().then((downloadUrl) {
       imageUrl = downloadUrl;
       isSending = true;
+      
        onSendMessage(imageUrl, 'image', intent);
     }, onError: (err) {
       // setState(() {
@@ -90,6 +102,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     storageTaskSnapshot.ref.getDownloadURL().then((downloadUrl) {
       audioUrl = downloadUrl;
       isSending = true;
+      liveResponses.removeLast();
+        responseTypes.removeLast();
+      setState(() {
+              liveResponses.add(audioUrl);
+              responseTypes.add('audio');
+              });
       print('The audioUrl is: ' +audioUrl);
       onSendMessage(audioUrl, 'audio', intent);
     }, onError: (err) {
@@ -100,19 +118,31 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     });
   }
 
+  void _updateDeliveredStatus() async {
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userId.toString())
+        .collection('orders')
+        .document(widget.orderDocId.toString())
+        .updateData(
+            {'status': 'delivered'}).whenComplete(() {
+      print('Delivered status!');
+    });
+  }
+
   void onSendMessage(String content, String type, var intent) async{
     if (content.trim() != '') {
       textEditingController.clear();
 
-QuerySnapshot result = await Firestore.instance
-    .collection('xpert_master')
-          .document('aamir-khan')
-          .collection('responses')
-    .where('intent', isEqualTo: intent.toString())
-    .limit(1)
-    .getDocuments();
+// QuerySnapshot result = await Firestore.instance
+//     .collection('xpert_master')
+//           .document('aamir-khan')
+//           .collection('responses')
+//     .where('intent', isEqualTo: intent.toString())
+//     .limit(1)
+//     .getDocuments();
 
-if(result.documents.length == 0){
+// if(result.documents.length == 0){
 
   Map<String, dynamic> responseData = new Map();
   responseData["response"] = content;
@@ -120,7 +150,7 @@ if(result.documents.length == 0){
   responseData["response_type"] = type;
 
   DocumentReference newIntentDoc = Firestore.instance.collection('xpert_master')
-          .document('aamir-khan')
+          .document(widget.userId)
           .collection('responses')
           .document();
 
@@ -132,56 +162,87 @@ if(result.documents.length == 0){
             print('Type was: '+ type);
             print('Intent was: ' + intent.toString());
             print("Responses updated!");
+            if(liveResponses.length >= messages.length){
+              if(content != ""){
+                setState(() {
+                isSending = false;
+                onScreenLoading[messageCounter] = true;
+              });
+              }
+              
+            }
             if(liveResponses.length < messages.length)
             setState(() {
-              liveResponses.add(content);
-              responseTypes.add(type);
+              // liveResponses.add(content);
+              // responseTypes.add(type);
+              onScreenLoading[messageCounter] = true;
               messageCounter++;
+              // if(messageCounter == messages.length - 1)
+              // onScreenLoading[messageCounter] = true;
+              onScreenQuestionsShow[messageCounter] = true;
+              print('MSG COUNTER: ' + messageCounter.toString());
               if(content != "")
               isSending = false;
               print('LIVE RES LEN: ' + liveResponses.length.toString());
+              // listScrollController.animateTo(0.0, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
             });
           });
-} else{
-    var responseDocId = result.documents[0].documentID;
+        
+// } 
+// else{
+    // var responseDocId = result.documents[0].documentID;
 
-    await Firestore.instance
-          .collection('xpert_master')
-          .document('aamir-khan')
-          .collection('responses')
-          .document(responseDocId.toString())
-          .updateData({
-            'response' : content,
-            'response_type' : type
-          }).whenComplete((){
-            print('COntent was: '+ content);
-            print('Type was: '+ type);
-            print('Intent was: ' + intent.toString());
-            print("Responses updated!");
-            if(liveResponses.length < messages.length)
-            setState(() {
-              liveResponses.add(content);
-              responseTypes.add(type);
-              messageCounter++;
-              if(content != "")
-              isSending = false;
-              print('LIVE RES LEN: ' + liveResponses.length.toString());
-            });
-            // listScrollController.animateTo(0.0, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
-          });
-}  
+    // await Firestore.instance
+    //       .collection('xpert_master')
+    //       .document('aamir-khan')
+    //       .collection('responses')
+    //       .document(responseDocId.toString())
+    //       .updateData({
+    //         'response' : content,
+    //         'response_type' : type
+    //       }).whenComplete((){
+    //         print('COntent was: '+ content);
+    //         print('Type was: '+ type);
+    //         print('Intent was: ' + intent.toString());
+    //         print("Responses updated!");
+    //         if(liveResponses.length < messages.length)
+    //         setState(() {
+    //           liveResponses.add(content);
+    //           responseTypes.add(type);
+    //           messageCounter++;
+    //           if(content != "")
+    //           isSending = false;
+    //           print('LIVE RES LEN: ' + liveResponses.length.toString());
+    //         });
+    //         // listScrollController.animateTo(0.0, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+    //       });
+// }  
     } else {
       Fluttertoast.showToast(msg: 'Nothing to send');
     }
   }
 
 // building messages MAP
-  _buildMessage(var message, var response, var rsptype) {
+  _buildMessage(var message, var response, var rsptype, int index) {
     print('Message Build BOT msg: ' + message.toString());
     print('Message Build RESPONSE msg: ' + response.toString());
-    
+    print('INDEX: ' + index.toString());
+    print(liveResponses.toString());
+
+    if(rsptype == 'video' && index < messages.length)
+    {
+      videoController = new VideoPlayerController.file(File(response));
+      _initializeVideoPlayerFuture = videoController.initialize();
+      videoController.setVolume(0.0);
+    }
+
+    // if(!isSending && index>=messages.length){
+    //   index = messages.length - 1;
+    //   onScreenLoading[index] = true;
+    // }
+
     Container botMessage = message==""?Container(height:0.0):
-    Container(
+    onScreenQuestionsShow[index]?Container(
       margin: EdgeInsets.only(
               top: MediaQuery.of(context).size.height * 0.015, //8.0
               bottom: MediaQuery.of(context).size.height * 0.015, // 8.0
@@ -209,68 +270,54 @@ if(result.documents.length == 0){
           ),
         ],
       ),
-    );
+    ):Container(height: 0.0,);
 
-    Container responseMsg = response==""?isSending?
-    Container(
-      margin: EdgeInsets.only(
-              top: MediaQuery.of(context).size.height * 0.015, //8.0
-              bottom: MediaQuery.of(context).size.height * 0.015, //8.0
-              left: MediaQuery.of(context).size.width * 0.30, // 80.0
-              right: MediaQuery.of(context).size.width * 0.012
-            ),
-      child: Container(
-        padding: const EdgeInsets.all(5.0),
-
-                              child: Center(
-                                child: Container(
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
-                                  ),
-                                ),
-                              ),
-                              // padding: EdgeInsets.all(70.0),
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(8.0),
-                                ),
-                              ),
-                            ),
-    )
-    :
+    Container responseMsg = response==""?
     Container(height:0.0)
     :
     rsptype=="video"?
     Container(
-      margin: EdgeInsets.only(
-              top: MediaQuery.of(context).size.height * 0.015, //8.0
+      margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.015, //8.0
               bottom: MediaQuery.of(context).size.height * 0.015, //8.0
               left: MediaQuery.of(context).size.width * 0.30, // 80.0
-              right: MediaQuery.of(context).size.width * 0.012
-            ),
-            // padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
-      width: MediaQuery.of(context).size.width * 0.75,
-      decoration: BoxDecoration(
-        color: Colors.amber,
-        borderRadius: BorderRadius.all(Radius.circular(15.0),
+              right: MediaQuery.of(context).size.width * 0.012),
+      width: MediaQuery.of(context).size.width * 0.4,
+      height: MediaQuery.of(context).size.height * 0.3,
+      child: 
+          videoController == null && response == null
+              ? Container(height: 0.0)
+              : SizedBox(
+                  child: Stack(
+                    children: <Widget>[
+                      (videoController == null)
+                          ? Image.file(File(response))
+                          : Container(
+                              child: Center(
+                                child: AspectRatio(
+                                      aspectRatio: videoController.value.size != null
+                                          ? videoController.value.aspectRatio
+                                          : 1.0,
+                                      child: VideoPlayer(videoController)),
+                              ),
+                              // ),
+                              
+                      // width: 64.0,
+                      // height: 64.0,
               ),
-      ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                Text('Video message', style: (TextStyle(fontSize: 20.0)),
-                ),
-                IconButton(
-                    color: Colors.white,
-                    icon: Icon(Icons.play_arrow),
-                    iconSize: 30.0,
-                    onPressed: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> WebViewContainer(response.toString())));
-                    },
-                  ),
-              ],
+              Center(
+                child: !onScreenLoading[index]?Container(
+            height: 20.0,
+            width: 20.0,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
+          ):Container(height: 0.0,),
+              )
+                    ],
+                  )),
+        decoration: BoxDecoration(
+                            borderRadius:  BorderRadius.all(Radius.circular(15.0))),
+                        
     )
     :
     rsptype=="audio"?
@@ -283,6 +330,7 @@ if(result.documents.length == 0){
             ),
             // padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
       width: MediaQuery.of(context).size.width * 0.75,
+      height: 50.0,
       decoration: BoxDecoration(
         color: Colors.amber,
         borderRadius: BorderRadius.all(Radius.circular(15.0),
@@ -293,7 +341,13 @@ if(result.documents.length == 0){
               children: <Widget>[
                 Text('Audio message', style: (TextStyle(fontSize: 20.0)),
                 ),
-                IconButton(
+                  !onScreenLoading[index]?Container(
+            height: 8.0,
+            width: 8.0,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ):IconButton(
                     color: Colors.white,
                     icon: Icon(Icons.play_arrow),
                     iconSize: 30.0,
@@ -309,52 +363,27 @@ if(result.documents.length == 0){
     :
     rsptype=="image"?
     Container(
-      margin: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.12),
-                      child: FlatButton(
-                        child: Material(
-                          child: CachedNetworkImage(
-                            placeholder: (context, url) => Container(
-                              child: Center(
-                                child: Container(
-                                  width: 40.0,
-                                  height: 40.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
-                                  ),
-                                ),
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(8.0),
-                                ),
-                              ),
-                              width: MediaQuery.of(context).size.width * 0.65,
-                            height: MediaQuery.of(context).size.height * 0.3,
-                            ),
-                            errorWidget: (context, url, error) => Material(
-                              child: Text('Image Not available', textAlign: TextAlign.center),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(8.0),
-                              ),
-                              clipBehavior: Clip.hardEdge,
-                            ),
-                            imageUrl: response.toString(),
-                            width: MediaQuery.of(context).size.width * 0.65,
-                            height: MediaQuery.of(context).size.height * 0.3,
-                            fit: BoxFit.cover,
-                          ),
-                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                          clipBehavior: Clip.hardEdge,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                              context, MaterialPageRoute(builder: (context) => FullPhoto(url: response.toString())));
-                        },
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0)
-                    )
-    :
+      margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.015, //8.0
+              bottom: MediaQuery.of(context).size.height * 0.015, //8.0
+              left: MediaQuery.of(context).size.width * 0.30, // 80.0
+              right: MediaQuery.of(context).size.width * 0.012),
+      width: MediaQuery.of(context).size.width * 0.4,
+      height: MediaQuery.of(context).size.height * 0.3,
+      decoration: BoxDecoration(
+        image: DecorationImage(image: FileImage(File(response)), fit: BoxFit.cover),
+        borderRadius: BorderRadius.all(Radius.circular(15.0)),
+        
+      ),
+      child: Center(
+        child: !onScreenLoading[index]?Container(
+            height: 20.0,
+            width: 20.0,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ):Container(height: 0.0,),
+      ),
+    ):
     Container(
       margin: EdgeInsets.only(
               top: MediaQuery.of(context).size.height * 0.015, //8.0
@@ -369,8 +398,8 @@ if(result.documents.length == 0){
         borderRadius: BorderRadius.all(Radius.circular(15.0),
               ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text(
             response,
@@ -380,6 +409,13 @@ if(result.documents.length == 0){
             ),
             maxLines: 6,
           ),
+          !onScreenLoading[index]?Container(
+            height: 8.0,
+            width: 8.0,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ):Container(height: 0.0,)
         ],
       ),
     );
@@ -405,6 +441,10 @@ if(result.documents.length == 0){
       print('Live responses with index: ' + liveResponses[i].toString() + i.toString());
     }
     
+    if(liveResponses.length >= messages.length){
+      _updateDeliveredStatus();
+      //return AlertDialog on finish;
+    }
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -417,11 +457,15 @@ if(result.documents.length == 0){
             iconSize: 25.0,
             color: Colors.grey,
             onPressed: () async{
+              if(liveResponses.length<messages.length && !isSending)
               await Navigator.push(context,
               MaterialPageRoute(builder: (context)=> CameraExampleHome(incomingQuestion: "", docId: null, orderDocId: null,))
               ).then((url){
                 setState(() {
              isSending = true;
+             liveResponses.add(url);
+              responseTypes.add('video');
+              // messageCounter++;
            });
            print('Returned video URL: ' + url);
            onSendMessage(url, 'video', intents[messageCounter]);
@@ -433,6 +477,7 @@ if(result.documents.length == 0){
             iconSize: 25.0,
             color: Colors.grey,
             onPressed: () {
+              if(liveResponses.length<messages.length && !isSending)
               _isAudioRecording?stopRecording():startRecording();
             }
           ),
@@ -441,6 +486,7 @@ if(result.documents.length == 0){
             iconSize: 25.0,
             color: Colors.grey,
             onPressed: () async{
+              if(liveResponses.length<messages.length && !isSending)
               getImage(intents[messageCounter]);
               // messageCounter++;
             }
@@ -462,7 +508,10 @@ if(result.documents.length == 0){
                         width: MediaQuery.of(context).size.width * 0.4,
                         child: Padding(
                           padding: const EdgeInsets.only(left: 4.0),
-                          child: TextField(
+                          child: isSending?
+                          Container(height: 0.0,)
+                          :
+                          TextField(
                           textCapitalization: TextCapitalization.sentences,
                           controller: textEditingController,
                           minLines: 1,
@@ -482,15 +531,24 @@ if(result.documents.length == 0){
             color: Colors.amber,
             onPressed: (){
               print('Msg counter: ' + messageCounter.toString());
-              onSendMessage(textEditingController.text, 'text', intents[messageCounter]);
-              isSending = true;
+              if(liveResponses.length<messages.length && !isSending){
+                setState(() {
+                isSending = true;
+                liveResponses.add(textEditingController.text);
+              responseTypes.add('text');
+              });
+                onSendMessage(textEditingController.text, 'text', intents[messageCounter]);
+              
+              }
+              
             },
           )
                     ],
                   ),
                   )
-              :(Text('Thanks for training!', style: TextStyle(color: Colors.black))),
-          ),
+              : Text('Thanks for training!', style: TextStyle(color: Colors.black))
+                ),
+          
           
         ],
       ),
@@ -500,7 +558,7 @@ if(result.documents.length == 0){
   void _fetchBotIntentMessages() async{
     await Firestore.instance
     .collection('chat_script')
-    .document('1')
+    .document(widget.incomingData['script_id'])
     .collection('script')
     .getDocuments()
     .then((docs){
@@ -512,29 +570,33 @@ if(result.documents.length == 0){
     }).whenComplete((){
     setState(() {
       print('Bot messages received: '+ messages.length.toString());
+      onScreenLoading = List.filled(messages.length, false);
+      onScreenQuestionsShow = List.filled(messages.length, false);
+      if(messages.isNotEmpty)
+      onScreenQuestionsShow[0] = true;
+      print(onScreenLoading.toString());
     });
     });
   }
 
-  void _fetchXpertResponseDocuments() async{
-    await Firestore.instance
-          .collection('xpert_master')
-          .document('aamir-khan')
-          .collection('responses')
-          .getDocuments().then((docs){
-            for(var doc in docs.documents){
-              responses.add(doc);
-            }
-          }).whenComplete((){
-            print('Xpert Response docs received: '+ responses.length.toString());
-          });
-  }
+  // void _fetchXpertResponseDocuments() async{
+  //   await Firestore.instance
+  //         .collection('xpert_master')
+  //         .document('aamir-khan')
+  //         .collection('responses')
+  //         .getDocuments().then((docs){
+  //           for(var doc in docs.documents){
+  //             responses.add(doc);
+  //           }
+  //         }).whenComplete((){
+  //           print('Xpert Response docs received: '+ responses.length.toString());
+  //         });
+  // }
 
   @override
   void initState() {
     super.initState();
     _fetchBotIntentMessages();
-    _fetchXpertResponseDocuments();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -601,6 +663,8 @@ if(result.documents.length == 0){
       defaultAudioFile =
           File(pathDart.join(docDir.path, this.tempFilename + '.m4a'));
           uploadAudioFile(intents[messageCounter]);
+          liveResponses.add(defaultAudioFile.path); // temporary for UI
+          responseTypes.add('audio'); 
           isSending = true;
     });
   }
@@ -608,7 +672,21 @@ if(result.documents.length == 0){
   @override
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width;
-    return Scaffold(
+    Timer(Duration(milliseconds: 500), ()=>listScrollController.jumpTo(listScrollController.position.maxScrollExtent));
+    // Timer(Duration(milliseconds: 300), ()=>listScrollController.animateTo(0.0,
+    //       curve: Curves.easeOut, duration: const Duration(milliseconds: 300)));
+    return messages.length == 0?
+    Center(
+                                child: Container(
+                                  width: 40.0,
+                                  height: 40.0,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+                                  ),
+                                ),
+                              )
+    :
+    Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       appBar: AppBar(
         title: Row(
@@ -616,11 +694,11 @@ if(result.documents.length == 0){
             CircleAvatar(
           radius: 30.0,
           backgroundImage: widget.botPicUrl!=null?NetworkImage(widget.botPicUrl.toString()):
-          AssetImage('assets/my_prof_pic.jpg'),
+          AssetImage('assets/def_prof_pic.png'),
         ),
         SizedBox(width: 8.0,),
             Text(
-              widget.incomingData["name"]??'Jaideep',
+              widget.incomingData["name"]??'',
               style: TextStyle(
                 fontSize: 28.0,
                 fontWeight: FontWeight.bold,
@@ -661,6 +739,8 @@ if(result.documents.length == 0){
                       topRight: Radius.circular(30.0),
                     ),
                     child: ListView.builder(
+                      // reverse: true,
+                      shrinkWrap: true,
                       padding: EdgeInsets.only(top: 15.0),
                       itemCount: liveResponses.length + 1,
                       // itemCount: liveResponses.isEmpty? messageCounter+1:messageCounter+2, //messages.length
@@ -685,7 +765,7 @@ if(result.documents.length == 0){
                           rspType = responseTypes[index];
                         }
 
-                        return _buildMessage(message, response, rspType);
+                        return _buildMessage(message, response, rspType, index);
 
                         // if(!isMe){
                         //   // messageCounter++;

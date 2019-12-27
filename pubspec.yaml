@@ -40,17 +40,15 @@ dependencies:
   share:
   cloud_firestore:
   firebase_auth:
-  sliding_up_panel:
   firebase_storage: ^3.0.6
   clipboard_manager: ^0.0.1
   fluttertoast:
   firebase_database:
-  firebase_analytics:
   cached_network_image:
   photo_view:
   audioplayer:
   webview_flutter:
-  scoped_model:
+  google_sign_in:
 
 dev_dependencies:
   flutter_test:
@@ -100,6 +98,7 @@ flutter:
   - assets/def_prof_pic.png
   - assets/view_transactions.png
   - assets/notification_screen.png
+  - assets/google.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

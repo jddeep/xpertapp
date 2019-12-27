@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:xpert/xpert_profile_page.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class EditPricePage extends StatefulWidget {
   final userDocID;
@@ -12,7 +11,6 @@ class EditPricePage extends StatefulWidget {
 }
 
 class _EditPricePageState extends State<EditPricePage> {
-  PanelController _pc = new PanelController();
   TextEditingController _priceTextController = TextEditingController();
 
   Future<Null> _updateQuesPriceInDB(String newprice) async {

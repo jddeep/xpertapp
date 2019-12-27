@@ -54,17 +54,48 @@ Positioned cardDemoDummy(
                                 // image: img,
                               ),
                               child: Center(
-                                child:Text(
-                                                  'Chat with me',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 26.0,
-                                                  ),
-                                                )
+                                child: Container(
+                                  padding: EdgeInsets.only(left: screenSize.width * 0.17, top: screenSize.height * 0.045),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                                        incomingData[
+                                                                "orange_headline1"] ??
+                                                            '',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 26.0,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        incomingData[
+                                                                "orange_headline2"] ??
+                                                            '',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 45.0,
+                                                          fontWeight: FontWeight.bold
+                                                        ),
+                                                      ),
+
+                                    ],
+                                  ),
+                                ),
                               ),
                                 ),
                                 
+                                incomingData['type'] =='bot_training'?
+                    Positioned(
+                      left: screenSize.width * 0.07,
+                      top: screenSize.height * 0.04,
+                                          child: CircleAvatar(
+                  backgroundImage: NetworkImage(incomingData['bot_pic_270x270']),
+                  radius: 50.0,
+                ),
+                    ):Container(height: 0.0,)
                               ],
                             ),
                             Expanded(
@@ -81,19 +112,19 @@ Positioned cardDemoDummy(
                                        style: TextStyle(color: Colors.grey, fontSize: 17.0),
 
                                      ),
-                                     Text('Jaideep', style: TextStyle(color: Colors.black, fontSize: 22.0,)),
+                                     Text(incomingData['bot_name'], style: TextStyle(color: Colors.black, fontSize: 22.0,fontWeight: FontWeight.bold)),
                                      Text(
                                        'Role',
                                        style: TextStyle(color: Colors.grey, fontSize: 17.0),
 
                                      ),
-                                     Text('Die Hard Fan', style: TextStyle(color: Colors.black, fontSize: 20.0,)),
+                                     Text(incomingData['bot_role'], style: TextStyle(color: Colors.black, fontSize: 20.0,fontWeight: FontWeight.bold)),
                                    Text(
                                        'Goal',
                                        style: TextStyle(color: Colors.grey, fontSize: 17.0),
 
                                      ),
-                                     Text('Wants to get motivated', style: TextStyle(color: Colors.black, fontSize: 17.0,))
+                                     Text(incomingData['bot_goal'], style: TextStyle(color: Colors.black, fontSize: 17.0,fontWeight: FontWeight.bold))
                                    ],
                                   ),
                                 ),
@@ -110,7 +141,7 @@ Positioned cardDemoDummy(
                                           bottomRight: new Radius.circular(15.0)),
                                       // image: img,
                                     ),
-                                    padding: EdgeInsets.all(6.0),
+                                    padding: EdgeInsets.only(left: 5.0, right: 5.0, bottom: 8.0, top: 35.0),
                                                                     child: Row(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[

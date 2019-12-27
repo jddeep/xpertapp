@@ -16,6 +16,8 @@ import 'package:file/local.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:xpert/audiotest.dart';
 
+import 'package:flutter/services.dart';
+
 class CameraExampleHome extends StatefulWidget {
   // List<CameraDescription> cameras;
   String incomingQuestion;
@@ -328,59 +330,102 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                         ))
                     : Container(),
                 Container(
-                    decoration: BoxDecoration(
-                        color: Colors.black54,
-                        // borderRadius: BorderRadius.only(
-                        //     topLeft: Radius.circular(14.0),
-                        //     topRight: Radius.circular(14.0))
-                            ),
+                    // decoration: BoxDecoration(
+                    //     color: Colors.black54,
+                    //     // borderRadius: BorderRadius.only(
+                    //     //     topLeft: Radius.circular(14.0),
+                    //     //     topRight: Radius.circular(14.0))
+                    //         ),
                     child: showBottom
-                        ? Wrap(
+                        ? Column(
                             children: <Widget>[
-                              SingleChildScrollView(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 8.0, bottom: 8.0, left: 8.0),
-                                  child: Text(widget.incomingQuestion,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 16.0)),
-                                ),
-                              ),
                               Center(
                                 child: Container(
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      border: Border.all(
-                                          width: 4.0, color: Colors.white)),
-                                  child: IconButton(
-                                    icon: isRecording
-                                        ? Icon(Icons.stop)
-                                        : Icon(Icons.fiber_manual_record),
-                                    iconSize: 30.0,
-                                    color: Colors.red,
-                                    onPressed: () {
-                                      _startTimer();
-                                      // if(!isRecording)
-                                      // Navigator.pop(context);
-                                    },
+                                  height: MediaQuery.of(context).size.height * 0.17,
+                                  width: MediaQuery.of(context).size.width * 0.9,
+                                  child: Card(
+                                    elevation: 8.0,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+                                    color: isRecording?Colors.transparent:Colors.white,
+                                    child: Center(
+                                      child: SingleChildScrollView(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Text(
+                                            widget.incomingQuestion,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                color: isRecording?Colors.white:Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)),
+                                        ),
+                                      ),
+                                    )
                                   ),
                                 ),
                               ),
+                              // SingleChildScrollView(
+                              //   child: Padding(
+                              //     padding: const EdgeInsets.only(
+                              //         top: 8.0, bottom: 8.0, left: 8.0),
+                              //     child: Text(widget.incomingQuestion,
+                              //         textAlign: TextAlign.center,
+                              //         style: TextStyle(
+                              //             color: Colors.white, fontSize: 16.0)),
+                              //   ),
+                              // ),
+                              Padding(
+                                padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.2,
+                                 right: MediaQuery.of(context).size.width * 0.2, top: 8.0, bottom: 8.0),
+                                child: FlatButton(
+                                  color: Colors.red,
+                                  padding: EdgeInsets.all(10.0),
+                                  shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(360.0)),
+                                              child: Center(
+                                                child: Text(
+                                                  isRecording?'Stop recording':'Tap to record',
+                                                  style: TextStyle(color: Colors.white, fontSize: 20.0),
+                                                ),
+                                              ),
+                                              onPressed: (){
+                                                _startTimer();
+                                              },
+                                ),
+                              )
+                              // Center(
+                              //   child: Container(
+                              //     decoration: BoxDecoration(
+                              //         borderRadius: BorderRadius.circular(20.0),
+                              //         border: Border.all(
+                              //             width: 4.0, color: Colors.white)),
+                              //     child: IconButton(
+                              //       icon: isRecording
+                              //           ? Icon(Icons.stop)
+                              //           : Icon(Icons.fiber_manual_record),
+                              //       iconSize: 30.0,
+                              //       color: Colors.red,
+                              //       onPressed: () {
+                              //         _startTimer();
+                              //         // if(!isRecording)
+                              //         // Navigator.pop(context);
+                              //       },
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           )
                         : Wrap(
                             children: <Widget>[
-                              SingleChildScrollView(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 8.0, bottom: 8.0, left: 8.0),
-                                  child: Text(widget.incomingQuestion,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 16.0)),
-                                ),
-                              ),
+                              // SingleChildScrollView(
+                              //   child: Padding(
+                              //     padding: const EdgeInsets.only(
+                              //         top: 8.0, bottom: 8.0, left: 8.0),
+                              //     child: Text(widget.incomingQuestion,
+                              //         textAlign: TextAlign.center,
+                              //         style: TextStyle(
+                              //             color: Colors.white, fontSize: 16.0)),
+                              //   ),
+                              // ),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
@@ -399,12 +444,70 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                     padding: EdgeInsets.only(left:10.0),
                                     child: FlatButton(
                                       
-                                      onPressed: () {
+                                      onPressed: () async{
                                         print("videoPath: $videoPath");
                                         setState(() {
                                           isUploading = true;
                                           showBottom = true;
                                         });
+
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    // try {
+    //   await VideoManipulation.platformVersion.then((value){
+    //     print('Platform version: ' + value.toString());
+    //   }).whenComplete(() async{
+    //     await VideoManipulation.generateVideo([videoPath, 'assets/app_logo_bg.png'], '', 30, 1).then((path){
+    //                                       print('Watermarked vid path: ' + path);
+    //                                       if(widget.orderDocId != null){
+    //                                       _updateAcceptedStatus();
+                                        
+    //                                     uploadToStorage(path).then((url) {
+    //                                       _updateAnswerUrl(url);
+    //                                     });
+    //                                     } else if(widget.orderDocId==null && widget.docId == null){
+    //                                       setState(() {
+    //                                         isChatVideo = true;
+    //                                       });
+    //                                       uploadToStorage(path).then((url){
+    //                                         Navigator.pop(context, url);
+    //                                         isChatVideo = false;
+    //                                       });
+    //                                     }
+    //                                     else{
+    //                                       uploadToStorage(path).then((url){
+    //                                         _createNewOrder(url);
+    //                                       });
+    //                                     }
+                                        
+                                        
+    //                                     if(widget.orderDocId != null){
+    //                                       Navigator.pop(context);
+    //                                       Fluttertoast.showToast(
+    //                                       msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
+    //                                       toastLength: Toast.LENGTH_LONG,
+    //                                       gravity: ToastGravity.BOTTOM,
+    //                                       timeInSecForIos: 2,
+    //                                       backgroundColor: Colors.grey,
+    //                                       textColor: Colors.white,
+    //                                       fontSize: 16.0);
+    //                                     }else{
+    //                                       Fluttertoast.showToast(
+    //                                       msg: "Thanks! Sending your video message...",  
+    //                                       toastLength: Toast.LENGTH_LONG,
+    //                                       gravity: ToastGravity.BOTTOM,
+    //                                       timeInSecForIos: 2,
+    //                                       backgroundColor: Colors.grey,
+    //                                       textColor: Colors.white,
+    //                                       fontSize: 16.0);
+    //                                     }
+
+    //                                     });
+    //   });
+    // } on PlatformException {
+    //   print('Failed to get platform version.');
+    // }
+
+                                        
                                         if(widget.orderDocId != null){
                                           _updateAcceptedStatus();
                                         
@@ -415,8 +518,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                           setState(() {
                                             isChatVideo = true;
                                           });
+                                          Navigator.pop(context, videoPath);
                                           uploadToStorage(videoPath).then((url){
-                                            Navigator.pop(context, url);
+                                          
                                             isChatVideo = false;
                                           });
                                         }
@@ -804,20 +908,34 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               ),
             ),
           ),
-          Row(
-            children: <Widget>[
-              IconTheme(
-                data: IconThemeData(color: Colors.red),
-                child: isRecording
-                    ? Icon(Icons.fiber_manual_record)
-                    : Container(height: 1.0),
-              ),
-              Text(
-                _timeString,
-                style: TextStyle(color: Colors.white, fontSize: 20.0),
-              ),
-            ],
-          ),
+          isRecording?Container(
+            height: 50.0,
+            width: 50.0,
+            decoration: BoxDecoration(
+              color: Colors.red,
+              shape: BoxShape.circle
+            ),
+            child: Center(
+              child: Text(
+                    _timeString,
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+            ),
+          ):Container(height:0.0),
+          // Row(
+          //   children: <Widget>[
+          //     IconTheme(
+          //       data: IconThemeData(color: Colors.red),
+          //       child: isRecording
+          //           ? Icon(Icons.fiber_manual_record)
+          //           : Container(height: 1.0),
+          //     ),
+          //     Text(
+          //       _timeString,
+          //       style: TextStyle(color: Colors.white, fontSize: 20.0),
+          //     ),
+          //   ],
+          // ),
           isRecording ? Container(height: 1.0) : _toggleAudioWidget()
         ],
       );

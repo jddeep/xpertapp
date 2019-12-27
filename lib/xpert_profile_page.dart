@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:xpert/edit_profile_page.dart';
 import 'package:xpert/profile_options/edit_payment_method.dart';
 import 'package:xpert/profile_options/referral_page.dart';
-import 'package:xpert/xpertWelcome.dart';
+import 'package:xpert/mobile_login_page.dart';
 import 'create_question_page.dart';
 import 'profile_options/change_price_page.dart';
 import 'package:share/share.dart';
@@ -212,7 +212,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
     await FirebaseAuth.instance.signOut().then((value) {
       print("***** log out");
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => XpertWelcomePage()));
+          context, MaterialPageRoute(builder: (context) => XpertMobileLoginPage()));
     });
     // Navigator.popUntil(context, ModalRoute.withName("/login"));
   }
@@ -267,7 +267,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            userName ?? 'No user name',
+            userName ?? '',
             // userName,
             // 'Jaideep Prasad',
             // textAlign: TextAlign.start,
@@ -297,7 +297,21 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
                   GestureDetector(
-                    child: _showUserImagefromURL(context),
+                    child: Container(
+                      child: Stack(
+                        children: <Widget>[
+                          _showUserImagefromURL(context),
+                          Positioned(
+                            left: MediaQuery.of(context).size.width * 0.076,
+                            top: MediaQuery.of(context).size.height * 0.074,
+                            child: IconTheme(
+                              data: IconThemeData(color: Colors.grey),
+                              child: Icon(Icons.camera_alt),
+                            ),
+                          )
+                        ],
+                      )
+                      ),
                     onTap: (){
                   pickImageFromGallery(ImageSource.gallery).then((image) {
                   uploadFile();
@@ -311,14 +325,11 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                       children: <Widget>[
                         Row(
                           children: <Widget>[
-                            // Text(
-                            // userName??'Please set up one',
-                            // // userName,
-                            //   // 'Jaideep Prasad',
-                            //   textAlign: TextAlign.start,
-                            //   style: TextStyle(
-                            //       fontWeight: FontWeight.bold, fontSize: 26.0),
-                            // ),
+                            Text(
+                            userName??'',
+                              textAlign: TextAlign.start,
+                              style: TextStyle(fontSize: 22.0),
+                            ),
                             Row(
                               children: <Widget>[
                                 IconTheme(
@@ -328,21 +339,21 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                                 ),
                                 Text(
                                   userRating ?? '0.0',
-                                  style: TextStyle(fontSize: 21.0),
+                                  style: TextStyle(fontSize: 20.0),
                                 )
                               ],
                             )
                           ],
                         ),
-                        // Container(
-                        //   width: MediaQuery.of(context).size.width * 0.7,
-                        //   child: Text(userShortBio ?? 'Please set up one',
-                        //       maxLines: 4,
-                        //       style: TextStyle(fontSize: 20.0),
-                        //       softWrap: true,
-                        //       // 'Software Developer',
-                        //       textAlign: TextAlign.start),
-                        // ),
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          child: Text(userShortBio ?? 'Please set up one',
+                              maxLines: 4,
+                              style: TextStyle(fontSize: 16.0),
+                              softWrap: true,
+                              // 'Software Developer',
+                              textAlign: TextAlign.start),
+                        ),
                         Container(
                           width: MediaQuery.of(context).size.width * 0.75,
                           child: Row(
@@ -391,9 +402,19 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
               color: Colors.amber,
               padding: EdgeInsets.all(8.0),
               textColor: Colors.white,
-              child: Text(
-                'ADD A NEW ANSWER',
-                textAlign: TextAlign.center,
+              child: Wrap(direction: Axis.horizontal,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8.0,
+                children: <Widget>[
+                  IconTheme(
+                    data: IconThemeData(color: Colors.white),
+                    child: Icon(Icons.add),
+                  ),
+                  Text(
+                    'ADD A NEW ANSWER',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
             SizedBox(

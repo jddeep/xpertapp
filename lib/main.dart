@@ -5,9 +5,10 @@ import 'package:intro_views_flutter/Models/page_view_model.dart';
 import 'package:intro_views_flutter/intro_views_flutter.dart';
 import 'package:xpert/homepage2.dart';
 import 'package:xpert/otpscreen.dart';
+import 'package:xpert/xpert_welcome_page.dart';
 
 import 'dart:async';
-import 'xpertWelcome.dart';
+import 'mobile_login_page.dart';
 
 List<CameraDescription> cameras;
 bool isLoggedIn = false;
@@ -117,8 +118,9 @@ class MyApp extends StatelessWidget {
         //     ),
         //   ), //IntroViewsFlutter
         // ),
-        // home: isLoggedIn ? OTPScreen(null, '') : XpertWelcomePage()
-        home: MyHomePage2(user: null, userDocId: 'aayushi-test',)
+        home: isLoggedIn ? OTPScreen(null, '') : XpertWelcome()
+        // home: XpertWelcome(),
+        // home: MyHomePage2(user: null, userDocId: 'aayushi-test',)
         );
   }
 }

@@ -845,7 +845,7 @@ class _MyHomePage2State extends State<MyHomePage2>
       if(txt.data["type"] == 'bot_training'){
         Navigator.push(context,
         MaterialPageRoute(
-          builder: (context) => ChatScreen(botPicUrl: txt.data["profile_pic"], incomingData: txt.data, orderDocId: txt.documentID, userId: widget.userDocId)
+          builder: (context) => ChatScreen(botPicUrl: txt.data["bot_pic_270x270"], incomingData: txt.data, orderDocId: txt.documentID, userId: widget.userDocId)
         )
         );
       }else
@@ -867,7 +867,7 @@ class _MyHomePage2State extends State<MyHomePage2>
       orders.remove(txt);
       _questionsCards.removeLast();
       if(_questionsCards.length == 0){
-        _acceptUpdateData(txt.documentID);
+        // _acceptUpdateData(txt.documentID);
     }
       print('SWIPE ORDERS LEN: ' + orders.length.toString());
       
@@ -950,7 +950,7 @@ class _MyHomePage2State extends State<MyHomePage2>
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NotificationPage(),
+                      builder: (context) => NotificationPage(userDocId: widget.userDocId.toString(),),
                     ));
               },
               child: new Container(
