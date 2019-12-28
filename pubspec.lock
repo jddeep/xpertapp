@@ -397,10 +397,12 @@ packages:
   video_player:
     dependency: "direct main"
     description:
-      name: video_player
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.10.2+3"
+      path: "packages/video_player"
+      ref: "feature/caching"
+      resolved-ref: "5f4f141310206c547e50ab55c8b4574e7ac299ae"
+      url: "https://github.com/999eagle/plugins.git"
+    source: git
+    version: "0.10.3"
   webview_flutter:
     dependency: "direct main"
     description:

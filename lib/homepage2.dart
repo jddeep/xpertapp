@@ -498,6 +498,7 @@ class _MyHomePage2State extends State<MyHomePage2>
 
   String text;
   DocumentSnapshot _item;
+  DocumentSnapshot xpertData;
 
   // List<String> data =
   //     []; //[" Question 1", "Question 2", "Question 3", "Question 4"];
@@ -510,6 +511,18 @@ class _MyHomePage2State extends State<MyHomePage2>
   bool _isMandatory = false;
 
   List<Widget> _questionsCards = [];
+
+  Future<DocumentSnapshot> _fetchUserProfileData() async {
+    DocumentSnapshot userDoc;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId) // bhuvan-bam
+        .get()
+        .then((_userDoc) {
+      userDoc = _userDoc;
+    });
+    return userDoc;
+  }
 
   Future<List<DocumentSnapshot>> _getWebOrders() async {
     List<DocumentSnapshot> d = new List();
@@ -655,6 +668,9 @@ class _MyHomePage2State extends State<MyHomePage2>
 
   void initState() {
     super.initState();
+    _fetchUserProfileData().then((_xpertdata){
+      xpertData = _xpertdata;
+    });
     _getWebOrders().then((_data) {
       setState(() {
         print('ORDERS LENGTH: ' + _data.length.toString());
@@ -845,7 +861,7 @@ class _MyHomePage2State extends State<MyHomePage2>
       if(txt.data["type"] == 'bot_training'){
         Navigator.push(context,
         MaterialPageRoute(
-          builder: (context) => ChatScreen(botPicUrl: txt.data["bot_pic_270x270"], incomingData: txt.data, orderDocId: txt.documentID, userId: widget.userDocId)
+          builder: (context) => ChatScreen(botPicUrl: txt.data["bot_pic_270x270"], incomingData: txt.data, orderDocId: txt.documentID, userId: widget.userDocId, xpertData: xpertData.data)
         )
         );
       }else
@@ -867,7 +883,7 @@ class _MyHomePage2State extends State<MyHomePage2>
       orders.remove(txt);
       _questionsCards.removeLast();
       if(_questionsCards.length == 0){
-        // _acceptUpdateData(txt.documentID);
+        _acceptUpdateData(txt.documentID);
     }
       print('SWIPE ORDERS LEN: ' + orders.length.toString());
       

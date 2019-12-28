@@ -197,6 +197,9 @@ class _XpertWelcomeState extends State<XpertWelcome> {
                 ),
               ),
             ),
+            Center(
+              child: Text('Terms and Conditions'),
+            ),
             Padding(
               padding: const EdgeInsets.only(left: 20, bottom: 5),
               child: Row(

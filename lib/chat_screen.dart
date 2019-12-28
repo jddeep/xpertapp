@@ -11,6 +11,7 @@ import 'package:path/path.dart' as pathDart;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:xpert/audiotest.dart';
 import 'package:xpert/chat_audio_player.dart';
 import 'package:xpert/global.dart';
 import 'package:xpert/videoanswerscreen.dart';
@@ -23,8 +24,9 @@ class ChatScreen extends StatefulWidget {
   final userId;
   final orderDocId;
   final incomingData;
+  final xpertData;
   
-  ChatScreen({this.botPicUrl, this.orderDocId, this.userId, this.incomingData});
+  ChatScreen({this.botPicUrl, this.orderDocId, this.userId, this.incomingData, this.xpertData});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -41,6 +43,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
   String tempFilename = DateTime.now().millisecondsSinceEpoch.toString(); //"TempRecording"
   File defaultAudioFile;
   VideoPlayerController videoController;
+  VoidCallback videoPlayerListener;
+  bool isVideoPlaying = false;
   Future<void> _initializeVideoPlayerFuture;
 
   final TextEditingController textEditingController = new TextEditingController();
@@ -94,10 +98,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     });
   }
 
-  Future uploadAudioFile(var intent) async{
+  Future uploadAudioFile(String filePath, var intent) async{
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    final file = File(filePath);
     StorageReference reference = FirebaseStorage.instance.ref().child(fileName);
-    StorageUploadTask uploadTask = reference.putFile(defaultAudioFile);
+    StorageUploadTask uploadTask = reference.putFile(file);
     StorageTaskSnapshot storageTaskSnapshot = await uploadTask.onComplete;
     storageTaskSnapshot.ref.getDownloadURL().then((downloadUrl) {
       audioUrl = downloadUrl;
@@ -111,14 +116,55 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
       print('The audioUrl is: ' +audioUrl);
       onSendMessage(audioUrl, 'audio', intent);
     }, onError: (err) {
-      // setState(() {
-      //   isLoading = false;
-      // });
       Fluttertoast.showToast(msg: 'This file is not an audio');
     });
   }
 
+    Future uploadToStorage(String filePath, var intent) async {
+    String url;
+    try {
+      final DateTime now = DateTime.now();
+      final int millSeconds = now.millisecondsSinceEpoch;
+      final String month = now.month.toString();
+      final String date = now.day.toString();
+      final String storageId = (millSeconds.toString());
+      final String today = ('$month-$date');
+
+//  final file =  await ImagePicker.pickVideo(source: ImageSource.gallery);
+      final file = File(filePath);
+      StorageReference ref = FirebaseStorage.instance
+          .ref()
+          .child("video")
+          .child(today)
+          .child(storageId);
+      StorageUploadTask uploadTask =
+          ref.putFile(file, StorageMetadata(contentType: 'video/mp4'));
+      final StorageTaskSnapshot downloadUrl = (await uploadTask.onComplete);
+      downloadUrl.ref.getDownloadURL().then((downloadurl){
+        url = downloadurl;
+        isSending = true;
+        liveResponses.removeLast();
+        responseTypes.removeLast();
+        setState(() {
+          liveResponses.add(url);
+          responseTypes.add('video');
+        });
+        print('The Video url: ' + url);
+        onSendMessage(url, 'video', intent);
+      }, onError: (err) {
+      Fluttertoast.showToast(msg: 'This file is not an video');
+      });
+      // url = (await downloadUrl.ref.getDownloadURL());
+
+      print(url);
+    } catch (error) {
+      print(error);
+      return null;
+    }
+  }
+
   void _updateDeliveredStatus() async {
+    print('USER ID: ' + widget.userId.toString() + 'ORDER ID: ' + widget.orderDocId.toString());
     await Firestore.instance
         .collection('xpert_master')
         .document(widget.userId.toString())
@@ -127,6 +173,40 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
         .updateData(
             {'status': 'delivered'}).whenComplete(() {
       print('Delivered status!');
+    });
+  }
+
+  Future<void> _stopVideoPlayer() async {
+    videoController?.removeListener(videoPlayerListener);
+    await videoController?.dispose();
+    setState(() {
+      isVideoPlaying = false;
+    });
+  }
+
+  Future<void> _startVideoPlayer(String videoPath) async {
+    final VideoPlayerController vcontroller =
+        VideoPlayerController.file(File(videoPath));
+    videoPlayerListener = () {
+      if (videoController != null && videoController.value.size != null) {
+        // Refreshing the state to update video player with the correct ratio.
+        if (mounted) setState(() {});
+        videoController.removeListener(videoPlayerListener);
+      }
+    };
+    vcontroller.addListener(videoPlayerListener);
+    await vcontroller.setLooping(true);
+    await vcontroller.initialize();
+    await videoController?.dispose();
+    // if (mounted) {
+    //   setState(() {
+    //     videoController = vcontroller;
+    //   });
+    // }
+    await vcontroller.play().then((value){
+      setState(() {
+        isVideoPlaying = true;
+      });
     });
   }
 
@@ -148,6 +228,41 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
   responseData["response"] = content;
   responseData["intent"] = intent;
   responseData["response_type"] = type;
+  responseData['amp_text_url'] = '';
+  responseData['ans_end'] = '';
+  responseData['ans_start'] = '';
+  responseData['answer_status'] = 'custom';
+  responseData['bucket1'] = '';
+  responseData['bucket2'] = '';
+  responseData['contributor_id'] = '';
+  responseData['contributor_name'] = '';
+  responseData['contributor_pic'] = '';
+  responseData['date'] = '${DateTime.now()}';
+  responseData['doc_type'] = '';
+  responseData['fan_ltr'] = 0;
+  responseData['fan_views'] = 0;
+  responseData['fan_votes'] = 0;
+  responseData['interest_ltr'] = 0;
+  responseData['interest_views'] = 0;
+  responseData['interest_votes'] = 0;
+  responseData['interview_id'] = 0;
+  responseData['language'] = 'en';
+  responseData['ltr'] = 0;
+  responseData['perishable'] = 'no';
+  responseData['profession_ltr'] = 0;
+  responseData['profession_views'] = 0;
+  responseData['profession_votes'] = 0;
+  responseData['question_id'] = 0;
+  responseData['total_views'] = 0;
+  responseData['total_votes'] = 0;
+  responseData['profession'] = '';
+  responseData['question'] = messages[messageCounter];
+  responseData['source_url'] = '';
+  responseData['transcript'] = '';
+  responseData['xpert_name'] = widget.xpertData['name'];
+  responseData['xpert_pic'] = widget.xpertData['profile_image'];
+  responseData['contributor_auth_id'] = '';
+  responseData['share_link'] = 'www.xpert.tv/cr/${widget.xpertData['slug']}';
 
   DocumentReference newIntentDoc = Firestore.instance.collection('xpert_master')
           .document(widget.userId)
@@ -231,9 +346,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
 
     if(rsptype == 'video' && index < messages.length)
     {
-      videoController = new VideoPlayerController.file(File(response));
+      videoController = new VideoPlayerController.network(response);
       _initializeVideoPlayerFuture = videoController.initialize();
-      videoController.setVolume(0.0);
     }
 
     // if(!isSending && index>=messages.length){
@@ -283,15 +397,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
               right: MediaQuery.of(context).size.width * 0.012),
       width: MediaQuery.of(context).size.width * 0.4,
       height: MediaQuery.of(context).size.height * 0.3,
-      child: 
-          videoController == null && response == null
-              ? Container(height: 0.0)
-              : SizedBox(
+      child: SizedBox(
                   child: Stack(
-                    children: <Widget>[
-                      (videoController == null)
-                          ? Image.file(File(response))
-                          : Container(
+                    children: <Widget>[Container(
                               child: Center(
                                 child: AspectRatio(
                                       aspectRatio: videoController.value.size != null
@@ -311,7 +419,21 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
-          ):Container(height: 0.0,),
+          ):Center(
+            child: Container(
+              child: IconButton(
+                  color: Colors.white,
+                  iconSize: 50.0,
+                  icon: Icon(Icons.play_arrow),
+                  onPressed: (){
+                    // isVideoPlaying?_stopVideoPlayer():_startVideoPlayer(response);
+                    Navigator.push(context,
+                    MaterialPageRoute(builder: (context)=>WebViewContainer(response))
+                    );
+                  },
+                ),
+            ),
+          ),
               )
                     ],
                   )),
@@ -401,21 +523,23 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Text(
+          Container(
+            width: MediaQuery.of(context).size.width * 0.5,
+            child:Text(
             response,
             style: TextStyle(
               color: Colors.white,
               fontSize: 18.0,
             ),
             maxLines: 6,
-          ),
+          ),),
           !onScreenLoading[index]?Container(
             height: 8.0,
             width: 8.0,
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
-          ):Container(height: 0.0,)
+          ):Container(height: 0.0,width: 0.0)
         ],
       ),
     );
@@ -435,6 +559,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     );
   }
 
+  bool isBotTrained = false;
+
   _buildMessageComposer() {
     for(int i =0; i<liveResponses.length; i++){
       print('Questions with index: ' + messages[i].toString()+ i.toString());
@@ -442,7 +568,18 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     }
     
     if(liveResponses.length >= messages.length){
-      _updateDeliveredStatus();
+      if(!isBotTrained){
+        isBotTrained = true;
+        _updateDeliveredStatus();
+      }
+      
+      Fluttertoast.showToast(
+        msg: 'Thanks for chatting!\nWe will use these responses to appropriately reply back to your fans.',
+        backgroundColor: Colors.amber,
+        gravity: ToastGravity.BOTTOM,
+        textColor: Colors.white,
+        toastLength: Toast.LENGTH_LONG
+      );
       //return AlertDialog on finish;
     }
 
@@ -459,16 +596,18 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
             onPressed: () async{
               if(liveResponses.length<messages.length && !isSending)
               await Navigator.push(context,
-              MaterialPageRoute(builder: (context)=> CameraExampleHome(incomingQuestion: "", docId: null, orderDocId: null,))
+              MaterialPageRoute(builder: (context)=> CameraExampleHome(incomingQuestion: messages[messageCounter], docId: null, orderDocId: null,))
               ).then((url){
+                if(url != null && url.toString().isNotEmpty)
                 setState(() {
              isSending = true;
-             liveResponses.add(url);
+             liveResponses.add(url); // actually this is the local path
               responseTypes.add('video');
               // messageCounter++;
            });
            print('Returned video URL: ' + url);
-           onSendMessage(url, 'video', intents[messageCounter]);
+           uploadToStorage(url, intents[messageCounter]);
+          //  onSendMessage(url, 'video', intents[messageCounter]);
               });
             }
           ),
@@ -476,9 +615,23 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
             icon: Icon(Icons.mic),
             iconSize: 25.0,
             color: Colors.grey,
-            onPressed: () {
-              if(liveResponses.length<messages.length && !isSending)
-              _isAudioRecording?stopRecording():startRecording();
+            onPressed: () async{
+              if(liveResponses.length<messages.length && !isSending){
+                await Navigator.push(context,
+                MaterialPageRoute(builder: (context)=>AudioRecPage(incomingQuestion: messages[messageCounter], userDocId: null, orderDocId: null,))
+                ).then((url){
+                  if(url != null && url.toString().isNotEmpty)
+                  setState(() {
+                    isSending = true;
+                    liveResponses.add(url);
+                    responseTypes.add('audio');
+                  });
+                  print('Returned Audio url: '+ url);
+                  uploadAudioFile(url, intents[messageCounter]);
+                  // onSendMessage(url, 'audio', intents[messageCounter]);
+                });
+              }
+              // _isAudioRecording?stopRecording():startRecording();
             }
           ),
           IconButton(
@@ -600,6 +753,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     WidgetsBinding.instance.addObserver(this);
   }
 
+  @override
+  void dispose() {
+    isBotTrained = false;
+    super.dispose();
+  }
+
       // @override
       // void didChangeAppLifecycleState(AppLifecycleState state) async{
       //   switch(state){
@@ -650,24 +809,24 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     }
   }
 
-  stopRecording() async {
-    await AudioRecorder.stop();
-    bool isRecording = await AudioRecorder.isRecording;
+  // stopRecording() async {
+  //   await AudioRecorder.stop();
+  //   bool isRecording = await AudioRecorder.isRecording;
 
-    Directory docDir = await getApplicationDocumentsDirectory();
+  //   Directory docDir = await getApplicationDocumentsDirectory();
 
-    setState(() {
-      _isAudioRecording = isRecording;
-      print('Recorded file: ' + defaultAudioFile.path);
-      Fluttertoast.showToast(msg: 'Recorded your message!', backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
-      defaultAudioFile =
-          File(pathDart.join(docDir.path, this.tempFilename + '.m4a'));
-          uploadAudioFile(intents[messageCounter]);
-          liveResponses.add(defaultAudioFile.path); // temporary for UI
-          responseTypes.add('audio'); 
-          isSending = true;
-    });
-  }
+  //   setState(() {
+  //     _isAudioRecording = isRecording;
+  //     print('Recorded file: ' + defaultAudioFile.path);
+  //     Fluttertoast.showToast(msg: 'Recorded your message!', backgroundColor: Colors.grey, textColor: Colors.white, toastLength: Toast.LENGTH_SHORT);
+  //     defaultAudioFile =
+  //         File(pathDart.join(docDir.path, this.tempFilename + '.m4a'));
+  //         uploadAudioFile(intents[messageCounter]);
+  //         liveResponses.add(defaultAudioFile.path); // temporary for UI
+  //         responseTypes.add('audio'); 
+  //         isSending = true;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

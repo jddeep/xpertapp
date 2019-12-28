@@ -16,6 +16,11 @@ class _NotificationPageState extends State<NotificationPage> {
   QuerySnapshot result;
 
   Widget _buildList(BuildContext context, DocumentSnapshot document) {
+    var data = document.data;
+
+    if(data['reaction_type']=='downvote' || data['reaction_type']=='flag')
+    return Container(height: 0.0,);
+    
     return Container(
       padding: EdgeInsets.all(8.0),
       child: Row(
@@ -29,7 +34,16 @@ class _NotificationPageState extends State<NotificationPage> {
             Container(
               padding: EdgeInsets.only(left: 4.0),
               width: MediaQuery.of(context).size.width * 0.8,
-              child: Text(document.data['sender']+' gave a ' + document.data['reaction_type'] + ' to your answer to ' + '"' + document.data['question'] + '"',
+              child: Text(
+                data['reaction_type']=='like'?data['first_name'] + ' liked your answer to "' + data['question']+'"':
+                data['reaction_type']=='view'?data['first_name'] + ' viewed your answer for "' + data['question']+'"':
+                data['reaction_type']=='save'?data['first_name'] + ' saved your answer for "' + data['question']+'"':
+                data['reaction_type']=='follow'?data['first_name'] + ' has started following you':
+                data['reaction_type']=='comment'?data['first_name'] + ' shared a comment "${data['user_comment']}" for your answer to ${data['question']}':
+                data['reaction_type']=='share'?data['first_name'] + ' has shared your answer for "' + data['question'] + '"':
+                data['reaction_type']=='messaged'?data['first_name'] + ' chatted with your bot and said "${data['utterance']}"':
+                data['reaction_type']=='chat'?data['first_name'] + ' has started a chat with your bot':'',
+        // document.data['sender']+' gave a ' + document.data['reaction_type'] + ' to your answer to ' + '"' + document.data['question'] + '"',
         style: TextStyle(color: Colors.black, fontSize: 16.0),
         maxLines: 4,
       ),

@@ -120,6 +120,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   @override
   void initState() {
     setupCameras();
+    if(widget.docId == null && widget.orderDocId == null)
+    isChatVideo = true;
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // CameraDescription cameraDescription = CameraDescription(lensDirection: CameraLensDirection.front);
@@ -129,7 +131,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    isChatVideo = false;
     _controller.dispose();
+    controller.dispose();
     _stopVideoPlayer();
     super.dispose();
   }
@@ -309,7 +313,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                !showBottom
+                !showBottom && !isChatVideo
                     ? Container(
                         decoration: BoxDecoration(color: Colors.grey),
                         child: Row(
@@ -515,14 +519,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                           _updateAnswerUrl(url);
                                         });
                                         } else if(widget.orderDocId==null && widget.docId == null){
-                                          setState(() {
-                                            isChatVideo = true;
-                                          });
+                                          // setState(() {
+                                          //   isChatVideo = true;
+                                          // });
                                           Navigator.pop(context, videoPath);
-                                          uploadToStorage(videoPath).then((url){
+                                          isChatVideo = false;
+                                          // uploadToStorage(videoPath).then((url){
                                           
-                                            isChatVideo = false;
-                                          });
+                                          //   isChatVideo = false;
+                                          // });
                                         }
                                         else{
                                           uploadToStorage(videoPath).then((url){
@@ -727,7 +732,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   /// Toggle recording audio
   Widget _toggleAudioWidget() {
-    return !showBottom && !isRecording?Container(height: 0.0,):Row(
+    return isChatVideo?Container(height: 0.0):!showBottom && !isRecording?Container(height: 0.0,):Row(
       children: <Widget>[
         Text(
           'TURN ON VIDEO',
@@ -1205,8 +1210,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   }
 
   Future<void> _stopVideoPlayer() async {
-    videoController?.removeListener(videoPlayerListener);
-    await videoController?.dispose();
+    videoController.removeListener(videoPlayerListener);
+    await videoController.dispose();
   }
 
   Future<void> _startVideoPlayer() async {
