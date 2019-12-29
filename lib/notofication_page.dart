@@ -51,11 +51,6 @@ class _NotificationPageState extends State<NotificationPage> {
           ],
         ),
     );
-    //   subtitle: Text(document.data['sender']+' gave a ' + document.data['reaction_type'] + ' to your answer to ' + '"' + document.data['question'] + '"',
-    //   style: TextStyle(color: Colors.black, fontSize: 17.0),
-      
-    //   // subtitle: Text(document['body']),
-    // );
   }
 
   @override
@@ -90,6 +85,11 @@ class _NotificationPageState extends State<NotificationPage> {
             );
           }
           List<DocumentSnapshot> notifications = snapshot.data.documents.toList();
+
+          if(notifications.length == 0)
+          return Center(
+            child: Text('No Notifications', style: TextStyle(color: Colors.grey, fontSize: 16.0)),
+          );
 
           print('Notification data: ' +notifications[0].data.toString());
           return ListView.builder(

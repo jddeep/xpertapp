@@ -141,7 +141,7 @@ Positioned cardDemoDummy(
                                           bottomRight: new Radius.circular(15.0)),
                                       // image: img,
                                     ),
-                                    padding: EdgeInsets.only(left: 5.0, right: 5.0, bottom: 8.0, top: 35.0),
+                                    padding: EdgeInsets.only(left: 5.0, right: 5.0, bottom: 8.0, top: 30.0),
                                                                     child: Row(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[

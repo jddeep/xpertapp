@@ -198,32 +198,35 @@ class _XpertWelcomeState extends State<XpertWelcome> {
               ),
             ),
             Center(
-              child: Text('Terms and Conditions'),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 20, bottom: 5),
-              child: Row(
-                children: <Widget>[
-                  Text(
-                    'Looking to follow Xperts? ',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Download our User App.',
-                    style: TextStyle(color: Colors.amber),
-                  )
-                ],
+              child: Padding(
+                padding: const EdgeInsets.only(bottom:8.0),
+                child: Text('Terms & Conditions', style: TextStyle(decoration: TextDecoration.underline),),
               ),
             ),
-            MaterialButton(
-              minWidth: double.infinity,
-              height: 60,
-              color: Colors.amber,
-              child: Text('Continue',
-                  style: TextStyle(color: Colors.white, fontSize: 20)),
-              onPressed: () {
-              },
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.only(left: 20, bottom: 5),
+            //   child: Row(
+            //     children: <Widget>[
+            //       Text(
+            //         'Looking to follow Xperts? ',
+            //         style: TextStyle(color: Colors.white),
+            //       ),
+            //       Text(
+            //         'Download our User App.',
+            //         style: TextStyle(color: Colors.amber),
+            //       )
+            //     ],
+            //   ),
+            // ),
+            // MaterialButton(
+            //   minWidth: double.infinity,
+            //   height: 60,
+            //   color: Colors.amber,
+            //   child: Text('Continue',
+            //       style: TextStyle(color: Colors.white, fontSize: 20)),
+            //   onPressed: () {
+            //   },
+            // ),
           ],
         ),
       ),

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_recorder/audio_recorder.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -10,14 +9,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path/path.dart' as pathDart;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:video_player/video_player.dart';
 import 'package:xpert/audiotest.dart';
 import 'package:xpert/chat_audio_player.dart';
-import 'package:xpert/global.dart';
 import 'package:xpert/videoanswerscreen.dart';
 import 'package:xpert/web_video_view.dart';
-
-import 'fullphoto.dart';
+import 'package:thumbnails/thumbnails.dart';
 
 class ChatScreen extends StatefulWidget {
   final botPicUrl;
@@ -42,10 +38,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
   bool _isAudioRecording = false;
   String tempFilename = DateTime.now().millisecondsSinceEpoch.toString(); //"TempRecording"
   File defaultAudioFile;
-  VideoPlayerController videoController;
-  VoidCallback videoPlayerListener;
   bool isVideoPlaying = false;
-  Future<void> _initializeVideoPlayerFuture;
+List<String> _thumbnailPaths = List();
 
   final TextEditingController textEditingController = new TextEditingController();
   final ScrollController listScrollController = new ScrollController();
@@ -176,40 +170,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     });
   }
 
-  Future<void> _stopVideoPlayer() async {
-    videoController?.removeListener(videoPlayerListener);
-    await videoController?.dispose();
-    setState(() {
-      isVideoPlaying = false;
-    });
-  }
-
-  Future<void> _startVideoPlayer(String videoPath) async {
-    final VideoPlayerController vcontroller =
-        VideoPlayerController.file(File(videoPath));
-    videoPlayerListener = () {
-      if (videoController != null && videoController.value.size != null) {
-        // Refreshing the state to update video player with the correct ratio.
-        if (mounted) setState(() {});
-        videoController.removeListener(videoPlayerListener);
-      }
-    };
-    vcontroller.addListener(videoPlayerListener);
-    await vcontroller.setLooping(true);
-    await vcontroller.initialize();
-    await videoController?.dispose();
-    // if (mounted) {
-    //   setState(() {
-    //     videoController = vcontroller;
-    //   });
-    // }
-    await vcontroller.play().then((value){
-      setState(() {
-        isVideoPlaying = true;
-      });
-    });
-  }
-
   void onSendMessage(String content, String type, var intent) async{
     if (content.trim() != '') {
       textEditingController.clear();
@@ -337,18 +297,31 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     }
   }
 
+_getThumbnail(videoPathUrl) async {
+  var appDocDir = await getApplicationDocumentsDirectory();
+  final folderPath = appDocDir.path;
+  String thumb = await Thumbnails.getThumbnail(
+      thumbnailFolder: folderPath,
+      videoFile: videoPathUrl,
+      imageType: ThumbFormat.PNG,//this image will store in created folderpath
+      quality: 30);
+  print(thumb);
+  return thumb;
+}
+int videothumbnailCounter = 0;
 // building messages MAP
   _buildMessage(var message, var response, var rsptype, int index) {
     print('Message Build BOT msg: ' + message.toString());
     print('Message Build RESPONSE msg: ' + response.toString());
     print('INDEX: ' + index.toString());
     print(liveResponses.toString());
+    print('thubmnailPaths: ' + _thumbnailPaths.toString());
 
-    if(rsptype == 'video' && index < messages.length)
-    {
-      videoController = new VideoPlayerController.network(response);
-      _initializeVideoPlayerFuture = videoController.initialize();
-    }
+    // if(rsptype == 'video' && index < messages.length)
+    // {
+    //   videoController = new VideoPlayerController.network(response);
+    //   _initializeVideoPlayerFuture = videoController.initialize();
+    // }
 
     // if(!isSending && index>=messages.length){
     //   index = messages.length - 1;
@@ -397,32 +370,23 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
               right: MediaQuery.of(context).size.width * 0.012),
       width: MediaQuery.of(context).size.width * 0.4,
       height: MediaQuery.of(context).size.height * 0.3,
-      child: SizedBox(
-                  child: Stack(
-                    children: <Widget>[Container(
-                              child: Center(
-                                child: AspectRatio(
-                                      aspectRatio: videoController.value.size != null
-                                          ? videoController.value.aspectRatio
-                                          : 1.0,
-                                      child: VideoPlayer(videoController)),
-                              ),
-                              // ),
-                              
-                      // width: 64.0,
-                      // height: 64.0,
-              ),
-              Center(
-                child: !onScreenLoading[index]?Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(image: videothumbnailCounter<_thumbnailPaths.length?
+        FileImage(File(_thumbnailPaths[videothumbnailCounter])):AssetImage('assets/def_prof_pic.png'),
+         fit: BoxFit.cover),
+        borderRadius: BorderRadius.all(Radius.circular(15.0)),
+        
+      ),
+      child: Center(
+        child: !onScreenLoading[index]?Container(
             height: 20.0,
             width: 20.0,
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
-          ):Center(
-            child: Container(
+          ):Container(
               child: IconButton(
-                  color: Colors.white,
+                  color: Colors.amber,
                   iconSize: 50.0,
                   icon: Icon(Icons.play_arrow),
                   onPressed: (){
@@ -433,14 +397,59 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
                   },
                 ),
             ),
-          ),
-              )
-                    ],
-                  )),
-        decoration: BoxDecoration(
-                            borderRadius:  BorderRadius.all(Radius.circular(15.0))),
-                        
+      ),
     )
+    // Container(
+    //   margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.015, //8.0
+    //           bottom: MediaQuery.of(context).size.height * 0.015, //8.0
+    //           left: MediaQuery.of(context).size.width * 0.30, // 80.0
+    //           right: MediaQuery.of(context).size.width * 0.012),
+    //   width: MediaQuery.of(context).size.width * 0.4,
+    //   height: MediaQuery.of(context).size.height * 0.3,
+    //   child: SizedBox(
+    //               child: Stack(
+    //                 children: <Widget>[Container(
+    //                           child: Center(
+    //                             child: AspectRatio(
+    //                                   aspectRatio: videoController.value.size != null
+    //                                       ? videoController.value.aspectRatio
+    //                                       : 1.0,
+    //                                   child: VideoPlayer(videoController)),
+    //                           ),
+    //                           // ),
+                              
+    //                   // width: 64.0,
+    //                   // height: 64.0,
+    //           ),
+    //           Center(
+    //             child: !onScreenLoading[index]?Container(
+    //         height: 20.0,
+    //         width: 20.0,
+    //         child: CircularProgressIndicator(
+    //           valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+    //         ),
+    //       ):Center(
+    //         child: Container(
+    //           child: IconButton(
+    //               color: Colors.white,
+    //               iconSize: 50.0,
+    //               icon: Icon(Icons.play_arrow),
+    //               onPressed: (){
+    //                 // isVideoPlaying?_stopVideoPlayer():_startVideoPlayer(response);
+    //                 Navigator.push(context,
+    //                 MaterialPageRoute(builder: (context)=>WebViewContainer(response))
+    //                 );
+    //               },
+    //             ),
+    //         ),
+    //       ),
+    //           )
+    //                 ],
+    //               )),
+    //     decoration: BoxDecoration(
+    //                         borderRadius:  BorderRadius.all(Radius.circular(15.0))),
+                        
+    // )
     :
     rsptype=="audio"?
     Container(
@@ -544,8 +553,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
       ),
     );
 
-    // if(response!="" && message!="")
-    // isSending = false;
+    if(rsptype == 'video' && index < messages.length){
+      videothumbnailCounter++;
+    }
 
     // MAP of two containers together
     return Container(
@@ -598,8 +608,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
               await Navigator.push(context,
               MaterialPageRoute(builder: (context)=> CameraExampleHome(incomingQuestion: messages[messageCounter], docId: null, orderDocId: null,))
               ).then((url){
-                if(url != null && url.toString().isNotEmpty)
+                if(url != null && url.toString().isNotEmpty){
                 setState(() {
+                  _getThumbnail(url).then((_url){
+                    setState(() {
+                      _thumbnailPaths.add(_url);
+                    });
+                  });
              isSending = true;
              liveResponses.add(url); // actually this is the local path
               responseTypes.add('video');
@@ -607,6 +622,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
            });
            print('Returned video URL: ' + url);
            uploadToStorage(url, intents[messageCounter]);
+                }
           //  onSendMessage(url, 'video', intents[messageCounter]);
               });
             }
@@ -620,7 +636,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
                 await Navigator.push(context,
                 MaterialPageRoute(builder: (context)=>AudioRecPage(incomingQuestion: messages[messageCounter], userDocId: null, orderDocId: null,))
                 ).then((url){
-                  if(url != null && url.toString().isNotEmpty)
+                  if(url != null && url.toString().isNotEmpty){
                   setState(() {
                     isSending = true;
                     liveResponses.add(url);
@@ -628,6 +644,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
                   });
                   print('Returned Audio url: '+ url);
                   uploadAudioFile(url, intents[messageCounter]);
+                  }
                   // onSendMessage(url, 'audio', intents[messageCounter]);
                 });
               }
@@ -758,7 +775,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
     isBotTrained = false;
     super.dispose();
   }
-
       // @override
       // void didChangeAppLifecycleState(AppLifecycleState state) async{
       //   switch(state){
@@ -831,7 +847,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
   @override
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width;
-    Timer(Duration(milliseconds: 500), ()=>listScrollController.jumpTo(listScrollController.position.maxScrollExtent));
+    videothumbnailCounter = 0;
+    if(messages.length != 0)
+    Timer(Duration(milliseconds: 300), ()=>listScrollController.jumpTo(listScrollController.position.maxScrollExtent));
     // Timer(Duration(milliseconds: 300), ()=>listScrollController.animateTo(0.0,
     //       curve: Curves.easeOut, duration: const Duration(milliseconds: 300)));
     return messages.length == 0?
@@ -923,7 +941,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
                           response = liveResponses[index];
                           rspType = responseTypes[index];
                         }
-
                         return _buildMessage(message, response, rspType, index);
 
                         // if(!isMe){

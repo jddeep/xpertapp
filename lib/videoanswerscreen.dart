@@ -133,8 +133,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     WidgetsBinding.instance.removeObserver(this);
     isChatVideo = false;
     _controller.dispose();
-    controller.dispose();
-    _stopVideoPlayer();
+    _timer.cancel();
+    // _stopVideoPlayer();
     super.dispose();
   }
 
@@ -260,17 +260,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     // :
     return Scaffold(
       key: _scaffoldKey,
-      body: isChatVideo?
-      Center(
-        child: Container(
-                                  width: 40.0,
-                                  height: 40.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
-                                  ),
-                                ),
-      )
-      :
+      body: 
       Stack(
         children: <Widget>[
           // Positioned(
@@ -450,6 +440,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                       
                                       onPressed: () async{
                                         print("videoPath: $videoPath");
+                                        if(!isChatVideo)
                                         setState(() {
                                           isUploading = true;
                                           showBottom = true;
@@ -1036,12 +1027,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     const oneSec = const Duration(seconds: 1);
     _timer = new Timer.periodic(
       oneSec,
-      (Timer timer) => setState(
+      (Timer timer) { 
+        if(mounted)
+        setState(
         () {
           _start = _start + 1;
           _timeString = formatHHMMSS(_start);
         },
-      ),
+      );
+      }
     );
   }
 
@@ -1210,8 +1204,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   }
 
   Future<void> _stopVideoPlayer() async {
-    videoController.removeListener(videoPlayerListener);
-    await videoController.dispose();
+    videoController?.removeListener(videoPlayerListener);
+    await videoController?.dispose();
   }
 
   Future<void> _startVideoPlayer() async {

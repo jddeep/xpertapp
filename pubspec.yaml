@@ -28,11 +28,11 @@ dependencies:
   country_code_picker: '^1.1.7'
   pin_code_text_field: ^1.4.0
   camera:
-  video_player:
-    git:
-      url: https://github.com/999eagle/plugins.git
-      ref: feature/caching
-      path: packages/video_player
+  video_player: ^0.10.1
+    # git:
+    #   url: https://github.com/999eagle/plugins.git
+    #   ref: feature/caching
+      # path: packages/video_player
   intl:
   flutter_sound:
   audio_recorder: '^1.0.1'
@@ -53,6 +53,8 @@ dependencies:
   audioplayer:
   webview_flutter:
   google_sign_in:
+  chewie: ^0.9.7
+  thumbnails:
 
 dev_dependencies:
   flutter_test:
