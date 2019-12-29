@@ -844,8 +844,26 @@ int videothumbnailCounter = 0;
   //   });
   // }
 
+void _checkInternetConnection() async{
+  try {
+  final result = await InternetAddress.lookup('google.com');
+  if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+    print('connected');
+  }
+} on SocketException catch (_) {
+  print('not connected');
+  Fluttertoast.showToast(
+    msg: 'No Internet Connection!',
+    backgroundColor: Colors.grey,
+    gravity: ToastGravity.CENTER,
+    textColor: Colors.white,
+    toastLength: Toast.LENGTH_SHORT
+  );
+}
+}
   @override
   Widget build(BuildContext context) {
+    _checkInternetConnection();
     width = MediaQuery.of(context).size.width;
     videothumbnailCounter = 0;
     if(messages.length != 0)
