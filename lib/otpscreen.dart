@@ -27,15 +27,19 @@ class _OTPScreenState extends State<OTPScreen> {
 
   _checkIntoMaster(FirebaseUser user) async {
     print('UID: ' + user.uid);
+    print('EMAIL: ' + user.email);
     await dataBaseRef
         .collection('xpert_master')
         .where('auth_id', isEqualTo: user.uid)
         .getDocuments()
         .then((docsMaster) {
       print('auth id check' + docsMaster.documents.toList().toString());
-      if (docsMaster.documents.length == 0 && widget.phoneNumber!=null && widget.phoneNumber.isNotEmpty) {
+      if (docsMaster.documents.length == 0) {
         /// if auth_id doesn't match with any documents
         /// in xpert_master collection then check phoneNumeber of that user.
+        if(widget.phoneNumber == null || widget.phoneNumber == ''){
+          widget.phoneNumber = 'no-mobile-number';
+        }
         dataBaseRef
             .collection('xpert_master')
             .where('mobile', isEqualTo: widget.phoneNumber)
@@ -43,6 +47,7 @@ class _OTPScreenState extends State<OTPScreen> {
             .then((docsMaster) {
           print('mobilecheck' + docsMaster.documents.toList().toString());
           if (docsMaster.documents.length == 0) {
+            widget.phoneNumber = '';
             //email check
             dataBaseRef
             .collection('xpert_master')

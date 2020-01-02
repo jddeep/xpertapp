@@ -59,10 +59,7 @@ Positioned cardDemoDummy(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      Text(
-                                                        incomingData[
-                                                                "orange_headline1"] ??
-                                                            '',
+                                      Text('Have a',
                                                         textAlign: TextAlign.center,
                                                         style: TextStyle(
                                                           color: Colors.white,
@@ -70,9 +67,7 @@ Positioned cardDemoDummy(
                                                         ),
                                                       ),
                                                       Text(
-                                                        incomingData[
-                                                                "orange_headline2"] ??
-                                                            '',
+                                                            'CHAT',
                                                         textAlign: TextAlign.center,
                                                         style: TextStyle(
                                                           color: Colors.white,
@@ -118,13 +113,13 @@ Positioned cardDemoDummy(
                                        style: TextStyle(color: Colors.grey, fontSize: 17.0),
 
                                      ),
-                                     Text(incomingData['bot_role'], style: TextStyle(color: Colors.black, fontSize: 20.0,fontWeight: FontWeight.bold)),
+                                     Text(incomingData['bot_role']??'', style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
                                    Text(
                                        'Goal',
                                        style: TextStyle(color: Colors.grey, fontSize: 17.0),
 
                                      ),
-                                     Text(incomingData['bot_goal'], style: TextStyle(color: Colors.black, fontSize: 17.0,fontWeight: FontWeight.bold))
+                                     Text(incomingData['bot_goal'], style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold))
                                    ],
                                   ),
                                 ),
@@ -303,7 +298,7 @@ Positioned cardDemoDummy(
                         fit: BoxFit.contain,
                       ),
                     ),
-                  )
+                  ):incomingData['message_type'] == 'video'?Expanded(flex: 1, child: Container(height: 0.0,))
                 : Expanded(
                   flex: 1,
                     child: Container(

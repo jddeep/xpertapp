@@ -17,6 +17,7 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:xpert/audiotest.dart';
 
 import 'package:flutter/services.dart';
+import 'package:xpert/global.dart';
 
 class CameraExampleHome extends StatefulWidget {
   // List<CameraDescription> cameras;
@@ -201,7 +202,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         .collection('creator-settings')
         .document(creatorsetDocId.toString())
         .updateData(
-            {'fulfilled': FieldValue.increment(1)}).whenComplete(() {
+            {'fulfilled': FieldValue.increment(1),
+            'requests' : FieldValue.increment(-1)
+            }).whenComplete(() {
       print('Fulfilled updated!');
     });
         });
@@ -221,11 +224,18 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   void _createNewOrder(String url) async{
 
+    if(LAST_ORDER_NO == null)
+    LAST_ORDER_NO = 0;
+
     Map<String, dynamic> order = new Map();
     order["message"] = widget.incomingQuestion;
     order["answer_url"] = url;
+    order["date"] = DateFormat("MMMM dd, yyyy 'at' hh:mm:ss aaa").format(DateTime.now()) + ' UTC+' +DateTime.now().timeZoneOffset.toString().substring(0, 4);
     order["answer_type"] = "video";
     order["status"] = "delivered";
+    order["order_no"] = ++LAST_ORDER_NO;
+
+    print('NEW DATE: ' +order['date']);
 
 
     DocumentReference newOrderDoc = Firestore.instance.collection('xpert_master')
@@ -514,7 +524,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                           //   isChatVideo = true;
                                           // });
                                           Navigator.pop(context, videoPath);
-                                          isChatVideo = false;
                                           // uploadToStorage(videoPath).then((url){
                                           
                                           //   isChatVideo = false;
@@ -527,17 +536,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                         }
                                         
                                         
-                                        if(widget.orderDocId != null){
-                                          Navigator.pop(context);
-                                          Fluttertoast.showToast(
-                                          msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
-                                          toastLength: Toast.LENGTH_LONG,
-                                          gravity: ToastGravity.BOTTOM,
-                                          timeInSecForIos: 2,
-                                          backgroundColor: Colors.grey,
-                                          textColor: Colors.white,
-                                          fontSize: 16.0);
-                                        }else{
+                                        if(widget.orderDocId == null && widget.docId == null){
                                           Fluttertoast.showToast(
                                           msg: "Thanks! Sending your video message...",  
                                           toastLength: Toast.LENGTH_LONG,
@@ -546,8 +545,20 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                           backgroundColor: Colors.grey,
                                           textColor: Colors.white,
                                           fontSize: 16.0);
+                                        }else{
+                                          Fluttertoast.showToast(
+                                          msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
+                                          toastLength: Toast.LENGTH_LONG,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIos: 2,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
                                         }
-                                        
+
+                                        if(!isChatVideo){
+                                          Navigator.pop(context);
+                                        }
                                         
                                         //                   Navigator.pushReplacement(
                                         // context,

@@ -55,6 +55,8 @@ dependencies:
   google_sign_in:
   chewie: ^0.9.7
   thumbnails:
+  html_unescape:
+  circular_profile_avatar:
 
 dev_dependencies:
   flutter_test:

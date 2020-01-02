@@ -474,6 +474,7 @@ import 'package:flutter/material.dart';
 import 'package:xpert/activeCard.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:xpert/chat_screen.dart';
+import 'package:xpert/global.dart';
 import 'package:xpert/notofication_page.dart';
 import 'package:xpert/videoanswerscreen.dart';
 import 'package:xpert/xpert_profile_page.dart';
@@ -499,6 +500,7 @@ class _MyHomePage2State extends State<MyHomePage2>
   String text;
   DocumentSnapshot _item;
   DocumentSnapshot xpertData;
+  var lastOrderNo;
 
   // List<String> data =
   //     []; //[" Question 1", "Question 2", "Question 3", "Question 4"];
@@ -534,6 +536,7 @@ class _MyHomePage2State extends State<MyHomePage2>
         // .document('aayush-sinha')//widget.title
         .collection('orders')
         .where('status', isEqualTo: 'xpert review')
+        .orderBy('order_no', descending: true)
         .getDocuments()
         .then((docs) {
       for (var item in docs.documents) {
@@ -562,6 +565,30 @@ class _MyHomePage2State extends State<MyHomePage2>
       print('Updated!');
       _isMandatory = false;
     });
+  }
+
+  void _updateRejectedRequests() async{
+    var creatorsetDocId;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId.toString()) // bhuvan-bam
+        .collection('creator-settings')
+        .getDocuments()
+        .then((_userDoc){
+          creatorsetDocId = _userDoc.documents[0].documentID;
+        }).whenComplete(() async{
+          await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId.toString())
+        .collection('creator-settings')
+        .document(creatorsetDocId.toString())
+        .updateData(
+            {
+            'requests' : FieldValue.increment(-1)
+            }).whenComplete(() {
+      print('Requests updated!');
+    });
+        });
   }
 
   void _acceptUpdateData(_orderDocID) async{
@@ -675,6 +702,11 @@ class _MyHomePage2State extends State<MyHomePage2>
       setState(() {
         print('ORDERS LENGTH: ' + _data.length.toString());
         orders = _data;
+        if(orders.length != 0){
+          lastOrderNo = orders[0].data['order_no'];
+        LAST_ORDER_NO = orders[0].data['order_no'];
+        }
+        print('LAST ORDER NO: ' + lastOrderNo.toString());
       });
       // _createCardList(_data);
       print('ORDERS LENGTH: ' + orders.length.toString());
@@ -904,6 +936,10 @@ class _MyHomePage2State extends State<MyHomePage2>
         if (txt.data['mandatory'] == 'yes') _isMandatory = true;
 
         _rejectUpdateData(txt.documentID);
+
+        if(!_isMandatory)
+        _updateRejectedRequests();
+
         orders.remove(txt);
         if(orders.length == 0)
         _questionsCards = new List();

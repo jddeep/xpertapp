@@ -6,9 +6,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as pathDart;
 import 'package:xpert/videoanswerscreen.dart';
+
+import 'global.dart';
 
 class AudioRecordingFragment extends StatefulWidget {
   final incomingQuestion;
@@ -40,6 +43,34 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
       profImgUrl = doc.data["profile_image"];
     });
     return profImgUrl;
+  }
+
+  void _createNewOrder(String url) async{
+
+    if(LAST_ORDER_NO == null)
+    LAST_ORDER_NO = 0;
+
+    Map<String, dynamic> order = new Map();
+    order["message"] = widget.incomingQuestion;
+    order["answer_url"] = url;
+    order["date"] = DateFormat("MMMM dd, yyyy 'at' hh:mm:ss aaa").format(DateTime.now()) + ' UTC+' +DateTime.now().timeZoneOffset.toString().substring(0, 4);
+    order["answer_type"] = "audio";
+    order["status"] = "delivered";
+    order["order_no"] = ++LAST_ORDER_NO;
+
+
+    DocumentReference newOrderDoc = Firestore.instance.collection('xpert_master')
+          .document(widget.userDocId)
+          .collection('orders')
+          .document();
+
+    await Firestore.instance.runTransaction((transaction) async{
+      await transaction.set(newOrderDoc, order);
+      
+    }).whenComplete((){
+      isUploading = false;
+      print("New order added with doc id: " + newOrderDoc.documentID);
+    });
   }
 
   Future<String> uploadToStorage() async {
@@ -495,16 +526,28 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                                           //   isChatAudio = true;
                                           // });
                                           Navigator.pop(context, defaultAudioFile.path);
-                                          uploadToStorage().then((url){
+                                          // uploadToStorage().then((url){
                                             
-                                            // isChatAudio = false;
+                                          //   // isChatAudio = false;
+                                          // });
+                                        } else {
+                                          uploadToStorage().then((url){
+                                            _createNewOrder(url);
                                           });
                                         }
                                         
                                         
-                                        if(widget.orderDocId != null){
-                                          Navigator.pop(context);
-                                        Fluttertoast.showToast(
+                                        if(widget.orderDocId == null && widget.userDocId == null){
+                                          Fluttertoast.showToast(
+                                          msg: "Thanks! Sending your video message...",  
+                                          toastLength: Toast.LENGTH_LONG,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIos: 2,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
+                                        }else{
+                                          Fluttertoast.showToast(
                                           msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
                                           toastLength: Toast.LENGTH_LONG,
                                           gravity: ToastGravity.BOTTOM,
@@ -513,6 +556,9 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                                           textColor: Colors.white,
                                           fontSize: 16.0);
                                         }
+
+                                        if(!isChatVideo)
+                                        Navigator.pop(context);
                                         
                                       },
                                       shape: RoundedRectangleBorder(

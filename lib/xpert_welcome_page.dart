@@ -110,7 +110,7 @@ class _XpertWelcomeState extends State<XpertWelcome> {
                                 bottom:
                                     MediaQuery.of(context).size.height / 7.32,
                                 // left: MediaQuery.of(context).size.width / 18,
-                                top: MediaQuery.of(context).size.height / 80), // 100, 20, 6
+                                top: MediaQuery.of(context).size.height / 15), // 100, 20, 6
                             child: Column(
                               children: <Widget>[
                                 Padding(

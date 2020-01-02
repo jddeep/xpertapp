@@ -12,6 +12,7 @@ import 'package:xpert/edit_profile_page.dart';
 import 'package:xpert/profile_options/edit_payment_method.dart';
 import 'package:xpert/profile_options/referral_page.dart';
 import 'package:xpert/mobile_login_page.dart';
+import 'package:xpert/xpert_welcome_page.dart';
 import 'create_question_page.dart';
 import 'profile_options/change_price_page.dart';
 import 'package:share/share.dart';
@@ -212,7 +213,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
     await FirebaseAuth.instance.signOut().then((value) {
       print("***** log out");
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => XpertMobileLoginPage()));
+          context, MaterialPageRoute(builder: (context) => XpertWelcome()));
     });
     // Navigator.popUntil(context, ModalRoute.withName("/login"));
   }
@@ -266,14 +267,16 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
     } else
       return Scaffold(
         appBar: AppBar(
-          title: Text(
-            userName ?? '',
-            // userName,
-            // 'Jaideep Prasad',
-            // textAlign: TextAlign.start,
-            // style: TextStyle(
-            //     fontWeight: FontWeight.bold, fontSize: 26.0),
-          ),
+          backgroundColor: Colors.grey[850],
+          elevation: 0.0,
+          // title: Text(
+          //   userName ?? '',
+          //   // userName,
+          //   // 'Jaideep Prasad',
+          //   // textAlign: TextAlign.start,
+          //   // style: TextStyle(
+          //   //     fontWeight: FontWeight.bold, fontSize: 26.0),
+          // ),
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.edit),
@@ -328,7 +331,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                             Text(
                             userName??'',
                               textAlign: TextAlign.start,
-                              style: TextStyle(fontSize: 22.0),
+                              style: TextStyle(fontSize: 24.0),
                             ),
                             Row(
                               children: <Widget>[
@@ -347,7 +350,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                         ),
                         Container(
                           width: MediaQuery.of(context).size.width * 0.7,
-                          child: Text(userShortBio ?? 'Please set up one',
+                          child: Text(userShortBio ?? '',
                               maxLines: 4,
                               style: TextStyle(fontSize: 16.0),
                               softWrap: true,
@@ -395,7 +398,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
             MaterialButton(
               minWidth: MediaQuery.of(context).size.width * 0.9,
               onPressed: () {
-                Navigator.push(context,
+                Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context)=> CreateQuestionPage(userDocId: widget.title))
                 );
               },

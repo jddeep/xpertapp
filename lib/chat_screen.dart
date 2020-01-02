@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as pathDart;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -167,7 +168,32 @@ List<String> _thumbnailPaths = List();
         .updateData(
             {'status': 'delivered'}).whenComplete(() {
       print('Delivered status!');
+      _updateFulfilledStatus();
     });
+  }
+
+  void _updateFulfilledStatus() async{
+    var creatorsetDocId;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userId.toString()) // bhuvan-bam
+        .collection('creator-settings')
+        .getDocuments()
+        .then((_userDoc){
+          creatorsetDocId = _userDoc.documents[0].documentID;
+        }).whenComplete(() async{
+          await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userId.toString())
+        .collection('creator-settings')
+        .document(creatorsetDocId.toString())
+        .updateData(
+            {'fulfilled': FieldValue.increment(1),
+            'requests' : FieldValue.increment(-1)
+            }).whenComplete(() {
+      print('Fulfilled updated!');
+    });
+        });
   }
 
   void onSendMessage(String content, String type, var intent) async{
@@ -197,7 +223,7 @@ List<String> _thumbnailPaths = List();
   responseData['contributor_id'] = '';
   responseData['contributor_name'] = '';
   responseData['contributor_pic'] = '';
-  responseData['date'] = '${DateTime.now()}';
+  responseData['date'] = DateFormat("MMMM dd, yyyy 'at' hh:mm:ss aaa").format(DateTime.now()) + ' UTC+' +DateTime.now().timeZoneOffset.toString().substring(0, 4);
   responseData['doc_type'] = '';
   responseData['fan_ltr'] = 0;
   responseData['fan_views'] = 0;
@@ -342,7 +368,7 @@ int videothumbnailCounter = 0;
         color: Colors.white,
         borderRadius: BorderRadius.all(Radius.circular(15.0),
               ),
-              border: Border.all(color: Colors.black)
+              border: Border.all(color: Colors.grey)
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,12 +609,25 @@ int videothumbnailCounter = 0;
         _updateDeliveredStatus();
       }
       
-      Fluttertoast.showToast(
-        msg: 'Thanks for chatting!\nWe will use these responses to appropriately reply back to your fans.',
-        backgroundColor: Colors.amber,
-        gravity: ToastGravity.BOTTOM,
-        textColor: Colors.white,
-        toastLength: Toast.LENGTH_LONG
+      // Fluttertoast.showToast(
+      //   msg: 'Thanks for chatting!\nWe will use these responses to appropriately reply back to your fans.',
+      //   backgroundColor: Colors.amber,
+      //   gravity: ToastGravity.BOTTOM,
+      //   textColor: Colors.white,
+      //   toastLength: Toast.LENGTH_LONG
+      // );
+
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.0),
+      height: MediaQuery.of(context).size.height * 0.1,
+      color: Colors.grey,
+      child: Center(
+        child: Text('Thanks for chatting!\nWe will use these responses to appropriately reply back to your fans.',
+        style: TextStyle(color: Colors.white, fontSize: 17.0),
+        maxLines: 3,
+        textAlign: TextAlign.center,
+        ),
+      ),
       );
       //return AlertDialog on finish;
     }
@@ -596,7 +635,11 @@ int videothumbnailCounter = 0;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.0),
       height: MediaQuery.of(context).size.height * 0.1,
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: BorderDirectional(top: BorderSide(color: Colors.grey))
+      ),
+      
       child: Row(
         children: <Widget>[
           IconButton(
@@ -669,7 +712,7 @@ int videothumbnailCounter = 0;
                     borderRadius: BorderRadius.all(
                                       Radius.circular(8.0),
                                     ),
-                                    border: Border.all(color: Colors.black)
+                                    border: Border.all(color: Colors.grey)
                   ),
                   child:Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -728,8 +771,9 @@ int videothumbnailCounter = 0;
   void _fetchBotIntentMessages() async{
     await Firestore.instance
     .collection('chat_script')
-    .document(widget.incomingData['script_id'])
+    .document(widget.incomingData['script_id'].toString())
     .collection('script')
+    .orderBy('id', descending: false)
     .getDocuments()
     .then((docs){
       for(var doc in docs.documents){
@@ -893,7 +937,7 @@ void _checkInternetConnection() async{
         ),
         SizedBox(width: 8.0,),
             Text(
-              widget.incomingData["name"]??'',
+              widget.incomingData["bot_name"]??'',
               style: TextStyle(
                 fontSize: 28.0,
                 fontWeight: FontWeight.bold,

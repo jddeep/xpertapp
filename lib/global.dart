@@ -1,4 +1,5 @@
 // String CHAT_URL;
+var LAST_ORDER_NO;
 
 // import 'package:scoped_model/scoped_model.dart';
 
