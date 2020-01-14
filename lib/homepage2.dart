@@ -474,6 +474,7 @@ import 'package:flutter/material.dart';
 import 'package:xpert/activeCard.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:xpert/chat_screen.dart';
+import 'package:xpert/create_question_page.dart';
 import 'package:xpert/global.dart';
 import 'package:xpert/notofication_page.dart';
 import 'package:xpert/videoanswerscreen.dart';
@@ -697,6 +698,7 @@ class _MyHomePage2State extends State<MyHomePage2>
     super.initState();
     _fetchUserProfileData().then((_xpertdata){
       xpertData = _xpertdata;
+      NOTIFS = xpertData.data['notification']??''=='unseen'?true:false;
     });
     _getWebOrders().then((_data) {
       setState(() {
@@ -906,6 +908,7 @@ class _MyHomePage2State extends State<MyHomePage2>
             docId: widget.userDocId,
             // docId: 'aayush-sinha',
             orderDocId: txt.documentID,
+            type: txt.data['type'],
           ),
         ),
       );
@@ -937,8 +940,8 @@ class _MyHomePage2State extends State<MyHomePage2>
 
         _rejectUpdateData(txt.documentID);
 
-        if(!_isMandatory)
-        _updateRejectedRequests();
+        // if(!_isMandatory)
+        // _updateRejectedRequests();
 
         orders.remove(txt);
         if(orders.length == 0)
@@ -1006,11 +1009,26 @@ class _MyHomePage2State extends State<MyHomePage2>
                     ));
               },
               child: new Container(
-                  padding: EdgeInsets.only(right: 14.0),
-                  child: new Icon(
-                    Icons.notifications,
-                    color: Colors.white,
-                    size: 30.0,
+                  padding: EdgeInsets.only(right: 14.0, top: 14.0),
+                  child: Stack(
+                    children: <Widget>[
+                      Icon(
+                        Icons.notifications,
+                        color: Colors.white,
+                        size: 30.0,
+                      ),
+                      NOTIFS?Positioned(
+                        left: 2.0,
+                        top: 2.0,
+                        child:Container(
+                        height: 10.0,
+                        width: 10.0,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(360.0),
+                          color: Colors.red
+                        ),
+                      )):Container(height: 0.0,)
+                    ],
                   )),
             ),
           ],
@@ -1069,7 +1087,7 @@ class _MyHomePage2State extends State<MyHomePage2>
                         else
                         bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/67.0:MediaQuery.of(context).size.height/77.0;
                         // double bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height* 0.03:15;
-                        backCardPosition = backCardPosition - bkdist;
+                        backCardPosition = backCardPosition - bkdist + (_questionsCards.length <=7?(_questionsCards.length < 3?8.5:2.7):1.1);
                         // MediaQuery.of(context).size.height > 640? MediaQuery.of(context).size.height* 0.04
                         // :MediaQuery.of(context).size.height* 0.04;
                         backCardWidth = backCardWidth + 50;
@@ -1120,10 +1138,14 @@ class _MyHomePage2State extends State<MyHomePage2>
                         height: MediaQuery.of(context).size.height * 0.07,
                         decoration: BoxDecoration(
                             image: DecorationImage(
-                                image: AssetImage('assets/do_later_two.png'))),
+                                image: AssetImage('assets/add_question_two.png'))),
                       ),
                       onTap: () {
-                        if (_questionsCards.length != 0) doLaterPressed(_item);
+                        // if (_questionsCards.length != 0) doLaterPressed(_item);
+                        if(_questionsCards.length != 0)
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context)=> CreateQuestionPage(userDocId: widget.userDocId,))
+                        );
                       },
                     ),
                   ),

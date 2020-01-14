@@ -21,13 +21,14 @@ import 'package:xpert/global.dart';
 
 class CameraExampleHome extends StatefulWidget {
   // List<CameraDescription> cameras;
+  var type;
   String incomingQuestion;
   final LocalFileSystem localFileSystem;
   var orderDocId;
   var docId;
 
   CameraExampleHome(
-      {this.incomingQuestion, this.orderDocId, this.docId, localFileSystem})
+      {this.incomingQuestion, this.orderDocId, this.docId, this.type, localFileSystem})
       : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
@@ -135,7 +136,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     isChatVideo = false;
     _controller.dispose();
     _timer.cancel();
-    // _stopVideoPlayer();
+    _stopVideoPlayer();
     super.dispose();
   }
 
@@ -154,6 +155,17 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
   }
 
+  void _updateIntroVideoField(String url) async{
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.docId.toString())
+        .updateData({
+          'intro_video' : url
+        }).whenComplete((){
+          print('Intro Video done!');
+        });
+  }
+
   void _updateAnswerUrl(String url) async {
     print('URL: ' +
         url +
@@ -169,6 +181,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         .updateData({
       'answer_url': url,
       'status': 'delivered',
+      'paid' : _paid?'Yes':'No',
       'answer_type': 'video'
     }).whenComplete(() {
       print('Updated!');
@@ -285,7 +298,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //   ),
           // ),
           Container(
-            child: _cameraPreviewWidget(),
+            child: isRecording?_cameraPreviewWidget():(videoPath==null || videoPath == '')?_cameraPreviewWidget():_thumbnailWidget(),
           ),
           Align(
             alignment: AlignmentDirectional.topStart,
@@ -313,35 +326,38 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                !showBottom && !isChatVideo
-                    ? Container(
-                        decoration: BoxDecoration(color: Colors.grey),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Text('MARK ANSWER AS: ',
-                                style: TextStyle(color: Colors.black)),
-                            Text("PAID", style: TextStyle(color: Colors.black)),
-                            CupertinoSwitch(
-                              value: _paid,
-                              onChanged: (value) {
-                                setState(() {
-                                  _paid = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ))
-                    : Container(),
+                // !showBottom && !isChatVideo
+                //     ? Container(
+                //         decoration: BoxDecoration(color: Colors.grey),
+                //         child: Row(
+                //           mainAxisAlignment: MainAxisAlignment.end,
+                //           children: <Widget>[
+                //             Text('MARK ANSWER AS: ',
+                //                 style: TextStyle(color: Colors.black)),
+                //             Text("PAID", style: TextStyle(color: Colors.black)),
+                //             CupertinoSwitch(
+                //               value: _paid,
+                //               onChanged: (value) {
+                //                 setState(() {
+                //                   _paid = value;
+                //                 });
+                //               },
+                //             ),
+                //           ],
+                //         ))
+                //     : Container(),
                 Container(
+                  child: Column(
+                    children: <Widget>[
+
+                    
                     // decoration: BoxDecoration(
                     //     color: Colors.black54,
                     //     // borderRadius: BorderRadius.only(
                     //     //     topLeft: Radius.circular(14.0),
                     //     //     topRight: Radius.circular(14.0))
                     //         ),
-                    child: showBottom
-                        ? Column(
+                    Column(
                             children: <Widget>[
                               Center(
                                 child: Container(
@@ -351,18 +367,52 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                     elevation: 8.0,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
                                     color: isRecording?Colors.transparent:Colors.white,
-                                    child: Center(
-                                      child: SingleChildScrollView(
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Text(
-                                            widget.incomingQuestion,
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                color: isRecording?Colors.white:Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)),
-                                        ),
+                                    child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          Container(
+                                            height: !showBottom?MediaQuery.of(context).size.height * 0.09:MediaQuery.of(context).size.height * 0.12,
+                                            child: SingleChildScrollView(
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(8.0),
+                                                  child: Text(
+                                                    // 'sdasfbdkfbksdfksdjhfgkjdhflhfjf;lsjf;ljd;lgjf;lmbvmf;ljv;lrguvljfvl;m;fljgv;lmfv;lfbv;lfd;lb;aljfgotugjporeugpoerogju;dflbjmd bl,dvssmgc;,oa;dlka;ifpaovmrpvr,ef.',
+                                                    widget.incomingQuestion,
+                                                    textAlign: TextAlign.start,
+                                                    // maxLines: 3,
+                                                    style: TextStyle(
+                                                        color: isRecording?Colors.white:Colors.black, fontSize: 17.0,)),
+                                                ),
+                                              ),
+                                          ),
+                                          !showBottom && !isChatVideo?Divider(
+                                            color: Colors.grey,
+                                            height: 5.0,
+                                            thickness: 1.0,
+                                          ):Container(height: 0.0,),
+                                          !showBottom && !isChatVideo?
+                                            // padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+                                            Container(
+                                            child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            Text('MARK ANSWER AS: ',
+                                style: TextStyle(color: Colors.black, fontSize: 12.0)),
+                            Text("PAID", style: TextStyle(color: Colors.black, fontSize: 12.0)),
+                            CupertinoSwitch(
+                                value: _paid,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _paid = value;
+                                  });
+                                },
+                              ),
+                          ],
+                        ),
+                                          ):Container(height: 0.0,),
+                                        ],
                                       ),
-                                    )
                                   ),
                                 ),
                               ),
@@ -376,7 +426,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                               //             color: Colors.white, fontSize: 16.0)),
                               //   ),
                               // ),
-                              Padding(
+                              showBottom?Padding(
                                 padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.2,
                                  right: MediaQuery.of(context).size.width * 0.2, top: 8.0, bottom: 8.0),
                                 child: FlatButton(
@@ -395,7 +445,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                                 _startTimer();
                                               },
                                 ),
-                              )
+                              ):Container(height: 0.0),
                               // Center(
                               //   child: Container(
                               //     decoration: BoxDecoration(
@@ -417,8 +467,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                               //   ),
                               // ),
                             ],
-                          )
-                        : Wrap(
+                          ),
+
+                        !showBottom?Wrap(
                             children: <Widget>[
                               // SingleChildScrollView(
                               //   child: Padding(
@@ -440,6 +491,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                     onPressed: () {
                                       setState(() {
                                         // onResumeButtonPressed();
+                                        videoController.pause();
+                                        videoController?.removeListener(videoPlayerListener);
+                                        videoPath = '';
                                         showBottom = true;
                                       });
                                     },
@@ -518,6 +572,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                         
                                         uploadToStorage(videoPath).then((url) {
                                           _updateAnswerUrl(url);
+                                          if(widget.type == 'orange')
+                                          _updateIntroVideoField(url);
                                         });
                                         } else if(widget.orderDocId==null && widget.docId == null){
                                           // setState(() {
@@ -591,7 +647,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                                 ],
                               ),
                             ],
-                          ) //todo,
+                        
+                        ):Container(height: 0.0,),
+                     ],
+                   ), //todo,
                     ),
               ],
             ),
@@ -665,13 +724,13 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //     ),
           //   ),
           // ),
-          Align(
-            alignment: AlignmentDirectional.bottomEnd,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10.0, right: 10.0),
-              child: _thumbnailWidget(),
-            ),
-          )
+          // Align(
+          //   alignment: AlignmentDirectional.bottomEnd,
+          //   child: Padding(
+          //     padding: const EdgeInsets.only(bottom: 10.0, right: 10.0),
+          //     child: _thumbnailWidget(),
+          //   ),
+          // )
         ],
       ),
     );
@@ -796,32 +855,22 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   /// Display the thumbnail of the captured image or video.
   Widget _thumbnailWidget() {
     return Container(
-      height: 70.0,
-      width: 70.0,
-      child: Row(
-        children: <Widget>[
-          videoController == null && imagePath == null
-              ? Container()
-              : SizedBox(
-                  child: (videoController == null)
-                      ? Image.file(File(imagePath))
-                      : Container(
-                          child: Center(
-                            child: AspectRatio(
-                                aspectRatio: videoController.value.size != null
-                                    ? videoController.value.aspectRatio
-                                    : 1.0,
-                                child: VideoPlayer(videoController)),
-                          ),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.amber)),
-                        ),
-                  width: 64.0,
-                  height: 64.0,
-                ),
-        ],
-      ),
-    );
+      // height: MediaQuery.of(context).size.height,
+      // width: MediaQuery.of(context).size.width,
+        child: videoController == null && imagePath == null
+                ? Container(height: 0.0,)
+                : SizedBox(
+                    child: (videoController == null)
+                        ? Container(height: 0.0,)
+                        : Center(child:Transform.scale(
+                          scale: 1 / videoController.value.aspectRatio,
+                          child:AspectRatio(
+                                  aspectRatio: videoController.value.size != null
+                                      ? videoController.value.aspectRatio
+                                      : 1.0,
+                                  child: VideoPlayer(videoController)),),),
+                  ),
+      );
   }
 
   /// Display the control bar with buttons to take pictures and record videos.
@@ -1185,7 +1234,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       _showCameraException(e);
       return null;
     }
-    // await _startVideoPlayer();
+    await _startVideoPlayer();
   }
 
   Future<void> pauseVideoRecording() async {
@@ -1232,7 +1281,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     vcontroller.addListener(videoPlayerListener);
     await vcontroller.setLooping(true);
     await vcontroller.initialize();
-    await videoController?.dispose();
+    // await videoController?.dispose();
     if (mounted) {
       setState(() {
         imagePath = null;

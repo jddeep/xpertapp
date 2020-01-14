@@ -131,15 +131,15 @@ class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
     });
   }
 
-  Future<void> verifyPhone() async {
+  Future<void> verifyPhone(String _phoneNumber) async {
     final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
       this.verificationId = verId;
-      print('autotimeout ' + '+91' + _phoneNumberController.text);
+      print('autotimeout ' + '+91' + _phoneNumber);
     };
 
     final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeResend]) {
       this.verificationId = verId;
-      print('sms code sent: ' + '+91' + _phoneNumberController.text);
+      print('sms code sent: ' + '+91' + _phoneNumber);
 
       // smsCodeDialog(context).then((value) {
       //   print('Signed in');
@@ -164,11 +164,11 @@ class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
 
     final PhoneVerificationFailed veriFailed = (AuthException exception) {
       print('${exception.message}');
-      print('exception on: ' + '+91' + _phoneNumberController.text);
+      print('exception on: ' + '+91' + _phoneNumber);
     };
 
     await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: '+91' + _phoneNumberController.text,
+      phoneNumber: '+91' + _phoneNumber,
       codeAutoRetrievalTimeout: autoRetrieve,
       codeSent: smsCodeSent,
       timeout: const Duration(seconds: 120),
@@ -205,12 +205,11 @@ class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () {
-        return _closeApp();
-      },
-      child: Scaffold(
+    return Scaffold(
         resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Text('Log in using mobile number'),
+        ),
         body: Column(
           children: <Widget>[
             Expanded(
@@ -223,8 +222,8 @@ class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
                           Stack(
                             children: <Widget>[
                               Container(
-                                height: MediaQuery.of(context).size.height /
-                                    2.62, //280
+                                height: MediaQuery.of(context).size.height>640?MediaQuery.of(context).size.height /
+                                    2.62:MediaQuery.of(context).size.height/3.3, //280
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
                                       image:
@@ -234,8 +233,8 @@ class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
                               ),
                               Padding(
                                 padding: EdgeInsets.only(
-                                    top: MediaQuery.of(context).size.height /
-                                        3.0), //310
+                                    top: MediaQuery.of(context).size.height>640?MediaQuery.of(context).size.height /
+                                        3.0:MediaQuery.of(context).size.height/4.0), //310
                                 child: Center(
                                   child: Container(
                                     height: 75.0, //75
@@ -286,7 +285,13 @@ class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
                                 ),
                                 Container(
                                   width: 200,
-                                  child: TextField(
+                                  child: TextFormField(
+                                    validator: (value) {
+    if (value == '') {
+      return 'Please enter your mobile number';
+    }
+    return null;
+  },
                                     controller: _phoneNumberController,
                                     decoration: InputDecoration(
                                       hintText: 'Enter your phone number',
@@ -308,21 +313,21 @@ class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 20, bottom: 5),
-              child: Row(
-                children: <Widget>[
-                  Text(
-                    'Looking to follow Xperts? ',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Download our User App.',
-                    style: TextStyle(color: Colors.amber),
-                  )
-                ],
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.only(left: 20, bottom: 5),
+            //   child: Row(
+            //     children: <Widget>[
+            //       Text(
+            //         'Looking to follow Xperts? ',
+            //         style: TextStyle(color: Colors.white),
+            //       ),
+            //       Text(
+            //         'Download our User App.',
+            //         style: TextStyle(color: Colors.amber),
+            //       )
+            //     ],
+            //   ),
+            // ),
             MaterialButton(
               minWidth: double.infinity,
               height: 60,
@@ -331,20 +336,19 @@ class _XpertMobileLoginPageState extends State<XpertMobileLoginPage> {
                   style: TextStyle(color: Colors.white, fontSize: 20)),
               onPressed: () {
                 // _checkPhone();
-                verifyPhone();
+                verifyPhone(_phoneNumberController.text);
                 ////Move to OTP Page
                 if(!isVerified)
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => new OTPScreen(
-                          signInWithPhoneNumber, _phoneNumberController.text),
+                          signInWithPhoneNumber, verifyPhone, _phoneNumberController.text),
                     ));
               },
             ),
           ],
         ),
-      ),
     );
   }
 }

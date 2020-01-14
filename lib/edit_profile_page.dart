@@ -112,8 +112,8 @@ TextEditingController _longbioController = TextEditingController();
                          TextField(
                            controller: _longbioController,
                            autofocus: false,
-                           minLines: 1,
-                           maxLines: 10,
+                           minLines: 7,
+                           maxLines: 15,
                            keyboardType: TextInputType.text,
                            style: TextStyle(color: Colors.black, fontSize: 18.0),
                            decoration: InputDecoration(hintText: 'Enter long bio',

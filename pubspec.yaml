@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.1+2
+version: 1.0.1+4
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -57,6 +57,8 @@ dependencies:
   thumbnails:
   html_unescape:
   circular_profile_avatar:
+  dart_ping: '1.0.0'
+  http: ^0.12.0+2
 
 dev_dependencies:
   flutter_test:
@@ -107,6 +109,7 @@ flutter:
   - assets/view_transactions.png
   - assets/notification_screen.png
   - assets/google.jpg
+  - assets/add_question_two.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

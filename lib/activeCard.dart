@@ -208,7 +208,10 @@ Positioned cardDemo(
                                       // image: img,
                                     ),
                                     padding: EdgeInsets.only(left: 5.0, right: 5.0, bottom: 8.0, top: 30.0),
-                                                                    child: Row(
+                                                                    child: Column(
+                                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                                      children: <Widget>[
+                                                                        Row(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
                                         IconTheme(
@@ -220,10 +223,6 @@ Positioned cardDemo(
                                               size: 20.0),
                                           child: Icon(Icons.lightbulb_outline),
                                         ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
                                             Text(
                                               'XPERT TIP',
                                               style: TextStyle(
@@ -233,7 +232,9 @@ Positioned cardDemo(
                                                       : Colors.black,
                                                   fontSize: 20.0),
                                             ),
-                                            Container(
+                                      ],
+                                    ),
+                                    Container(
                                               width: MediaQuery.of(context)
                                                       .size
                                                       .width *
@@ -252,10 +253,8 @@ Positioned cardDemo(
                                                     fontSize: 14.0),
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                                                      ],
+                                                                    ),
                             )
                           ],
                         )
@@ -563,9 +562,10 @@ Positioned cardDemo(
                                           bottomRight: new Radius.circular(15.0)),
                                       // image: img,
                                     ),
-                                    padding: EdgeInsets.all(6.0),
+                                    padding: EdgeInsets.only(left: 5.0, right: 5.0, bottom: 8.0, top: 30.0),
                                     child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.start,
                                       children: <Widget>[
                                         IconTheme(
                                           data: IconThemeData(
@@ -573,12 +573,13 @@ Positioned cardDemo(
                                                   incomingData['type'] == 'orange'
                                                       ? Colors.white
                                                       : Colors.black,
-                                              size: 20.0),
+                                              size: 30.0),
                                           child: Icon(Icons.lightbulb_outline),
                                         ),
                                         Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
                                           children: <Widget>[
                                             Text(
                                               'XPERT TIP',

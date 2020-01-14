@@ -117,7 +117,7 @@ class _XpertWelcomeState extends State<XpertWelcome> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: FlatButton(
                                     onPressed: (){
-                                      Navigator.pushReplacement(context,
+                                      Navigator.push(context,
                                       MaterialPageRoute(builder: (context)=> XpertMobileLoginPage())
                                       );
                                     },
@@ -155,7 +155,7 @@ class _XpertWelcomeState extends State<XpertWelcome> {
                                       signInWithGoogle().whenComplete((){
                                         print('USER EMAIL: ' + _user.email);
                                         Navigator.pushReplacement(context,
-                                        MaterialPageRoute(builder: (context)=> OTPScreen(null, ''))
+                                        MaterialPageRoute(builder: (context)=> OTPScreen(null, null, ''))
                                         );
                                       });
                                     },

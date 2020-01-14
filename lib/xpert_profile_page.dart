@@ -12,6 +12,7 @@ import 'package:xpert/edit_profile_page.dart';
 import 'package:xpert/profile_options/edit_payment_method.dart';
 import 'package:xpert/profile_options/referral_page.dart';
 import 'package:xpert/mobile_login_page.dart';
+import 'package:xpert/web_video_view.dart';
 import 'package:xpert/xpert_welcome_page.dart';
 import 'create_question_page.dart';
 import 'profile_options/change_price_page.dart';
@@ -74,15 +75,15 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
         .document(widget.title) // bhuvan-bam
         .get()
         .then((_userDoc) {
-      xpertLink = 'www.xpert.tv/cr/';
+      xpertLink = 'xpert.chat/cr/';
       userName = _userDoc["name"];
       userShortBio = _userDoc["short_bio"];
       userLongBio = _userDoc["long_bio"];
       profImgURL = _userDoc["profile_image"];
       xpertLink += _userDoc["slug"];
-      questionPrice = _userDoc["question_price"].toString();
-      wishPrice = _userDoc["wish_price"].toString();
-      shoutoutPrice = _userDoc["shout_price"].toString();
+      questionPrice = _userDoc["question_price"]??''.toString();
+      wishPrice = _userDoc["wish_price"]??''.toString();
+      shoutoutPrice = _userDoc["shout_price"]??''.toString();
       refCode = _userDoc["slug"];
       userDoc = _userDoc;
     });
@@ -254,6 +255,16 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    _fetchUserProfileData().then((userDoc) {
+      setState(() {
+        // userName = userDoc["name"];
+        // userShortBio = userDoc["short_bio"];
+        // userLongBio = userDoc["long_bio"];
+        // userRating = userDoc["rating"];
+        // profImgURL = userDoc["profile_image"];
+        this._userDoc = userDoc;
+      });
+    });
     if (_userDoc == null) {
       return Center(
         child: Container(
@@ -305,12 +316,20 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                         children: <Widget>[
                           _showUserImagefromURL(context),
                           Positioned(
-                            left: MediaQuery.of(context).size.width * 0.076,
-                            top: MediaQuery.of(context).size.height * 0.074,
-                            child: IconTheme(
-                              data: IconThemeData(color: Colors.grey),
-                              child: Icon(Icons.camera_alt),
-                            ),
+                            left: MediaQuery.of(context).size.width * 0.12,
+                            top: MediaQuery.of(context).size.height * 0.076,
+                            child: Container(
+                                      height: 30.0,
+                                      width: 30.0,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(300.0),
+                                        color: Colors.amber
+                                      ),
+                                      child: IconTheme(
+                                        data: IconThemeData(color: Colors.white, size: 20.0),
+                                        child: Icon(Icons.camera_alt),
+                                      ),
+                                    ),
                           )
                         ],
                       )
@@ -333,19 +352,19 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                               textAlign: TextAlign.start,
                               style: TextStyle(fontSize: 24.0),
                             ),
-                            Row(
-                              children: <Widget>[
-                                IconTheme(
-                                  data: IconThemeData(
-                                      color: Colors.amber, size: 20.0),
-                                  child: Icon(Icons.star),
-                                ),
-                                Text(
-                                  userRating ?? '0.0',
-                                  style: TextStyle(fontSize: 20.0),
-                                )
-                              ],
-                            )
+                            // Row(
+                            //   children: <Widget>[
+                            //     IconTheme(
+                            //       data: IconThemeData(
+                            //           color: Colors.amber, size: 20.0),
+                            //       child: Icon(Icons.star),
+                            //     ),
+                            //     Text(
+                            //       userRating ?? '0.0',
+                            //       style: TextStyle(fontSize: 20.0),
+                            //     )
+                            //   ],
+                            // )
                           ],
                         ),
                         Container(
@@ -358,32 +377,41 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                               textAlign: TextAlign.start),
                         ),
                         Container(
+                          padding: EdgeInsets.only(bottom: 12.0),
                           width: MediaQuery.of(context).size.width * 0.75,
                           child: Row(
                             children: <Widget>[
-                              Text(
-                                xpertLink,
-                                textAlign: TextAlign.start,
-                                style: TextStyle(fontSize: 15.0),
+                              GestureDetector(
+                                onTap: (){
+                                  Navigator.push(context,
+                                  MaterialPageRoute(builder: (context)=> WebViewContainer('https://'+xpertLink))
+                                  );
+                                },
+                                child: Text(
+                                  xpertLink,
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(fontSize: 15.0),
+                                ),
                               ),
-                              IconTheme(
-                                data: IconThemeData(color: Colors.white),
-                                child: IconButton(
-                                  onPressed: () {
-                                    // copy code
-                                    ClipboardManager.copyToClipBoard(xpertLink)
-                                        .then((result) {
-                                      Fluttertoast.showToast(
-                                          msg: "URL copied!",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.CENTER,
-                                          timeInSecForIos: 1,
-                                          backgroundColor: Colors.grey,
-                                          textColor: Colors.white,
-                                          fontSize: 16.0);
-                                    });
-                                  },
-                                  icon: Icon(Icons.content_copy),
+                              GestureDetector(
+                                onTap: (){
+                                  // copy code
+                                      ClipboardManager.copyToClipBoard(xpertLink)
+                                          .then((result) {
+                                        Fluttertoast.showToast(
+                                            msg: "URL copied!",
+                                            toastLength: Toast.LENGTH_SHORT,
+                                            gravity: ToastGravity.CENTER,
+                                            timeInSecForIos: 1,
+                                            backgroundColor: Colors.grey,
+                                            textColor: Colors.white,
+                                            fontSize: 16.0);
+                                      });
+                                },
+                                                              child: IconTheme(
+                                  data: IconThemeData(color: Colors.white, size: 30.0),
+                                  child: Icon(Icons.content_copy
+                                  ),
                                 ),
                               )
                             ],
@@ -537,6 +565,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                                 image: AssetImage('assets/transactions.png'))),
                       ),
                       onTap: () {
+                        print('Payment TYpe: ' + paymentType);
                         if (paymentType == null || (paymentType != null && paymentType.isEmpty)) {
                           Navigator.push(
                               context,

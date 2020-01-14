@@ -6,6 +6,7 @@ import 'package:intro_views_flutter/intro_views_flutter.dart';
 import 'package:xpert/homepage2.dart';
 import 'package:xpert/otpscreen.dart';
 import 'package:xpert/xpert_welcome_page.dart';
+import 'package:xpert/xpertinvitescreen.dart';
 
 import 'dart:async';
 import 'mobile_login_page.dart';
@@ -118,9 +119,84 @@ class MyApp extends StatelessWidget {
         //     ),
         //   ), //IntroViewsFlutter
         // ),
-        home: isLoggedIn ? OTPScreen(null, '') : XpertWelcome()
+        home: isLoggedIn ? OTPScreen(null,null, '') : SplashIntroPage(),
+        // home: isLoggedIn ? OTPScreen(null,null, '') : XpertWelcome()
         // home: XpertWelcome(),
-        // home: MyHomePage2(user: null, userDocId: 'aayushi-sinha_42',)
+        // home: MyHomePage2(user: null, userDocId: 'aayushi-sinha',)
         );
+  }
+}
+
+class SplashIntroPage extends StatefulWidget {
+  @override
+  _SplashIntroPageState createState() => _SplashIntroPageState();
+}
+
+class _SplashIntroPageState extends State<SplashIntroPage> {
+
+  @override
+  void initState() {
+    super.initState();
+    new Timer(const Duration(seconds: 3), onClose);
+  }
+
+  void onClose() {
+    Navigator.of(context).pushReplacement(new PageRouteBuilder(
+        maintainState: true,
+        opaque: true,
+        pageBuilder: (context, _, __) => XpertWelcome(),
+        transitionDuration: const Duration(seconds: 2),
+        transitionsBuilder: (context, anim1, anim2, child) {
+          return new FadeTransition(
+            child: child,
+            opacity: anim1,
+          );
+        }));
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'CONNECT',
+              style: TextStyle(fontSize: 45.0, fontWeight: FontWeight.bold),
+
+            ),
+            Text(
+              'WITH FOLLOWERS',
+              style: TextStyle(color: Colors.amber, fontSize: 27.0),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+            Text(
+              'SHARE',
+              style: TextStyle(fontSize: 45.0, fontWeight: FontWeight.bold),
+
+            ),
+            Text(
+              'YOUR EXPERIENCES',
+              style: TextStyle(color: Colors.amber, fontSize: 27.0),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+            Text(
+              'INFLUENCE',
+              style: TextStyle(fontSize: 45.0, fontWeight: FontWeight.bold),
+
+            ),
+            Text(
+              'CAREER PATHS',
+              style: TextStyle(color: Colors.amber, fontSize: 27.0),
+              textAlign: TextAlign.center,
+
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+          ],
+        ),
+      ),
+    );
   }
 }

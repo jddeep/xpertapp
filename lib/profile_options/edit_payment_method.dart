@@ -171,7 +171,7 @@ class _EditPayMethodState extends State<EditPayMethod> {
             minWidth: double.infinity,
             height: 60,
             color: Colors.amber,
-            child: Text('Continue',
+            child: Text('CONTINUE',
                 style: TextStyle(color: Colors.white, fontSize: 22)),
             onPressed: () {
               if (_upiCheckerVal)

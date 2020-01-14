@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
+import 'package:xpert/guideline_page.dart';
 
 class ReferralPage extends StatefulWidget {
   final String refCode;
@@ -82,11 +83,36 @@ class _ReferralPageState extends State<ReferralPage> {
                         Container(
                           padding: const EdgeInsets.only(left: 4.0),
                           width: MediaQuery.of(context).size.width * 0.9,
-                          child: Text('Share your invite code',
-                              maxLines: 3,
-                              softWrap: true,
-                              textAlign: TextAlign.start,
-                              style: TextStyle(color: Colors.black, fontSize: 20.0)),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Text('Identify an Xpert (', style: TextStyle(color: Colors.black, fontSize: 20.0)),
+                                GestureDetector(
+                                  onTap: (){
+                                    Navigator.push(context,
+                                    MaterialPageRoute(builder: (context)=>GuideLinePage())
+                                    );
+                                  },
+                                  child:Text('Guideline', style: TextStyle(color: Colors.amber, fontSize: 16.0))),
+                                Text(')', style: TextStyle(color: Colors.black, fontSize: 20.0))
+                            ],
+                          ) 
+                          // RichText(
+                          //   maxLines: 3,
+                          //   softWrap: true,
+                          //   textAlign: TextAlign.start,
+                          //   text: TextSpan(
+                          //     children: [
+                          //       TextSpan(text: 'Identify an Xpert ('),
+                          //       GestureDetector(child:TextSpan(text: 'Guideline', style: TextStyle(color: Colors.amber))),
+                          //       TextSpan(text: ')')
+                          //     ],
+                          //     // 'Identify an Xpert (',
+                          //       // maxLines: 3,
+                          //       // softWrap: true,
+                          //     //   textAlign: TextAlign.start,
+                          //       style: TextStyle(color: Colors.black, fontSize: 20.0)),
+                          // ),
                         ),
                       ],
                     ),
@@ -109,7 +135,7 @@ class _ReferralPageState extends State<ReferralPage> {
                             text: TextSpan(
                                 style: TextStyle(color: Colors.black, fontSize: 20.0),
                                 children: <TextSpan>[
-                                  TextSpan(text: 'Request your referral to provide '),
+                                  TextSpan(text: 'Request them to provide '),
                                   TextSpan(
                                       text: widget.refCode,
                                       style: TextStyle(fontWeight: FontWeight.bold)),
@@ -140,7 +166,7 @@ class _ReferralPageState extends State<ReferralPage> {
                         Container(
                           width: MediaQuery.of(context).size.width * 0.9,
                           padding: const EdgeInsets.only(left: 4.0),
-                          child: Text('You can earn 5% of their annual revenue',
+                          child: Text('Get 5% of their Xpert income in the first year',
                               textAlign: TextAlign.start,
                               maxLines: 3,
                               softWrap: true,
@@ -163,7 +189,6 @@ class _ReferralPageState extends State<ReferralPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    
                     Divider(
                       thickness: 3.0,
                       color: Colors.grey,
@@ -176,8 +201,8 @@ class _ReferralPageState extends State<ReferralPage> {
                       ),
                       Container(
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(MediaQuery.of(context).size.height * 0.02),
-                            border: Border.all(color: Colors.black, width: 2.0)),
+                            borderRadius: BorderRadius.circular(MediaQuery.of(context).size.height * 0.2),
+                            border: Border.all(color: Colors.black, width: 1.0)),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
@@ -189,14 +214,16 @@ class _ReferralPageState extends State<ReferralPage> {
                                       TextStyle(color: Colors.black, fontSize: 26.0)),
                             ),
                             Container(
+                              width: MediaQuery.of(context).size.width * 0.21,
                               decoration: BoxDecoration(
                                   color: Colors.amber,
                                   borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(MediaQuery.of(context).size.height * 0.016),
-                                      bottomRight: Radius.circular(MediaQuery.of(context).size.height * 0.016))),
+                                      topRight: Radius.circular(MediaQuery.of(context).size.height * 0.2),
+                                      bottomRight: Radius.circular(MediaQuery.of(context).size.height * 0.2))),
                               child: IconTheme(
-                                data: IconThemeData(color: Colors.white, size: 30.0),
+                                data: IconThemeData(color: Colors.white),
                                 child: IconButton(
+                                  iconSize: 30.0,
                                   onPressed: () {
                                     Share.share('Invite code: ' + widget.refCode,
                                         subject: 'Invite a friend via...');

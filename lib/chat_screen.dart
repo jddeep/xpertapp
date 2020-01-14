@@ -609,26 +609,28 @@ int videothumbnailCounter = 0;
         _updateDeliveredStatus();
       }
       
-      // Fluttertoast.showToast(
-      //   msg: 'Thanks for chatting!\nWe will use these responses to appropriately reply back to your fans.',
-      //   backgroundColor: Colors.amber,
-      //   gravity: ToastGravity.BOTTOM,
-      //   textColor: Colors.white,
-      //   toastLength: Toast.LENGTH_LONG
-      // );
-
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.0),
-      height: MediaQuery.of(context).size.height * 0.1,
-      color: Colors.grey,
-      child: Center(
-        child: Text('Thanks for chatting!\nWe will use these responses to appropriately reply back to your fans.',
-        style: TextStyle(color: Colors.white, fontSize: 17.0),
-        maxLines: 3,
-        textAlign: TextAlign.center,
-        ),
-      ),
+      Fluttertoast.showToast(
+        msg: 'Thanks for chatting!\nWe will use these responses to appropriately reply back to your fans.',
+        backgroundColor: Colors.grey,
+        gravity: ToastGravity.BOTTOM,
+        textColor: Colors.white,
+        toastLength: Toast.LENGTH_LONG
       );
+      Navigator.pop(context);
+      return Container(height: 0.0,);
+
+      // return Container(
+      //   padding: EdgeInsets.symmetric(horizontal: 8.0),
+      // height: MediaQuery.of(context).size.height * 0.1,
+      // color: Colors.grey,
+      // child: Center(
+      //   child: Text('Thanks for chatting!\nWe will use these responses to appropriately reply back to your fans.',
+      //   style: TextStyle(color: Colors.white, fontSize: 17.0),
+      //   maxLines: 3,
+      //   textAlign: TextAlign.center,
+      //   ),
+      // ),
+      // );
       //return AlertDialog on finish;
     }
 
@@ -770,8 +772,11 @@ int videothumbnailCounter = 0;
 
   void _fetchBotIntentMessages() async{
     await Firestore.instance
-    .collection('chat_script')
-    .document(widget.incomingData['script_id'].toString())
+    .collection('xpert_master')
+    .document(widget.userId.toString())
+    .collection('orders')
+    .document(widget.orderDocId.toString())
+    // .document(widget.incomingData['script_id'].toString())
     .collection('script')
     .orderBy('id', descending: false)
     .getDocuments()
@@ -931,7 +936,7 @@ void _checkInternetConnection() async{
         title: Row(
           children: <Widget>[
             CircleAvatar(
-          radius: 30.0,
+          radius: 25.0,
           backgroundImage: widget.botPicUrl!=null?NetworkImage(widget.botPicUrl.toString()):
           AssetImage('assets/def_prof_pic.png'),
         ),
@@ -939,7 +944,7 @@ void _checkInternetConnection() async{
             Text(
               widget.incomingData["bot_name"]??'',
               style: TextStyle(
-                fontSize: 28.0,
+                fontSize: 20.0,
                 fontWeight: FontWeight.bold,
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:xpert/homepage2.dart';
+import 'global.dart';
 import 'homepage.dart';
 import 'rejectedPage.dart';
 import 'underReview_page.dart';
@@ -12,9 +13,10 @@ import 'xpertinvitescreen.dart';
 class OTPScreen extends StatefulWidget {
   // int status;
   final Function signInCallback;
+  final Function verifyPhone;
   String phoneNumber;
 
-  OTPScreen(this.signInCallback, this.phoneNumber);
+  OTPScreen(this.signInCallback, this.verifyPhone, this.phoneNumber);
   @override
   _OTPScreenState createState() => _OTPScreenState();
 }
@@ -27,7 +29,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
   _checkIntoMaster(FirebaseUser user) async {
     print('UID: ' + user.uid);
-    print('EMAIL: ' + user.email);
+    // print('EMAIL: ' + user.email);
     await dataBaseRef
         .collection('xpert_master')
         .where('auth_id', isEqualTo: user.uid)
@@ -196,14 +198,32 @@ class _OTPScreenState extends State<OTPScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    FROM_INVITE_PAGE = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_isLoggedIn) {
-      return Center(
-        child: Container(
-          height: 50.0,
-          width: 50.0,
-          child: CircularProgressIndicator(
-            backgroundColor: Colors.amber,
+      return Scaffold(
+              body: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                height: 50.0,
+                width: 50.0,
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.amber,
+                ),
+              ),
+              FROM_INVITE_PAGE?Text('Creating Your Account', style: TextStyle(fontSize: 20.0), textAlign: TextAlign.center):Container(height: 0.0,),
+              FROM_INVITE_PAGE?Text('Please wait while we set up your account',
+              
+style: TextStyle(fontSize: 18.0),            textAlign: TextAlign.center,):Text('Please Wait...', style: TextStyle(fontSize: 18.0), textAlign: TextAlign.center,)
+            ],
           ),
         ),
       );
@@ -302,43 +322,47 @@ class _OTPScreenState extends State<OTPScreen> {
                       children: <Widget>[
                         Text("Didn't receive OTP?",
                             style: TextStyle(color: Colors.amber)),
-                        Text("Resend", style: TextStyle(color: Colors.white)),
+                        GestureDetector(
+                          onTap: (){
+                            widget.verifyPhone(widget.phoneNumber);
+                          },
+                          child: Text("Resend", style: TextStyle(color: Colors.white))),
                       ],
                     ),
                   ],
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  'TAP: Agree and continue to accept ',
-                  style: TextStyle(color: Colors.white),
-                ),
-                Text(
-                  'Xpert Terms of ',
-                  style: TextStyle(color: Colors.amber),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('Service ', style: TextStyle(color: Colors.amber)),
-                Text(
-                  'and ',
-                  style: TextStyle(color: Colors.white),
-                ),
-                Text(
-                  'Privacy policy.',
-                  style: TextStyle(color: Colors.amber),
-                )
-              ],
-            ),
-            SizedBox(
-              height: 5.0,
-            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: <Widget>[
+            //     Text(
+            //       'TAP: Agree and continue to accept ',
+            //       style: TextStyle(color: Colors.white),
+            //     ),
+            //     Text(
+            //       'Xpert Terms of ',
+            //       style: TextStyle(color: Colors.amber),
+            //     ),
+            //   ],
+            // ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: <Widget>[
+            //     Text('Service ', style: TextStyle(color: Colors.amber)),
+            //     Text(
+            //       'and ',
+            //       style: TextStyle(color: Colors.white),
+            //     ),
+            //     Text(
+            //       'Privacy policy.',
+            //       style: TextStyle(color: Colors.amber),
+            //     )
+            //   ],
+            // ),
+            // SizedBox(
+            //   height: 5.0,
+            // ),
             MaterialButton(
               minWidth: double.infinity,
               height: 60,

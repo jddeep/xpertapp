@@ -32,6 +32,7 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
   bool onlyVideo = false;
   bool isUploading = false;
   bool isChatVideo = false;
+  bool _paid = true;
 
   Future<String> _getProfImg() async {
     String profImgUrl;
@@ -118,6 +119,7 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
         .updateData({
       'answer_url': url,
       'status': 'delivered',
+      'paid' : _paid?'Yes':'No',
       'answer_type': 'audio'
     }).whenComplete(() {
       print('Updated!');
@@ -458,7 +460,7 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                   child: Container(
                     child: Wrap(
                       children: <Widget>[
-                        !showBottom?Padding(
+                        Padding(
                           padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05),
                           child:Container(
                                   height: MediaQuery.of(context).size.height * 0.17,
@@ -467,20 +469,54 @@ class _AudioRecordingFragmentState extends State<AudioRecordingFragment> {
                                     elevation: 8.0,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
                                     color: _isRecording?Colors.transparent:Colors.white,
-                                    child: Center(
-                                      child: SingleChildScrollView(
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Text(
-                                            widget.incomingQuestion,
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                color: _isRecording?Colors.white:Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)),
-                                        ),
+                                    child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          Container(
+                                            height: showBottom?MediaQuery.of(context).size.height * 0.09:MediaQuery.of(context).size.height * 0.12,
+                                            child: SingleChildScrollView(
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(8.0),
+                                                  child: Text(
+                                                    // 'sdasfbdkfbksdfksdjhfgkjdhflhfjf;lsjf;ljd;lgjf;lmbvmf;ljv;lrguvljfvl;m;fljgv;lmfv;lfbv;lfd;lb;aljfgotugjporeugpoerogju;dflbjmd bl,dvssmgc;,oa;dlka;ifpaovmrpvr,ef.',
+                                                    widget.incomingQuestion,
+                                                    textAlign: TextAlign.start,
+                                                    // maxLines: 3,
+                                                    style: TextStyle(
+                                                        color: _isRecording?Colors.white:Colors.black, fontSize: 17.0,)),
+                                                ),
+                                              ),
+                                          ),
+                                          showBottom && !isChatVideo?Divider(
+                                            color: Colors.grey,
+                                            height: 5.0,
+                                            thickness: 1.0,
+                                          ):Container(height: 0.0,),
+                                          showBottom && !isChatVideo?
+                                            // padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+                                            Container(
+                                            child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            Text('MARK ANSWER AS: ',
+                                style: TextStyle(color: Colors.black, fontSize: 12.0)),
+                            Text("PAID", style: TextStyle(color: Colors.black, fontSize: 12.0)),
+                            CupertinoSwitch(
+                                value: _paid,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _paid = value;
+                                  });
+                                },
+                              ),
+                          ],
+                        ),
+                                          ):Container(height: 0.0,),
+                                        ],
                                       ),
-                                    )
                                   ),
-                                ),):Container(height: 0.0),
+                                ),),
                         // SingleChildScrollView(
                         //   child: Padding(
                         //     padding:

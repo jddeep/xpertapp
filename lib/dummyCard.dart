@@ -137,7 +137,10 @@ Positioned cardDemoDummy(
                                       // image: img,
                                     ),
                                     padding: EdgeInsets.only(left: 5.0, right: 5.0, bottom: 8.0, top: 30.0),
-                                                                    child: Row(
+                                                                    child: Column(
+                                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                                      children: <Widget>[
+                                                                        Row(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
                                         IconTheme(
@@ -149,10 +152,6 @@ Positioned cardDemoDummy(
                                               size: 20.0),
                                           child: Icon(Icons.lightbulb_outline),
                                         ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
                                             Text(
                                               'XPERT TIP',
                                               style: TextStyle(
@@ -162,7 +161,9 @@ Positioned cardDemoDummy(
                                                       : Colors.black,
                                                   fontSize: 20.0),
                                             ),
-                                            Container(
+                                      ],
+                                    ),
+                                    Container(
                                               width: MediaQuery.of(context)
                                                       .size
                                                       .width *
@@ -181,10 +182,8 @@ Positioned cardDemoDummy(
                                                     fontSize: 14.0),
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                                                      ],
+                                                                    ),
                             )
                           ],
                         )
