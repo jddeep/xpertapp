@@ -93,10 +93,22 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
+  void _updateNotificationField() async{
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId.toString())
+        .updateData({
+          'notification' : 'seen'
+        }).whenComplete((){
+          print('notifications done!');
+        });
+  }
+
   @override
   void initState() {
     super.initState();
     NOTIFS = false;
+    _updateNotificationField();
   }
 
   @override

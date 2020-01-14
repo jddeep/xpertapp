@@ -225,7 +225,7 @@ class _ReferralPageState extends State<ReferralPage> {
                                 child: IconButton(
                                   iconSize: 30.0,
                                   onPressed: () {
-                                    Share.share('Invite code: ' + widget.refCode,
+                                    Share.share("Join me on XPERT! The #1 Social Learning App. It's a great way to share your knowledge. XPERT is Invite-Only . Use my invite code : " + widget.refCode + " to signup. Download : " + "https://play.google.com/store/apps/details?id=chat.xpert.creator",
                                         subject: 'Invite a friend via...');
                                   },
                                   icon: Icon(Icons.share),

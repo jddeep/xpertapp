@@ -698,7 +698,9 @@ class _MyHomePage2State extends State<MyHomePage2>
     super.initState();
     _fetchUserProfileData().then((_xpertdata){
       xpertData = _xpertdata;
-      NOTIFS = xpertData.data['notification']??''=='unseen'?true:false;
+      print('REAL NOTIFS: ' + xpertData.data['notification']);
+      NOTIFS = xpertData.data['notification']=='unseen'?true:false;
+      print("NOTIFS: " +NOTIFS.toString());
     });
     _getWebOrders().then((_data) {
       setState(() {
@@ -1025,7 +1027,7 @@ class _MyHomePage2State extends State<MyHomePage2>
                         width: 10.0,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(360.0),
-                          color: Colors.red
+                          color: Colors.amber
                         ),
                       )):Container(height: 0.0,)
                     ],

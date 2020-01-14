@@ -87,7 +87,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'XPERT',
+        title: 'Admin-Xpert',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
             primarySwatch: Colors.yellow, brightness: Brightness.dark),
