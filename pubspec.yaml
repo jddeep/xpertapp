@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.1+2
+version: 1.0.1+4
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -28,7 +28,11 @@ dependencies:
   country_code_picker: '^1.1.7'
   pin_code_text_field: ^1.4.0
   camera:
-  video_player: ^0.10.0
+  video_player: ^0.10.1
+    # git:
+    #   url: https://github.com/999eagle/plugins.git
+    #   ref: feature/caching
+      # path: packages/video_player
   intl:
   flutter_sound:
   audio_recorder: '^1.0.1'
@@ -40,10 +44,21 @@ dependencies:
   share:
   cloud_firestore:
   firebase_auth:
-  sliding_up_panel:
   firebase_storage: ^3.0.6
   clipboard_manager: ^0.0.1
   fluttertoast:
+  firebase_database:
+  cached_network_image:
+  photo_view:
+  audioplayer:
+  webview_flutter:
+  google_sign_in:
+  chewie: ^0.9.7
+  thumbnails:
+  html_unescape:
+  circular_profile_avatar:
+  dart_ping: '1.0.0'
+  http: ^0.12.0+2
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +108,8 @@ flutter:
   - assets/def_prof_pic.png
   - assets/view_transactions.png
   - assets/notification_screen.png
+  - assets/google.jpg
+  - assets/add_question_two.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

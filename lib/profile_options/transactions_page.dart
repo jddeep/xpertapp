@@ -15,7 +15,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
       ),
       body: Center(
         child: Text(
-          'NO TRANSACTIONS IN DATABASE',
+          'Once active, the payments made to you would show up here.',
           style: TextStyle(color: Colors.black, fontSize: 26.0),
           textAlign: TextAlign.center,
         ),

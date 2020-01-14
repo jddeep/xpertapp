@@ -473,6 +473,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xpert/activeCard.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
+import 'package:xpert/chat_screen.dart';
+import 'package:xpert/create_question_page.dart';
+import 'package:xpert/global.dart';
 import 'package:xpert/notofication_page.dart';
 import 'package:xpert/videoanswerscreen.dart';
 import 'package:xpert/xpert_profile_page.dart';
@@ -497,6 +500,8 @@ class _MyHomePage2State extends State<MyHomePage2>
 
   String text;
   DocumentSnapshot _item;
+  DocumentSnapshot xpertData;
+  var lastOrderNo;
 
   // List<String> data =
   //     []; //[" Question 1", "Question 2", "Question 3", "Question 4"];
@@ -510,6 +515,18 @@ class _MyHomePage2State extends State<MyHomePage2>
 
   List<Widget> _questionsCards = [];
 
+  Future<DocumentSnapshot> _fetchUserProfileData() async {
+    DocumentSnapshot userDoc;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId) // bhuvan-bam
+        .get()
+        .then((_userDoc) {
+      userDoc = _userDoc;
+    });
+    return userDoc;
+  }
+
   Future<List<DocumentSnapshot>> _getWebOrders() async {
     List<DocumentSnapshot> d = new List();
     //[" Question 1", "Question 2", "Question 3", "Question 4"];
@@ -520,6 +537,7 @@ class _MyHomePage2State extends State<MyHomePage2>
         // .document('aayush-sinha')//widget.title
         .collection('orders')
         .where('status', isEqualTo: 'xpert review')
+        .orderBy('order_no', descending: true)
         .getDocuments()
         .then((docs) {
       for (var item in docs.documents) {
@@ -548,6 +566,30 @@ class _MyHomePage2State extends State<MyHomePage2>
       print('Updated!');
       _isMandatory = false;
     });
+  }
+
+  void _updateRejectedRequests() async{
+    var creatorsetDocId;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId.toString()) // bhuvan-bam
+        .collection('creator-settings')
+        .getDocuments()
+        .then((_userDoc){
+          creatorsetDocId = _userDoc.documents[0].documentID;
+        }).whenComplete(() async{
+          await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId.toString())
+        .collection('creator-settings')
+        .document(creatorsetDocId.toString())
+        .updateData(
+            {
+            'requests' : FieldValue.increment(-1)
+            }).whenComplete(() {
+      print('Requests updated!');
+    });
+        });
   }
 
   void _acceptUpdateData(_orderDocID) async{
@@ -654,10 +696,21 @@ class _MyHomePage2State extends State<MyHomePage2>
 
   void initState() {
     super.initState();
+    _fetchUserProfileData().then((_xpertdata){
+      xpertData = _xpertdata;
+      print('REAL NOTIFS: ' + xpertData.data['notification']);
+      NOTIFS = xpertData.data['notification']=='unseen'?true:false;
+      print("NOTIFS: " +NOTIFS.toString());
+    });
     _getWebOrders().then((_data) {
       setState(() {
         print('ORDERS LENGTH: ' + _data.length.toString());
         orders = _data;
+        if(orders.length != 0){
+          lastOrderNo = orders[0].data['order_no'];
+        LAST_ORDER_NO = orders[0].data['order_no'];
+        }
+        print('LAST ORDER NO: ' + lastOrderNo.toString());
       });
       // _createCardList(_data);
       print('ORDERS LENGTH: ' + orders.length.toString());
@@ -841,6 +894,13 @@ class _MyHomePage2State extends State<MyHomePage2>
         // selectedData.add(txt);
       });
     _swipeAnimation().whenComplete(() {
+      if(txt.data["type"] == 'bot_training'){
+        Navigator.push(context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(botPicUrl: txt.data["bot_pic_270x270"], incomingData: txt.data, orderDocId: txt.documentID, userId: widget.userDocId, xpertData: xpertData.data)
+        )
+        );
+      }else
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -850,6 +910,7 @@ class _MyHomePage2State extends State<MyHomePage2>
             docId: widget.userDocId,
             // docId: 'aayush-sinha',
             orderDocId: txt.documentID,
+            type: txt.data['type'],
           ),
         ),
       );
@@ -880,6 +941,10 @@ class _MyHomePage2State extends State<MyHomePage2>
         if (txt.data['mandatory'] == 'yes') _isMandatory = true;
 
         _rejectUpdateData(txt.documentID);
+
+        // if(!_isMandatory)
+        // _updateRejectedRequests();
+
         orders.remove(txt);
         if(orders.length == 0)
         _questionsCards = new List();
@@ -942,15 +1007,30 @@ class _MyHomePage2State extends State<MyHomePage2>
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NotificationPage(),
+                      builder: (context) => NotificationPage(userDocId: widget.userDocId.toString(),),
                     ));
               },
               child: new Container(
-                  padding: EdgeInsets.only(right: 14.0),
-                  child: new Icon(
-                    Icons.notifications,
-                    color: Colors.white,
-                    size: 30.0,
+                  padding: EdgeInsets.only(right: 14.0, top: 14.0),
+                  child: Stack(
+                    children: <Widget>[
+                      Icon(
+                        Icons.notifications,
+                        color: Colors.white,
+                        size: 30.0,
+                      ),
+                      NOTIFS?Positioned(
+                        left: 2.0,
+                        top: 2.0,
+                        child:Container(
+                        height: 10.0,
+                        width: 10.0,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(360.0),
+                          color: Colors.amber
+                        ),
+                      )):Container(height: 0.0,)
+                    ],
                   )),
             ),
           ],
@@ -994,12 +1074,22 @@ class _MyHomePage2State extends State<MyHomePage2>
                       } else {
                         double bkdist;
                         print('QUESTION CARDS LENGTH: '+ _questionsCards.length.toString());
-                        if(_questionsCards.length > 2)
-                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/58.0:MediaQuery.of(context).size.height/68.0;
-                        else
+                        if(_questionsCards.length < 3)
                         bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/20.0:MediaQuery.of(context).size.height/30.0;
+                        else if(_questionsCards.length <=7)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/43.0:MediaQuery.of(context).size.height/53.0;
+                        else if(_questionsCards.length <=14)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/53.0:MediaQuery.of(context).size.height/63.0;
+                        else if(_questionsCards.length <= 20)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/58.0:MediaQuery.of(context).size.height/68.0;
+                        else if(_questionsCards.length <= 50)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/60.0:MediaQuery.of(context).size.height/70.0;
+                        else if(_questionsCards.length <= 70)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/63.0:MediaQuery.of(context).size.height/73.0;
+                        else
+                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/67.0:MediaQuery.of(context).size.height/77.0;
                         // double bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height* 0.03:15;
-                        backCardPosition = backCardPosition - bkdist;
+                        backCardPosition = backCardPosition - bkdist + (_questionsCards.length <=7?(_questionsCards.length < 3?8.5:2.7):1.1);
                         // MediaQuery.of(context).size.height > 640? MediaQuery.of(context).size.height* 0.04
                         // :MediaQuery.of(context).size.height* 0.04;
                         backCardWidth = backCardWidth + 50;
@@ -1050,10 +1140,14 @@ class _MyHomePage2State extends State<MyHomePage2>
                         height: MediaQuery.of(context).size.height * 0.07,
                         decoration: BoxDecoration(
                             image: DecorationImage(
-                                image: AssetImage('assets/do_later_two.png'))),
+                                image: AssetImage('assets/add_question_two.png'))),
                       ),
                       onTap: () {
-                        if (_questionsCards.length != 0) doLaterPressed(_item);
+                        // if (_questionsCards.length != 0) doLaterPressed(_item);
+                        if(_questionsCards.length != 0)
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context)=> CreateQuestionPage(userDocId: widget.userDocId,))
+                        );
                       },
                     ),
                   ),
