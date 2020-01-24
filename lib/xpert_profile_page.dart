@@ -8,9 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:xpert/edit_profile_page.dart';
+import 'package:xpert/edit_profile_pic_page.dart';
 import 'package:xpert/profile_options/edit_payment_method.dart';
 import 'package:xpert/profile_options/referral_page.dart';
-import 'package:xpert/xpertWelcome.dart';
+import 'package:xpert/mobile_login_page.dart';
+import 'package:xpert/web_video_view.dart';
+import 'package:xpert/xpert_welcome_page.dart';
+import 'create_question_page.dart';
 import 'profile_options/change_price_page.dart';
 import 'package:share/share.dart';
 import 'package:path/path.dart';
@@ -71,15 +77,15 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
         .document(widget.title) // bhuvan-bam
         .get()
         .then((_userDoc) {
-      xpertLink = 'www.xpert.tv/cr/';
+      xpertLink = 'xpert.chat/cr/';
       userName = _userDoc["name"];
       userShortBio = _userDoc["short_bio"];
       userLongBio = _userDoc["long_bio"];
       profImgURL = _userDoc["profile_image"];
       xpertLink += _userDoc["slug"];
-      questionPrice = _userDoc["question_price"].toString();
-      wishPrice = _userDoc["wish_price"].toString();
-      shoutoutPrice = _userDoc["shout_price"].toString();
+      questionPrice = _userDoc["question_price"] ?? ''.toString();
+      wishPrice = _userDoc["wish_price"] ?? ''.toString();
+      shoutoutPrice = _userDoc["shout_price"] ?? ''.toString();
       refCode = _userDoc["slug"];
       userDoc = _userDoc;
     });
@@ -91,7 +97,9 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
         .then((_userDoc) {
       creatorSetDocId = _userDoc.documents[0].documentID;
       userRating = _userDoc.documents[0].data["rating"].toString();
-      earned = (NumberFormat.compact().format(_userDoc.documents[0].data["earned"])).toString();
+      earned =
+          (NumberFormat.compact().format(_userDoc.documents[0].data["earned"]))
+              .toString();
       requests = _userDoc.documents[0].data["requests"].toString();
       chats = _userDoc.documents[0].data["fulfilled"].toString(); //chats
       paymentType = _userDoc.documents[0].data["payment_type"];
@@ -100,12 +108,34 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
     return userDoc;
   }
 
-  //Open gallery
-  Future pickImageFromGallery(ImageSource source) async {
-    await ImagePicker.pickImage(source: ImageSource.gallery).then((image) {
+  void _editDP(BuildContext context, var image) async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => EditProfPicPage(
+                  imgFile: image,
+                ))).then((imgfile) {
       setState(() {
-        _dp = image;
+        if (imgfile == null) {
+          _updateAnswerUrl('');
+          profImgURL = '';
+        } else {
+          _dp = imgfile;
+          uploadFile();
+        }
       });
+    }).whenComplete(() {
+      print('DP received!' + _dp.path);
+    });
+  }
+
+  //Open gallery
+  Future pickImageFromGallery(ImageSource source, BuildContext context) async {
+    await ImagePicker.pickImage(source: source).then((image) {
+      _editDP(context, image);
+      // setState(() {
+      //   _dp = image;
+      // });
     });
   }
 
@@ -210,7 +240,7 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
     await FirebaseAuth.instance.signOut().then((value) {
       print("***** log out");
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => XpertWelcomePage()));
+          context, MaterialPageRoute(builder: (context) => XpertWelcome()));
     });
     // Navigator.popUntil(context, ModalRoute.withName("/login"));
   }
@@ -249,8 +279,24 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
     );
   }
 
+  PanelController _panelController = new PanelController();
+  BorderRadiusGeometry radius = BorderRadius.only(
+    topLeft: Radius.circular(10.0),
+    topRight: Radius.circular(10.0),
+  );
+
   @override
   Widget build(BuildContext context) {
+    _fetchUserProfileData().then((userDoc) {
+      setState(() {
+        // userName = userDoc["name"];
+        // userShortBio = userDoc["short_bio"];
+        // userLongBio = userDoc["long_bio"];
+        // userRating = userDoc["rating"];
+        // profImgURL = userDoc["profile_image"];
+        this._userDoc = userDoc;
+      });
+    });
     if (_userDoc == null) {
       return Center(
         child: Container(
@@ -264,86 +310,213 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
     } else
       return Scaffold(
         appBar: AppBar(
-          title: Text(
-            userName ?? 'No user name',
-            // userName,
-            // 'Jaideep Prasad',
-            // textAlign: TextAlign.start,
-            // style: TextStyle(
-            //     fontWeight: FontWeight.bold, fontSize: 26.0),
-          ),
+          backgroundColor: Colors.grey[850],
+          elevation: 0.0,
+          // title: Text(
+          //   userName ?? '',
+          //   // userName,
+          //   // 'Jaideep Prasad',
+          //   // textAlign: TextAlign.start,
+          //   // style: TextStyle(
+          //   //     fontWeight: FontWeight.bold, fontSize: 26.0),
+          // ),
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.edit),
               onPressed: () {
-                pickImageFromGallery(ImageSource.gallery).then((image) {
-                  uploadFile();
-                });
+                // pickImageFromGallery(ImageSource.gallery).then((image) {
+                //   uploadFile();
+                // });
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EditProfilePage(
+                              docID: widget.title,
+                            )));
               },
             )
           ],
         ),
-        body: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0, top: 10.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
+        body: SlidingUpPanel(
+          controller: _panelController,
+          borderRadius: radius,
+          backdropEnabled: true,
+          minHeight: 0.0,
+          maxHeight: MediaQuery.of(context).size.height * 0.35,
+          collapsed: Container(height: 0.0),
+          panel: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Text('Profile Photo',
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-                  _showUserImagefromURL(context),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            // Text(
-                            // userName??'Please set up one',
-                            // // userName,
-                            //   // 'Jaideep Prasad',
-                            //   textAlign: TextAlign.start,
-                            //   style: TextStyle(
-                            //       fontWeight: FontWeight.bold, fontSize: 26.0),
-                            // ),
-                            Row(
-                              children: <Widget>[
-                                IconTheme(
-                                  data: IconThemeData(
-                                      color: Colors.amber, size: 20.0),
-                                  child: Icon(Icons.star),
-                                ),
-                                Text(
-                                  userRating ?? '0.0',
-                                  style: TextStyle(fontSize: 21.0),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
-                        // Container(
-                        //   width: MediaQuery.of(context).size.width * 0.7,
-                        //   child: Text(userShortBio ?? 'Please set up one',
-                        //       maxLines: 4,
-                        //       style: TextStyle(fontSize: 20.0),
-                        //       softWrap: true,
-                        //       // 'Software Developer',
-                        //       textAlign: TextAlign.start),
-                        // ),
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.75,
-                          child: Row(
+                  IconButton(
+                    icon: Icon(Icons.photo),
+                    color: Colors.black,
+                    onPressed: () {
+                      pickImageFromGallery(ImageSource.gallery, context)
+                          .then((image) {
+                        uploadFile();
+                      });
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.camera),
+                    color: Colors.black,
+                    onPressed: () {
+                      pickImageFromGallery(ImageSource.camera, context)
+                          .then((image) {
+                        uploadFile();
+                      });
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.remove_circle_outline),
+                    color: Colors.black,
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+
+              GestureDetector(
+                onTap: () {
+                  _panelController.close();
+                },
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.black, fontSize: 18.0),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                      border: Border(
+                          top: BorderSide(width: 1.0, color: Colors.grey))),
+                ),
+              ),
+
+              // Divider(
+              //   height: 4.0,
+              //   thickness: 1.0,
+              //   color: Colors.grey,
+              // ),
+              // GestureDetector(
+              //   onTap: (){
+              //     _panelController.close();
+              //   },
+              //   child: Container(
+              //     child: Text('Cancel', style: TextStyle(color: Colors.black),),
+              //   ),
+              // )
+            ],
+          ),
+          body: Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    GestureDetector(
+                      child: Container(
+                          child: Stack(
+                        children: <Widget>[
+                          _showUserImagefromURL(context),
+                          Positioned(
+                            left: MediaQuery.of(context).size.width * 0.12,
+                            top: MediaQuery.of(context).size.height * 0.069,
+                            child: Container(
+                              height: 30.0,
+                              width: 30.0,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(300.0),
+                                  color: Colors.amber),
+                              child: IconTheme(
+                                data: IconThemeData(
+                                    color: Colors.white, size: 20.0),
+                                child: Icon(Icons.camera_alt),
+                              ),
+                            ),
+                          )
+                        ],
+                      )),
+                      onTap: () {
+                        // _panelController.open();
+                        print('Prof img url sent: ' + profImgURL);
+                        _editDP(context, profImgURL);
+                        //   pickImageFromGallery(ImageSource.gallery).then((image) {
+                        //   uploadFile();
+                        // });
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
                             children: <Widget>[
                               Text(
-                                xpertLink,
+                                userName ?? '',
                                 textAlign: TextAlign.start,
-                                style: TextStyle(fontSize: 15.0),
+                                style: TextStyle(fontSize: 24.0),
                               ),
-                              IconTheme(
-                                data: IconThemeData(color: Colors.white),
-                                child: IconButton(
-                                  onPressed: () {
+                              // Row(
+                              //   children: <Widget>[
+                              //     IconTheme(
+                              //       data: IconThemeData(
+                              //           color: Colors.amber, size: 20.0),
+                              //       child: Icon(Icons.star),
+                              //     ),
+                              //     Text(
+                              //       userRating ?? '0.0',
+                              //       style: TextStyle(fontSize: 20.0),
+                              //     )
+                              //   ],
+                              // )
+                            ],
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.7,
+                            child: Text(userShortBio ?? '',
+                                maxLines: 4,
+                                style: TextStyle(fontSize: 16.0),
+                                softWrap: true,
+                                // 'Software Developer',
+                                textAlign: TextAlign.start),
+                          ),
+                          Container(
+                            padding: EdgeInsets.only(bottom: 12.0),
+                            width: MediaQuery.of(context).size.width * 0.75,
+                            child: Row(
+                              children: <Widget>[
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                WebViewContainer(
+                                                    'https://' + xpertLink)));
+                                  },
+                                  child: Text(
+                                    xpertLink,
+                                    textAlign: TextAlign.start,
+                                    style: TextStyle(fontSize: 15.0),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
                                     // copy code
                                     ClipboardManager.copyToClipBoard(xpertLink)
                                         .then((result) {
@@ -357,234 +530,259 @@ class _XpertProfilePageState extends State<XpertProfilePage> {
                                           fontSize: 16.0);
                                     });
                                   },
-                                  icon: Icon(Icons.content_copy),
-                                ),
-                              )
-                            ],
+                                  child: IconTheme(
+                                    data: IconThemeData(
+                                        color: Colors.white, size: 30.0),
+                                    child: Icon(Icons.content_copy),
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              MaterialButton(
+                minWidth: MediaQuery.of(context).size.width * 0.9,
+                onPressed: () {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              CreateQuestionPage(userDocId: widget.title)));
+                },
+                color: Colors.amber,
+                padding: EdgeInsets.all(8.0),
+                textColor: Colors.white,
+                child: Wrap(
+                  direction: Axis.horizontal,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8.0,
+                  children: <Widget>[
+                    IconTheme(
+                      data: IconThemeData(color: Colors.white),
+                      child: Icon(Icons.add),
                     ),
-                  )
+                    Text(
+                      'ADD A NEW ANSWER',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.025,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  // Column(
+                  //   children: <Widget>[
+                  //     Text(
+                  //       '₹'+ earned??'0',
+                  //       style: TextStyle(color: Colors.amber, fontSize: 20.0),
+                  //       textAlign: TextAlign.center,
+                  //     ),
+                  //     Text(
+                  //       'Earned',
+                  //     )
+                  //   ],
+                  // ),
+                  // Container(
+                  //   height: 40.0,
+                  //   child: VerticalDivider(
+                  //     width: 5.0,
+                  //     color: Colors.grey,
+                  //   ),
+                  // ),
+                  Column(
+                    children: <Widget>[
+                      Text(
+                        requests ?? '0',
+                        // '586',
+                        style: TextStyle(color: Colors.amber, fontSize: 26.0),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'Requests',
+                      )
+                    ],
+                  ),
+                  Container(
+                    height: MediaQuery.of(context).size.width / 8,
+                    child: VerticalDivider(
+                      width: 5.0,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Column(
+                    children: <Widget>[
+                      Text(
+                        chats ?? '0',
+                        style: TextStyle(color: Colors.amber, fontSize: 26.0),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'Fulfilled', //Chats
+                      )
+                    ],
+                  ),
+                  Container(
+                    height: MediaQuery.of(context).size.width / 8,
+                    child: VerticalDivider(
+                      width: 5.0,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Column(
+                    children: <Widget>[
+                      Text(
+                        '₹' + earned ?? '0',
+                        style: TextStyle(color: Colors.amber, fontSize: 26.0),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'Earned',
+                      )
+                    ],
+                  ),
                 ],
               ),
-            ),
-            MaterialButton(
-              minWidth: MediaQuery.of(context).size.width * 0.9,
-              onPressed: () {},
-              color: Colors.grey,
-              padding: EdgeInsets.all(8.0),
-              textColor: Colors.white,
-              child: Text(
-                'AWAITING INTRO VIDEO',
-                textAlign: TextAlign.center,
+              SizedBox(
+                height: 20.0,
               ),
-            ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.025,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                // Column(
-                //   children: <Widget>[
-                //     Text(
-                //       '₹'+ earned??'0',
-                //       style: TextStyle(color: Colors.amber, fontSize: 20.0),
-                //       textAlign: TextAlign.center,
-                //     ),
-                //     Text(
-                //       'Earned',
-                //     )
-                //   ],
-                // ),
-                // Container(
-                //   height: 40.0,
-                //   child: VerticalDivider(
-                //     width: 5.0,
-                //     color: Colors.grey,
-                //   ),
-                // ),
-                Column(
-                  children: <Widget>[
-                    Text(
-                      requests ?? '0',
-                      // '586',
-                      style: TextStyle(color: Colors.amber, fontSize: 26.0),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      'Requests',
-                    )
-                  ],
-                ),
-                Container(
-                  height: MediaQuery.of(context).size.width / 8,
-                  child: VerticalDivider(
-                    width: 5.0,
-                    color: Colors.grey,
-                  ),
-                ),
-                Column(
-                  children: <Widget>[
-                    Text(
-                      chats ?? '0',
-                      style: TextStyle(color: Colors.amber, fontSize: 26.0),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      'Fulfilled', //Chats
-                    )
-                  ],
-                ),
-                Container(
-                  height: MediaQuery.of(context).size.width / 8,
-                  child: VerticalDivider(
-                    width: 5.0,
-                    color: Colors.grey,
-                  ),
-                ),
-                Column(
-                  children: <Widget>[
-                    Text(
-                      '₹' + earned ?? '0',
-                      style: TextStyle(color: Colors.amber, fontSize: 26.0),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      'Earned',
-                    )
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Expanded(
-              child: Container(
-                color: Colors.white,
-                child: ListView(
-                  children: <Widget>[
-                    ListTile(
-                      leading: Container(
-                        height: 50.0,
-                        width: 40.0,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage('assets/pricing.png'))),
+              Expanded(
+                child: Container(
+                  color: Colors.white,
+                  child: ListView(
+                    children: <Widget>[
+                      // Change Price hidden for now //
+                      // ListTile(
+                      //   leading: Container(
+                      //     height: 50.0,
+                      //     width: 40.0,
+                      //     decoration: BoxDecoration(
+                      //         image: DecorationImage(
+                      //             image: AssetImage('assets/pricing.png'))),
+                      //   ),
+                      //   onTap: () {
+                      //     Navigator.push(
+                      //         context,
+                      //         MaterialPageRoute(
+                      //             builder: (context) => ChangePricePage(
+                      //                 widget.title,
+                      //                 questionPrice,
+                      //                 wishPrice,
+                      //                 shoutoutPrice)));
+                      //   },
+                      //   title: Text('Change Price',
+                      //       style: TextStyle(color: Colors.black)),
+                      // ),
+                      ListTile(
+                        leading: Container(
+                          height: 50.0,
+                          width: 40.0,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image:
+                                      AssetImage('assets/transactions.png'))),
+                        ),
+                        onTap: () {
+                          print('Payment TYpe: ' + paymentType);
+                          if (paymentType == null ||
+                              (paymentType != null && paymentType.isEmpty)) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => EditPayMethod(
+                                          userDocId: widget.title,
+                                          creatorSetDocId: creatorSetDocId,
+                                        )));
+                          } else
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ManageBankPage(
+                                          userDocId: widget.title,
+                                          creatorDocId: creatorSetDocId,
+                                        )));
+                        },
+                        title: Text('Settlements',
+                            style: TextStyle(color: Colors.black)),
                       ),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ChangePricePage(
-                                    widget.title,
-                                    questionPrice,
-                                    wishPrice,
-                                    shoutoutPrice)));
-                      },
-                      title: Text('Change Price',
-                          style: TextStyle(color: Colors.black)),
-                    ),
-                    ListTile(
-                      leading: Container(
-                        height: 50.0,
-                        width: 40.0,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage('assets/transactions.png'))),
-                      ),
-                      onTap: () {
-                        if (paymentType == null || (paymentType != null && paymentType.isEmpty)) {
+                      // ListTile(
+                      //   leading: IconTheme(
+                      //     data: IconThemeData(color: Colors.grey, size: 35.0),
+                      //     child: Icon(Icons.headset_mic),
+                      //   ),
+                      //   title: Text('WhatsApp Jacqueline',
+                      //       style: TextStyle(color: Colors.black)),
+                      // ),
+                      // ListTile(
+                      //   leading: IconTheme(
+                      //     data: IconThemeData(color: Colors.grey, size: 35.0),
+                      //     child: Icon(Icons.headset_mic),
+                      //   ),
+                      //   title: Text('WhatsApp Jacqueline',
+                      //       style: TextStyle(color: Colors.black)),
+                      // ),
+                      ListTile(
+                        leading: Container(
+                          height: 50.0,
+                          width: 40.0,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image:
+                                      AssetImage('assets/refer_a_friend.png'))),
+                        ),
+                        onTap: () {
+                          // Share.share('Share stuff from Xpert app',
+                          //     subject: 'Invite a friend via...');
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => EditPayMethod(
-                                        userDocId: widget.title,
-                                        creatorSetDocId: creatorSetDocId,
-                                      )));
-                        } else
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ManageBankPage(
-                                        userDocId: widget.title,
-                                        creatorDocId: creatorSetDocId,
-                                      )));
-                      },
-                      title: Text('Settlements',
-                          style: TextStyle(color: Colors.black)),
-                    ),
-                    // ListTile(
-                    //   leading: IconTheme(
-                    //     data: IconThemeData(color: Colors.grey, size: 35.0),
-                    //     child: Icon(Icons.headset_mic),
-                    //   ),
-                    //   title: Text('WhatsApp Jacqueline',
-                    //       style: TextStyle(color: Colors.black)),
-                    // ),
-                    // ListTile(
-                    //   leading: IconTheme(
-                    //     data: IconThemeData(color: Colors.grey, size: 35.0),
-                    //     child: Icon(Icons.headset_mic),
-                    //   ),
-                    //   title: Text('WhatsApp Jacqueline',
-                    //       style: TextStyle(color: Colors.black)),
-                    // ),
-                    ListTile(
-                      leading: Container(
-                        height: 50.0,
-                        width: 40.0,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image:
-                                    AssetImage('assets/refer_a_friend.png'))),
+                                  builder: (context) => ReferralPage(refCode)));
+                        },
+                        title: Text('Refer A Friend',
+                            style: TextStyle(color: Colors.black)),
                       ),
-                      onTap: () {
-                        // Share.share('Share stuff from Xpert app',
-                        //     subject: 'Invite a friend via...');
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ReferralPage(refCode)));
-                      },
-                      title: Text('Refer A Friend',
-                          style: TextStyle(color: Colors.black)),
-                    ),
-                    // ListTile(
-                    //   leading: IconTheme(
-                    //     data: IconThemeData(color: Colors.grey, size: 35.0),
-                    //     child: Icon(Icons.settings),
-                    //   ),
-                    //   onTap: () {
-                    //     Navigator.push(
-                    //         context,
-                    //         MaterialPageRoute(
-                    //             builder: (context) => SettingsPage()));
-                    //   },
-                    //   title:
-                    //       Text('Settings', style: TextStyle(color: Colors.black)),
-                    // ),
-                    ListTile(
-                      leading: Container(
-                        height: 100.0,
-                        width: 40.0,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage('assets/logout.png'))),
+                      // ListTile(
+                      //   leading: IconTheme(
+                      //     data: IconThemeData(color: Colors.grey, size: 35.0),
+                      //     child: Icon(Icons.settings),
+                      //   ),
+                      //   onTap: () {
+                      //     Navigator.push(
+                      //         context,
+                      //         MaterialPageRoute(
+                      //             builder: (context) => SettingsPage()));
+                      //   },
+                      //   title:
+                      //       Text('Settings', style: TextStyle(color: Colors.black)),
+                      // ),
+                      ListTile(
+                        leading: Container(
+                          height: 100.0,
+                          width: 40.0,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: AssetImage('assets/logout.png'))),
+                        ),
+                        onTap: () {
+                          _showDialog(context);
+                        },
+                        title: Text('Logout',
+                            style: TextStyle(color: Colors.black)),
                       ),
-                      onTap: () {
-                        _showDialog(context);
-                      },
-                      title:
-                          Text('Logout', style: TextStyle(color: Colors.black)),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       );
   }

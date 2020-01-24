@@ -3,18 +3,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:xpert/homepage2.dart';
+import 'global.dart';
 import 'homepage.dart';
 import 'rejectedPage.dart';
 import 'underReview_page.dart';
-import 'xpertWelcome.dart';
+import 'mobile_login_page.dart';
 import 'xpertinvitescreen.dart';
 
 class OTPScreen extends StatefulWidget {
   // int status;
   final Function signInCallback;
+  final Function verifyPhone;
   String phoneNumber;
 
-  OTPScreen(this.signInCallback, this.phoneNumber);
+  OTPScreen(this.signInCallback, this.verifyPhone, this.phoneNumber);
   @override
   _OTPScreenState createState() => _OTPScreenState();
 }
@@ -27,6 +29,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
   _checkIntoMaster(FirebaseUser user) async {
     print('UID: ' + user.uid);
+    // print('EMAIL: ' + user.email);
     await dataBaseRef
         .collection('xpert_master')
         .where('auth_id', isEqualTo: user.uid)
@@ -36,6 +39,9 @@ class _OTPScreenState extends State<OTPScreen> {
       if (docsMaster.documents.length == 0) {
         /// if auth_id doesn't match with any documents
         /// in xpert_master collection then check phoneNumeber of that user.
+        if (widget.phoneNumber == null || widget.phoneNumber == '') {
+          widget.phoneNumber = 'no-mobile-number';
+        }
         dataBaseRef
             .collection('xpert_master')
             .where('mobile', isEqualTo: widget.phoneNumber)
@@ -43,44 +49,83 @@ class _OTPScreenState extends State<OTPScreen> {
             .then((docsMaster) {
           print('mobilecheck' + docsMaster.documents.toList().toString());
           if (docsMaster.documents.length == 0) {
+            //email check
             dataBaseRef
-                .collection('invite_requests')
-                .where('auth_id', isEqualTo: user.uid)
+                .collection('xpert_master')
+                .where('email',
+                    isEqualTo:
+                        widget.phoneNumber == '' ? user.email : 'invalid-email')
                 .getDocuments()
-                .then((docsRequest) {
-              print('invite check' + '${docsRequest.documents.length}');
-              if (docsRequest.documents.length == 0) {
-                //todo: maybe pushReplacement
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => XpertInviteScreen(
-                            user: user,
-                            phoneNumber: widget.phoneNumber,
-                          )),
-                );
+                .then((docsMaster) {
+              widget.phoneNumber = '';
+              print('emailcheck' + docsMaster.documents.toList().toString());
+              if (docsMaster.documents.length == 0) {
+                dataBaseRef
+                    .collection('invite_requests')
+                    .where('auth_id', isEqualTo: user.uid)
+                    .getDocuments()
+                    .then((docsRequest) {
+                  print('invite check' + '${docsRequest.documents.length}');
+                  if (docsRequest.documents.length == 0) {
+                    //todo: maybe pushReplacement
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => XpertInviteScreen(
+                                user: user,
+                                phoneNumber: widget.phoneNumber,
+                              )),
+                    );
+                  } else {
+                    if (docsRequest.documents[0].data['status'] == 'pending' ||
+                        docsRequest.documents[0].data['status'] ==
+                            'in-review') {
+                      print("UnderReview Profile");
+                      //todo: maybe pushReplacement
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UnderReviewPage(),
+                        ),
+                      );
+                    } else if (docsRequest.documents[0].data['status'] ==
+                        'rejected') {
+                      print("Rejected Profile");
+                      //todo: maybe pushReplacement
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RejectedPage(),
+                        ),
+                      );
+                    }
+                  }
+                });
               } else {
-                if (docsRequest.documents[0].data['status'] == 'pending' ||
-                    docsRequest.documents[0].data['status'] == 'in-review') {
-                  print("UnderReview Profile");
-                  //todo: maybe pushReplacement
+                ///auth_id doesn't match but email matched then update authId
+                ///in xpert_master collection and push the user to Home Page.
+                dataBaseRef
+                    .collection('xpert_master')
+                    .document(docsMaster.documents[0].documentID)
+                    .updateData({
+                  'auth_id': user.uid,
+                  'email': '',
+                  'mobile': ''
+                }).whenComplete(() {
+                  /// todo: maybe pushRepalcement
+                  // Navigator.pushReplacement(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => HomePage(user: user, title: docsMaster.documents[0].documentID,),
+                  //     ));
                   Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => UnderReviewPage(),
-                    ),
-                  );
-                } else if (docsRequest.documents[0].data['status'] ==
-                    'rejected') {
-                  print("Rejected Profile");
-                  //todo: maybe pushReplacement
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RejectedPage(),
-                    ),
-                  );
-                }
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyHomePage2(
+                            userDocId: docsMaster.documents[0].documentID,
+                            user: user),
+                      ));
+                });
               }
             });
           } else {
@@ -91,7 +136,8 @@ class _OTPScreenState extends State<OTPScreen> {
                 .document(docsMaster.documents[0].documentID)
                 .updateData({
               'auth_id': user.uid,
-              'mobile': '' // maybe blank the phone number here (done)
+              'mobile': '',
+              'email': ''
             }).whenComplete(() {
               /// todo: maybe pushRepalcement
               // Navigator.pushReplacement(
@@ -118,6 +164,8 @@ class _OTPScreenState extends State<OTPScreen> {
         //     MaterialPageRoute(
         //       builder: (context) => HomePage(user: user, title: docsMaster.documents[0].documentID,),
         //     ));
+        print(docsMaster.documents.length.toString() +
+            docsMaster.documents[0].documentID);
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -140,7 +188,7 @@ class _OTPScreenState extends State<OTPScreen> {
     if (widget.signInCallback == null && widget.phoneNumber.isEmpty) {
       print('checking current user');
       _checkCurrentUser().then((_user) {
-        print('USER UID' + '${_user.uid}');
+        print('USER UID' + '${_user.uid}' + '${_user.email}');
         _checkIntoMaster(_user);
       });
     } else {
@@ -151,14 +199,46 @@ class _OTPScreenState extends State<OTPScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    FROM_INVITE_PAGE = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_isLoggedIn) {
-      return Center(
-        child: Container(
-          height: 50.0,
-          width: 50.0,
-          child: CircularProgressIndicator(
-            backgroundColor: Colors.amber,
+      return Scaffold(
+        body: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                height: 50.0,
+                width: 50.0,
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.amber,
+                ),
+              ),
+              FROM_INVITE_PAGE
+                  ? Text('Creating Your Account',
+                      style: TextStyle(fontSize: 20.0),
+                      textAlign: TextAlign.center)
+                  : Container(
+                      height: 0.0,
+                    ),
+              FROM_INVITE_PAGE
+                  ? Text(
+                      'Please wait while we set up your account',
+                      style: TextStyle(fontSize: 18.0),
+                      textAlign: TextAlign.center,
+                    )
+                  : Text(
+                      'Please Wait...',
+                      style: TextStyle(fontSize: 18.0),
+                      textAlign: TextAlign.center,
+                    )
+            ],
           ),
         ),
       );
@@ -224,9 +304,9 @@ class _OTPScreenState extends State<OTPScreen> {
                               controller: _smsController,
                               hideCharacter: false,
                               highlight: true,
-                              highlightColor: Colors.blue,
-                              defaultBorderColor: Colors.black,
-                              hasTextBorderColor: Colors.green,
+                              highlightColor: Colors.amber,
+                              defaultBorderColor: Colors.white,
+                              hasTextBorderColor: Colors.amber,
                               maxLength: 6,
                               // maskCharacter: "😎",
 
@@ -257,43 +337,48 @@ class _OTPScreenState extends State<OTPScreen> {
                       children: <Widget>[
                         Text("Didn't receive OTP?",
                             style: TextStyle(color: Colors.amber)),
-                        Text("Resend", style: TextStyle(color: Colors.white)),
+                        GestureDetector(
+                            onTap: () {
+                              widget.verifyPhone(widget.phoneNumber);
+                            },
+                            child: Text("Resend",
+                                style: TextStyle(color: Colors.white))),
                       ],
                     ),
                   ],
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  'TAP: Agree and continue to accept ',
-                  style: TextStyle(color: Colors.white),
-                ),
-                Text(
-                  'Xpert Terms of ',
-                  style: TextStyle(color: Colors.amber),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('Service ', style: TextStyle(color: Colors.amber)),
-                Text(
-                  'and ',
-                  style: TextStyle(color: Colors.white),
-                ),
-                Text(
-                  'Privacy policy.',
-                  style: TextStyle(color: Colors.amber),
-                )
-              ],
-            ),
-            SizedBox(
-              height: 5.0,
-            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: <Widget>[
+            //     Text(
+            //       'TAP: Agree and continue to accept ',
+            //       style: TextStyle(color: Colors.white),
+            //     ),
+            //     Text(
+            //       'Xpert Terms of ',
+            //       style: TextStyle(color: Colors.amber),
+            //     ),
+            //   ],
+            // ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: <Widget>[
+            //     Text('Service ', style: TextStyle(color: Colors.amber)),
+            //     Text(
+            //       'and ',
+            //       style: TextStyle(color: Colors.white),
+            //     ),
+            //     Text(
+            //       'Privacy policy.',
+            //       style: TextStyle(color: Colors.amber),
+            //     )
+            //   ],
+            // ),
+            // SizedBox(
+            //   height: 5.0,
+            // ),
             MaterialButton(
               minWidth: double.infinity,
               height: 60,

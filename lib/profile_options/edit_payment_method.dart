@@ -35,7 +35,10 @@ class _EditPayMethodState extends State<EditPayMethod> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print('Manage bank page: ' + widget.userDocId + " ; " + widget.creatorSetDocId);
+    print('Manage bank page: ' +
+        widget.userDocId +
+        " ; " +
+        widget.creatorSetDocId);
   }
 
   @override
@@ -64,10 +67,8 @@ class _EditPayMethodState extends State<EditPayMethod> {
                     child: Row(
                       children: <Widget>[
                         Theme(
-                          data: ThemeData(
-                            unselectedWidgetColor: Colors.black
-                          ),
-                                                  child: Checkbox(
+                          data: ThemeData(unselectedWidgetColor: Colors.black),
+                          child: Checkbox(
                             value: _upiCheckerVal,
                             onChanged: (value) {
                               setState(() {
@@ -93,16 +94,20 @@ class _EditPayMethodState extends State<EditPayMethod> {
                       ],
                     ),
                   ),
-                  !_isPaytmEnabled?TextField(
-                    controller: _upiIdController,
-                    autofocus: false,
-                    keyboardType: TextInputType.text,
-                    style: TextStyle(color: Colors.black, fontSize: 20.0),
-                    decoration: InputDecoration.collapsed(
-                      hintText: 'Enter your UPI ID',
-                      hintStyle: TextStyle(color: Colors.grey),
-                    ),
-                  ):Container(height: 2.0,),
+                  !_isPaytmEnabled
+                      ? TextField(
+                          controller: _upiIdController,
+                          autofocus: false,
+                          keyboardType: TextInputType.text,
+                          style: TextStyle(color: Colors.black, fontSize: 20.0),
+                          decoration: InputDecoration.collapsed(
+                            hintText: 'Enter your UPI ID',
+                            hintStyle: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : Container(
+                          height: 2.0,
+                        ),
                   Divider(
                     height: 5.0,
                     color: Colors.grey,
@@ -112,10 +117,8 @@ class _EditPayMethodState extends State<EditPayMethod> {
                     child: Row(
                       children: <Widget>[
                         Theme(
-                          data: ThemeData(
-                            unselectedWidgetColor: Colors.black
-                          ),
-                                                  child: Checkbox(
+                          data: ThemeData(unselectedWidgetColor: Colors.black),
+                          child: Checkbox(
                             value: !_upiCheckerVal,
                             onChanged: (value) {
                               setState(() {
@@ -141,16 +144,20 @@ class _EditPayMethodState extends State<EditPayMethod> {
                       ],
                     ),
                   ),
-                  _isPaytmEnabled?TextField(
-                    controller: _paytmController,
-                    autofocus: false,
-                    keyboardType: TextInputType.text,
-                    style: TextStyle(color: Colors.black, fontSize: 20.0),
-                    decoration: InputDecoration.collapsed(
-                      hintText: 'Enter your Paytm ID or number',
-                      hintStyle: TextStyle(color: Colors.grey),
-                    ),
-                  ):Container(height: 2.0,),
+                  _isPaytmEnabled
+                      ? TextField(
+                          controller: _paytmController,
+                          autofocus: false,
+                          keyboardType: TextInputType.text,
+                          style: TextStyle(color: Colors.black, fontSize: 20.0),
+                          decoration: InputDecoration.collapsed(
+                            hintText: 'Enter your Paytm ID or number',
+                            hintStyle: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : Container(
+                          height: 2.0,
+                        ),
                   Divider(
                     height: 5.0,
                     color: Colors.grey,
@@ -160,8 +167,10 @@ class _EditPayMethodState extends State<EditPayMethod> {
                   ),
                   Text('NOTE:',
                       style: TextStyle(
-                          color: Colors.black,)),
-                  Text('Funds will be transferred bi-weekly to your specified account and will be net of our commission. For payment related queries contact your account manager or email us at finance@xpert.tv',
+                        color: Colors.black,
+                      )),
+                  Text(
+                      'Funds will be transferred bi-weekly to your specified account and will be net of our commission. For payment related queries contact your account manager or email us at finance@xpert.tv',
                       style: TextStyle(color: Colors.black, fontSize: 12.0))
                 ],
               ),
@@ -171,20 +180,30 @@ class _EditPayMethodState extends State<EditPayMethod> {
             minWidth: double.infinity,
             height: 60,
             color: Colors.amber,
-            child: Text('Continue',
+            child: Text('CONTINUE',
                 style: TextStyle(color: Colors.white, fontSize: 22)),
             onPressed: () {
               if (_upiCheckerVal)
-                _updatePaymentType('upi', _upiIdController.text).then((onValue){
-                  Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context)=> ManageBankPage(userDocId: widget.userDocId, creatorDocId: widget.creatorSetDocId,))
-                  );
+                _updatePaymentType('upi', _upiIdController.text)
+                    .then((onValue) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ManageBankPage(
+                                userDocId: widget.userDocId,
+                                creatorDocId: widget.creatorSetDocId,
+                              )));
                 });
               else
-                _updatePaymentType('paytm', _paytmController.text).then((onValue){
-                  Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context)=> ManageBankPage(userDocId: widget.userDocId, creatorDocId: widget.creatorSetDocId,))
-                  );
+                _updatePaymentType('paytm', _paytmController.text)
+                    .then((onValue) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ManageBankPage(
+                                userDocId: widget.userDocId,
+                                creatorDocId: widget.creatorSetDocId,
+                              )));
                 });
             },
           ),

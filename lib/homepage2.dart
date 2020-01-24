@@ -473,6 +473,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xpert/activeCard.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
+import 'package:xpert/chat_screen.dart';
+import 'package:xpert/create_question_page.dart';
+import 'package:xpert/global.dart';
 import 'package:xpert/notofication_page.dart';
 import 'package:xpert/videoanswerscreen.dart';
 import 'package:xpert/xpert_profile_page.dart';
@@ -497,6 +500,8 @@ class _MyHomePage2State extends State<MyHomePage2>
 
   String text;
   DocumentSnapshot _item;
+  DocumentSnapshot xpertData;
+  var lastOrderNo;
 
   // List<String> data =
   //     []; //[" Question 1", "Question 2", "Question 3", "Question 4"];
@@ -510,6 +515,18 @@ class _MyHomePage2State extends State<MyHomePage2>
 
   List<Widget> _questionsCards = [];
 
+  Future<DocumentSnapshot> _fetchUserProfileData() async {
+    DocumentSnapshot userDoc;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId) // bhuvan-bam
+        .get()
+        .then((_userDoc) {
+      userDoc = _userDoc;
+    });
+    return userDoc;
+  }
+
   Future<List<DocumentSnapshot>> _getWebOrders() async {
     List<DocumentSnapshot> d = new List();
     //[" Question 1", "Question 2", "Question 3", "Question 4"];
@@ -520,6 +537,7 @@ class _MyHomePage2State extends State<MyHomePage2>
         // .document('aayush-sinha')//widget.title
         .collection('orders')
         .where('status', isEqualTo: 'xpert review')
+        .orderBy('order_no', descending: true)
         .getDocuments()
         .then((docs) {
       for (var item in docs.documents) {
@@ -550,7 +568,28 @@ class _MyHomePage2State extends State<MyHomePage2>
     });
   }
 
-  void _acceptUpdateData(_orderDocID) async{
+  void _updateRejectedRequests() async {
+    var creatorsetDocId;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.userDocId.toString()) // bhuvan-bam
+        .collection('creator-settings')
+        .getDocuments()
+        .then((_userDoc) {
+      creatorsetDocId = _userDoc.documents[0].documentID;
+    }).whenComplete(() async {
+      await Firestore.instance
+          .collection('xpert_master')
+          .document(widget.userDocId.toString())
+          .collection('creator-settings')
+          .document(creatorsetDocId.toString())
+          .updateData({'requests': FieldValue.increment(-1)}).whenComplete(() {
+        print('Requests updated!');
+      });
+    });
+  }
+
+  void _acceptUpdateData(_orderDocID) async {
     print('Accept func called id: ' +
         widget.userDocId.toString() +
         ' ' +
@@ -561,9 +600,7 @@ class _MyHomePage2State extends State<MyHomePage2>
         // .document('aayush-sinha') //widget.title
         .collection('orders')
         .document(_orderDocID)
-        .updateData({
-      'status': 'accepted'
-    }).whenComplete(() {
+        .updateData({'status': 'accepted'}).whenComplete(() {
       print('Updated!');
       _isMandatory = false;
     });
@@ -654,10 +691,22 @@ class _MyHomePage2State extends State<MyHomePage2>
 
   void initState() {
     super.initState();
+    print('USER DOC ID in homepage: ' + widget.userDocId.toString());
+    _fetchUserProfileData().then((_xpertdata) {
+      xpertData = _xpertdata;
+      print('REAL NOTIFS: ' + xpertData.data['notification']);
+      NOTIFS = xpertData.data['notification'] == 'unseen' ? true : false;
+      print("NOTIFS: " + NOTIFS.toString());
+    });
     _getWebOrders().then((_data) {
       setState(() {
         print('ORDERS LENGTH: ' + _data.length.toString());
         orders = _data;
+        if (orders.length != 0) {
+          lastOrderNo = orders[0].data['order_no'];
+          LAST_ORDER_NO = orders[0].data['order_no'];
+        }
+        print('LAST ORDER NO: ' + lastOrderNo.toString());
       });
       // _createCardList(_data);
       print('ORDERS LENGTH: ' + orders.length.toString());
@@ -841,28 +890,39 @@ class _MyHomePage2State extends State<MyHomePage2>
         // selectedData.add(txt);
       });
     _swipeAnimation().whenComplete(() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CameraExampleHome(
-            incomingQuestion: txt.data['teleprompter_text'] ??
-                'No teleprompter text', // teleprompter_text
-            docId: widget.userDocId,
-            // docId: 'aayush-sinha',
-            orderDocId: txt.documentID,
+      if (txt.data["type"] == 'bot_training') {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ChatScreen(
+                    botPicUrl: txt.data["bot_pic_270x270"],
+                    incomingData: txt.data,
+                    orderDocId: txt.documentID,
+                    userId: widget.userDocId,
+                    xpertData: xpertData.data)));
+      } else
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CameraExampleHome(
+              incomingQuestion: txt.data['teleprompter_text'] ??
+                  'No teleprompter text', // teleprompter_text
+              docId: widget.userDocId,
+              // docId: 'aayush-sinha',
+              orderDocId: txt.documentID,
+              type: txt.data['type'],
+            ),
           ),
-        ),
-      );
+        );
       print('Swipe right question cards: ' + _questionsCards.length.toString());
 
       isAccepted = false;
       orders.remove(txt);
       _questionsCards.removeLast();
-      if(_questionsCards.length == 0){
+      if (_questionsCards.length == 0) {
         _acceptUpdateData(txt.documentID);
-    }
+      }
       print('SWIPE ORDERS LEN: ' + orders.length.toString());
-      
     });
 
     // addImg(txt);
@@ -880,9 +940,12 @@ class _MyHomePage2State extends State<MyHomePage2>
         if (txt.data['mandatory'] == 'yes') _isMandatory = true;
 
         _rejectUpdateData(txt.documentID);
+
+        // if(!_isMandatory)
+        // _updateRejectedRequests();
+
         orders.remove(txt);
-        if(orders.length == 0)
-        _questionsCards = new List();
+        if (orders.length == 0) _questionsCards = new List();
       });
       isRejected = false;
     });
@@ -901,10 +964,10 @@ class _MyHomePage2State extends State<MyHomePage2>
       print('ORDERS LENGTH: ' + orders.length.toString());
     });
     return Center(
-        child: Container(
-          height: 0.0,
-        ),
-      );
+      child: Container(
+        height: 0.0,
+      ),
+    );
   }
 
   @override
@@ -942,15 +1005,35 @@ class _MyHomePage2State extends State<MyHomePage2>
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NotificationPage(),
+                      builder: (context) => NotificationPage(
+                        userDocId: widget.userDocId.toString(),
+                      ),
                     ));
               },
               child: new Container(
-                  padding: EdgeInsets.only(right: 14.0),
-                  child: new Icon(
-                    Icons.notifications,
-                    color: Colors.white,
-                    size: 30.0,
+                  padding: EdgeInsets.only(right: 14.0, top: 14.0),
+                  child: Stack(
+                    children: <Widget>[
+                      Icon(
+                        Icons.notifications,
+                        color: Colors.white,
+                        size: 30.0,
+                      ),
+                      NOTIFS
+                          ? Positioned(
+                              left: 2.0,
+                              top: 2.0,
+                              child: Container(
+                                height: 10.0,
+                                width: 10.0,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(360.0),
+                                    color: Colors.amber),
+                              ))
+                          : Container(
+                              height: 0.0,
+                            )
+                    ],
                   )),
             ),
           ],
@@ -961,225 +1044,261 @@ class _MyHomePage2State extends State<MyHomePage2>
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: <Widget>[
-           _questionsCards.length > 0
-                ? Stack(
-                    alignment: Alignment.center,
-                    // children: _questionsCards,
-                    children: orders.map((item) {
-                      if (orders.indexOf(item) == dataLength - 1) {
-                        _item = item;
-                        text = item.data['message']; //.data['message'];
-                        print('ITEM DATA MAP: ' + item.data.toString());
-                        return cardDemo(
-                          // 'aayu-sinha',
-                          widget.userDocId,
-                          item.documentID,
-                          item.data, //.data['message'],
-                          bottom.value,
-                          right.value,
-                          0.0,
-                          backCardWidth + 10,
-                          rotate.value,
-                          rotate.value < -10 ? 0.1 : 0.0,
-                          isAccepted,
-                          isRejected,
-                          isDoLater,
-                          context,
-                          dismissImg,
-                          flag,
-                          addImg,
-                          swipeRight,
-                          swipeLeft,
-                        );
-                      } else {
-                        double bkdist;
-                        print('QUESTION CARDS LENGTH: '+ _questionsCards.length.toString());
-                        if(_questionsCards.length > 2)
-                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/58.0:MediaQuery.of(context).size.height/68.0;
-                        else
-                        bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height/20.0:MediaQuery.of(context).size.height/30.0;
-                        // double bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height* 0.03:15;
-                        backCardPosition = backCardPosition - bkdist;
-                        // MediaQuery.of(context).size.height > 640? MediaQuery.of(context).size.height* 0.04
-                        // :MediaQuery.of(context).size.height* 0.04;
-                        backCardWidth = backCardWidth + 50;
+          _questionsCards.length > 0
+              ? Stack(
+                  alignment: Alignment.center,
+                  // children: _questionsCards,
+                  children: orders.map((item) {
+                    if (orders.indexOf(item) == dataLength - 1) {
+                      _item = item;
+                      text = item.data['message']; //.data['message'];
+                      print('ITEM DATA MAP: ' + item.data.toString());
+                      return cardDemo(
+                        // 'aayu-sinha',
+                        widget.userDocId,
+                        item.documentID,
+                        item.data, //.data['message'],
+                        bottom.value,
+                        right.value,
+                        0.0,
+                        backCardWidth + 10,
+                        rotate.value,
+                        rotate.value < -10 ? 0.1 : 0.0,
+                        isAccepted,
+                        isRejected,
+                        isDoLater,
+                        context,
+                        dismissImg,
+                        flag,
+                        addImg,
+                        swipeRight,
+                        swipeLeft,
+                      );
+                    } else {
+                      double bkdist;
+                      print('QUESTION CARDS LENGTH: ' +
+                          _questionsCards.length.toString());
+                      if (_questionsCards.length < 3)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0
+                            ? MediaQuery.of(context).size.height / 20.0
+                            : MediaQuery.of(context).size.height / 30.0;
+                      else if (_questionsCards.length <= 7)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0
+                            ? MediaQuery.of(context).size.height / 43.0
+                            : MediaQuery.of(context).size.height / 53.0;
+                      else if (_questionsCards.length <= 14)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0
+                            ? MediaQuery.of(context).size.height / 53.0
+                            : MediaQuery.of(context).size.height / 63.0;
+                      else if (_questionsCards.length <= 20)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0
+                            ? MediaQuery.of(context).size.height / 58.0
+                            : MediaQuery.of(context).size.height / 68.0;
+                      else if (_questionsCards.length <= 50)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0
+                            ? MediaQuery.of(context).size.height / 60.0
+                            : MediaQuery.of(context).size.height / 70.0;
+                      else if (_questionsCards.length <= 70)
+                        bkdist = MediaQuery.of(context).size.height <= 640.0
+                            ? MediaQuery.of(context).size.height / 63.0
+                            : MediaQuery.of(context).size.height / 73.0;
+                      else
+                        bkdist = MediaQuery.of(context).size.height <= 640.0
+                            ? MediaQuery.of(context).size.height / 67.0
+                            : MediaQuery.of(context).size.height / 77.0;
+                      // double bkdist = MediaQuery.of(context).size.height <= 640.0?MediaQuery.of(context).size.height* 0.03:15;
+                      backCardPosition = backCardPosition -
+                          bkdist +
+                          (_questionsCards.length <= 7
+                              ? (_questionsCards.length < 3 ? 8.5 : 2.7)
+                              : 1.1);
+                      // MediaQuery.of(context).size.height > 640? MediaQuery.of(context).size.height* 0.04
+                      // :MediaQuery.of(context).size.height* 0.04;
+                      backCardWidth = backCardWidth + 50;
 
-                        return cardDemoDummy(
-                            item.data, //.data['message'],
-                            backCardPosition,
-                            0.0,
-                            0.0,
-                            backCardWidth,
-                            0.0,
-                            0.0,
-                            context);
-                      }
-                    }).toList())
-                : _noCardLeftRefresh(),
-                  // return Center(child:Text("No Card Left",
-                  //   style: new TextStyle(color: Colors.white, fontSize: 50.0)));
-                    
-          
+                      return cardDemoDummy(
+                          item.data, //.data['message'],
+                          backCardPosition,
+                          0.0,
+                          0.0,
+                          backCardWidth,
+                          0.0,
+                          0.0,
+                          context);
+                    }
+                  }).toList())
+              : _noCardLeftRefresh(),
+          // return Center(child:Text("No Card Left",
+          //   style: new TextStyle(color: Colors.white, fontSize: 50.0)));
+
           Container(
-              // color:  Color.fromRGBO(106, 94, 175, 1.0),
-              padding: const EdgeInsets.only(bottom: 10.0),
-              child: Row(
-                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(right: 6.0),
-                    child: GestureDetector(
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.18,
-                        height: MediaQuery.of(context).size.height * 0.1,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage('assets/reject_two.png'))),
-                      ),
-                      onTap: () {
-                        if (_questionsCards.length != 0) swipeLeft(_item);
-                      },
+            // color:  Color.fromRGBO(106, 94, 175, 1.0),
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Row(
+              // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(right: 6.0),
+                  child: GestureDetector(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.18,
+                      height: MediaQuery.of(context).size.height * 0.1,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage('assets/reject_two.png'))),
                     ),
+                    onTap: () {
+                      if (_questionsCards.length != 0) swipeLeft(_item);
+                    },
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(right: 0.0, left: 0.0),
-                    child: GestureDetector(
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.18,
-                        height: MediaQuery.of(context).size.height * 0.07,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage('assets/do_later_two.png'))),
-                      ),
-                      onTap: () {
-                        if (_questionsCards.length != 0) doLaterPressed(_item);
-                      },
+                ),
+                Padding(
+                  padding: EdgeInsets.only(right: 0.0, left: 0.0),
+                  child: GestureDetector(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.18,
+                      height: MediaQuery.of(context).size.height * 0.07,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image:
+                                  AssetImage('assets/add_question_two.png'))),
                     ),
+                    onTap: () {
+                      // if (_questionsCards.length != 0) doLaterPressed(_item);
+                      if (_questionsCards.length != 0)
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CreateQuestionPage(
+                                      userDocId: widget.userDocId,
+                                    )));
+                    },
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 6.0),
-                    child: GestureDetector(
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.18,
-                        height: MediaQuery.of(context).size.height * 0.1,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage('assets/accept_two.png'))),
-                      ),
-                      onTap: () {
-                        if (_questionsCards.length != 0) swipeRight(_item);
-                      },
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 6.0),
+                  child: GestureDetector(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.18,
+                      height: MediaQuery.of(context).size.height * 0.1,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage('assets/accept_two.png'))),
                     ),
+                    onTap: () {
+                      if (_questionsCards.length != 0) swipeRight(_item);
+                    },
                   ),
-                  // OutlineButton(
-                  //   padding: EdgeInsets.all(6.0),
-                  //   shape: CircleBorder(
-                  //     side: BorderSide(width: 4.0, color: Colors.white,)
-                  //   ),
-                  //   child: IconTheme(
-                  //     data: IconThemeData(color: Colors.red, size: 50.0),
-                  //     child: Icon(Icons.cancel)
-                  //   ),
-                  //   // child: Container(
-                  //   //   height: 50.0,
-                  //   //   decoration: BoxDecoration(
-                  //   //     image: DecorationImage(image: AssetImage('assets/reject_icon.png'))
-                  //   //   ),
-                  //   // ),
-                  //   onPressed: (){
-                  //     if(_questionsCards.length != 0)
-                  //     swipeLeft(_item);
-                  //   },
-                  // ),
-                  // OutlineButton(
-                  //   padding: EdgeInsets.all(6.0),
-                  //   shape: CircleBorder(
-                  //     side: BorderSide(width: 4.0, color: Colors.white,)
-                  //   ),
-                  //   child: IconTheme(
-                  //     data: IconThemeData(color: Colors.yellow, size: 40.0),
-                  //     child: Icon(Icons.refresh),
-                  //   ),
-                  //   // child: Container(
-                  //   //   height: 50.0,
-                  //   //   decoration: BoxDecoration(
-                  //   //     image: DecorationImage(image: AssetImage('assets/do_later_icon.png'))
-                  //   //   ),
-                  //   // ),
-                  //   onPressed: (){
-                  //     // todo refresh
-                  //     if(_questionsCards.length != 0)
-                  //     doLaterPressed(_item);
-                  //   },
-                  // ),
-                  // OutlineButton(
-                  //   padding: EdgeInsets.all(6.0),
-                  //   shape: CircleBorder(
-                  //     side: BorderSide(width: 4.0, color: Colors.white,)
-                  //   ),
-                  //   // child: Container(
-                  //   //   height: 50.0,
-                  //   //   decoration: BoxDecoration(
-                  //   //     image: DecorationImage(image: AssetImage('assets/accept_icon.png'))
-                  //   //   ),
-                  //   // ),
-                  //   child: IconTheme(
-                  //     data: IconThemeData(color: Colors.green, size: 50.0),
-                  //     child: Icon(Icons.favorite),
-                  //   ),
-                  //   onPressed: (){
-                  //     if(_questionsCards.length != 0)
-                  //     swipeRight(_item);
-                  //   },
-                  // ),
-                  // new FlatButton(
-                  //     padding: new EdgeInsets.all(0.0),
-                  //     onPressed: () {
-                  //       swipeLeft(_item);
-                  //       // setState(() {
-                  //       //   data.remove(text);
-                  //       //   print("#####$data");
-                  //       // });
-                  //     },
-                  //     child: new Container(
-                  //       height: 30.0,
-                  //       width: 130.0,
-                  //       alignment: Alignment.center,
-                  //       decoration: new BoxDecoration(
-                  //         color: Colors.red,
-                  //         borderRadius: new BorderRadius.circular(60.0),
-                  //       ),
-                  //       child: new Text(
-                  //         "DON'T",
-                  //         style: new TextStyle(color: Colors.white),
-                  //       ),
-                  //     )),
-                  // new FlatButton(
-                  //     padding: new EdgeInsets.all(0.0),
-                  //     onPressed: () {
-                  //       swipeRight(_item);
-                  //       // setState(() {
-                  //       //   data.remove(text);
-                  //       //   print("#####$data");
-                  //       // });
-                  //     },
-                  //     child: new Container(
-                  //       height: 30.0,
-                  //       width: 130.0,
-                  //       alignment: Alignment.center,
-                  //       decoration: new BoxDecoration(
-                  //         color: Colors.cyan,
-                  //         borderRadius: new BorderRadius.circular(60.0),
-                  //       ),
-                  //       child: new Text(
-                  //         "I'M IN",
-                  //         style: new TextStyle(color: Colors.white),
-                  //       ),
-                  //     ))
-                ],
-              ),
+                ),
+                // OutlineButton(
+                //   padding: EdgeInsets.all(6.0),
+                //   shape: CircleBorder(
+                //     side: BorderSide(width: 4.0, color: Colors.white,)
+                //   ),
+                //   child: IconTheme(
+                //     data: IconThemeData(color: Colors.red, size: 50.0),
+                //     child: Icon(Icons.cancel)
+                //   ),
+                //   // child: Container(
+                //   //   height: 50.0,
+                //   //   decoration: BoxDecoration(
+                //   //     image: DecorationImage(image: AssetImage('assets/reject_icon.png'))
+                //   //   ),
+                //   // ),
+                //   onPressed: (){
+                //     if(_questionsCards.length != 0)
+                //     swipeLeft(_item);
+                //   },
+                // ),
+                // OutlineButton(
+                //   padding: EdgeInsets.all(6.0),
+                //   shape: CircleBorder(
+                //     side: BorderSide(width: 4.0, color: Colors.white,)
+                //   ),
+                //   child: IconTheme(
+                //     data: IconThemeData(color: Colors.yellow, size: 40.0),
+                //     child: Icon(Icons.refresh),
+                //   ),
+                //   // child: Container(
+                //   //   height: 50.0,
+                //   //   decoration: BoxDecoration(
+                //   //     image: DecorationImage(image: AssetImage('assets/do_later_icon.png'))
+                //   //   ),
+                //   // ),
+                //   onPressed: (){
+                //     // todo refresh
+                //     if(_questionsCards.length != 0)
+                //     doLaterPressed(_item);
+                //   },
+                // ),
+                // OutlineButton(
+                //   padding: EdgeInsets.all(6.0),
+                //   shape: CircleBorder(
+                //     side: BorderSide(width: 4.0, color: Colors.white,)
+                //   ),
+                //   // child: Container(
+                //   //   height: 50.0,
+                //   //   decoration: BoxDecoration(
+                //   //     image: DecorationImage(image: AssetImage('assets/accept_icon.png'))
+                //   //   ),
+                //   // ),
+                //   child: IconTheme(
+                //     data: IconThemeData(color: Colors.green, size: 50.0),
+                //     child: Icon(Icons.favorite),
+                //   ),
+                //   onPressed: (){
+                //     if(_questionsCards.length != 0)
+                //     swipeRight(_item);
+                //   },
+                // ),
+                // new FlatButton(
+                //     padding: new EdgeInsets.all(0.0),
+                //     onPressed: () {
+                //       swipeLeft(_item);
+                //       // setState(() {
+                //       //   data.remove(text);
+                //       //   print("#####$data");
+                //       // });
+                //     },
+                //     child: new Container(
+                //       height: 30.0,
+                //       width: 130.0,
+                //       alignment: Alignment.center,
+                //       decoration: new BoxDecoration(
+                //         color: Colors.red,
+                //         borderRadius: new BorderRadius.circular(60.0),
+                //       ),
+                //       child: new Text(
+                //         "DON'T",
+                //         style: new TextStyle(color: Colors.white),
+                //       ),
+                //     )),
+                // new FlatButton(
+                //     padding: new EdgeInsets.all(0.0),
+                //     onPressed: () {
+                //       swipeRight(_item);
+                //       // setState(() {
+                //       //   data.remove(text);
+                //       //   print("#####$data");
+                //       // });
+                //     },
+                //     child: new Container(
+                //       height: 30.0,
+                //       width: 130.0,
+                //       alignment: Alignment.center,
+                //       decoration: new BoxDecoration(
+                //         color: Colors.cyan,
+                //         borderRadius: new BorderRadius.circular(60.0),
+                //       ),
+                //       child: new Text(
+                //         "I'M IN",
+                //         style: new TextStyle(color: Colors.white),
+                //       ),
+                //     ))
+              ],
             ),
+          ),
           // ),
         ],
       ),
