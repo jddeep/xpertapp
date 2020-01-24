@@ -14,20 +14,25 @@ import 'package:audio_recorder/audio_recorder.dart';
 // import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:intl/intl.dart' show DateFormat;
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:xpert/audiotest.dart';
-import 'package:xpert/homepage2.dart';
-// import 'package:xpert/homepage.dart';
+
+import 'package:flutter/services.dart';
+import 'package:xpert/global.dart';
 
 class CameraExampleHome extends StatefulWidget {
   // List<CameraDescription> cameras;
+  var type;
   String incomingQuestion;
   final LocalFileSystem localFileSystem;
   var orderDocId;
   var docId;
 
   CameraExampleHome(
-      {this.incomingQuestion, this.orderDocId, this.docId, localFileSystem})
+      {this.incomingQuestion,
+      this.orderDocId,
+      this.docId,
+      this.type,
+      localFileSystem})
       : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
@@ -62,6 +67,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   bool onlyVideo = true;
   Recording _recording = new Recording();
   bool isRecording = false;
+  bool isChatVideo = false;
   Random random = new Random();
   TextEditingController _controller = new TextEditingController();
   bool isReady = false;
@@ -120,6 +126,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   @override
   void initState() {
     setupCameras();
+    // widget.incomingQuestion = 'sdasfbdkfbksdfksdjhfgkjdhflhfjf;lsjf;ljd;lgjf;lmbvmf;ljv;lrguvljfvl;m;fljgv;lmfv;lfbv;lfd;lb;aljfgotugjporeugpoerogju;dflbjmd bl,dvssmgc;,oa;dlka;ifpaovmrpvr,ef.sdasfbdkfbksdfksdjhfgkjdhflhfjf;lsjf;ljd;lgjf;lmbvmf;ljv;lrguvljfvl;m;fljgv;lmfv;lfbv;lfd;lb;aljfgotugjporeugpoerogju;dflbjmd bl,dvssmgc;,oa;dlka;ifpaovmrpvr,ef';
+    if (widget.docId == null && widget.orderDocId == null) isChatVideo = true;
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // CameraDescription cameraDescription = CameraDescription(lensDirection: CameraLensDirection.front);
@@ -129,7 +137,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    isChatVideo = false;
     _controller.dispose();
+    _timer.cancel();
     _stopVideoPlayer();
     super.dispose();
   }
@@ -149,6 +159,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
   }
 
+  void _updateIntroVideoField(String url) async {
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.docId.toString())
+        .updateData({'intro_video': url}).whenComplete(() {
+      print('Intro Video done!');
+    });
+  }
+
   void _updateAnswerUrl(String url) async {
     print('URL: ' +
         url +
@@ -164,10 +183,12 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         .updateData({
       'answer_url': url,
       'status': 'delivered',
+      'paid': _paid ? 'Yes' : 'No',
       'answer_type': 'video'
     }).whenComplete(() {
       print('Updated!');
       isUploading = false;
+      _updateFulfilledStatus();
       // Navigator.pop(context);
       // Fluttertoast.showToast(
       //                                     msg: "Video uploaded!",
@@ -180,6 +201,30 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     });
   }
 
+  void _updateFulfilledStatus() async {
+    var creatorsetDocId;
+    await Firestore.instance
+        .collection('xpert_master')
+        .document(widget.docId.toString()) // bhuvan-bam
+        .collection('creator-settings')
+        .getDocuments()
+        .then((_userDoc) {
+      creatorsetDocId = _userDoc.documents[0].documentID;
+    }).whenComplete(() async {
+      await Firestore.instance
+          .collection('xpert_master')
+          .document(widget.docId.toString())
+          .collection('creator-settings')
+          .document(creatorsetDocId.toString())
+          .updateData({
+        'fulfilled': FieldValue.increment(1),
+        'requests': FieldValue.increment(-1)
+      }).whenComplete(() {
+        print('Fulfilled updated!');
+      });
+    });
+  }
+
   void _updateAcceptedStatus() async {
     await Firestore.instance
         .collection('xpert_master')
@@ -189,6 +234,36 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         .updateData(
             {'status': 'accepted', 'answer_type': 'video'}).whenComplete(() {
       print('Accepted status!');
+    });
+  }
+
+  void _createNewOrder(String url) async {
+    if (LAST_ORDER_NO == null) LAST_ORDER_NO = 0;
+
+    Map<String, dynamic> order = new Map();
+    order["message"] = widget.incomingQuestion;
+    order["answer_url"] = url;
+    order["date"] =
+        DateFormat("MMMM dd, yyyy 'at' hh:mm:ss aaa").format(DateTime.now()) +
+            ' UTC+' +
+            DateTime.now().timeZoneOffset.toString().substring(0, 4);
+    order["answer_type"] = "video";
+    order["status"] = "delivered";
+    order["order_no"] = ++LAST_ORDER_NO;
+
+    print('NEW DATE: ' + order['date']);
+
+    DocumentReference newOrderDoc = Firestore.instance
+        .collection('xpert_master')
+        .document(widget.docId)
+        .collection('orders')
+        .document();
+
+    await Firestore.instance.runTransaction((transaction) async {
+      await transaction.set(newOrderDoc, order);
+    }).whenComplete(() {
+      isUploading = false;
+      print("New order added with doc id: " + newOrderDoc.documentID);
     });
   }
 
@@ -224,7 +299,11 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //   ),
           // ),
           Container(
-            child: _cameraPreviewWidget(),
+            child: isRecording
+                ? _cameraPreviewWidget()
+                : (videoPath == null || videoPath == '')
+                    ? _cameraPreviewWidget()
+                    : _thumbnailWidget(),
           ),
           Align(
             alignment: AlignmentDirectional.topStart,
@@ -252,153 +331,376 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                !showBottom
-                    ? Container(
-                        decoration: BoxDecoration(color: Colors.grey),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Text('MARK ANSWER AS: ',
-                                style: TextStyle(color: Colors.black)),
-                            Text("PAID", style: TextStyle(color: Colors.black)),
-                            CupertinoSwitch(
-                              value: _paid,
-                              onChanged: (value) {
-                                setState(() {
-                                  _paid = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ))
-                    : Container(),
+                // !showBottom && !isChatVideo
+                //     ? Container(
+                //         decoration: BoxDecoration(color: Colors.grey),
+                //         child: Row(
+                //           mainAxisAlignment: MainAxisAlignment.end,
+                //           children: <Widget>[
+                //             Text('MARK ANSWER AS: ',
+                //                 style: TextStyle(color: Colors.black)),
+                //             Text("PAID", style: TextStyle(color: Colors.black)),
+                //             CupertinoSwitch(
+                //               value: _paid,
+                //               onChanged: (value) {
+                //                 setState(() {
+                //                   _paid = value;
+                //                 });
+                //               },
+                //             ),
+                //           ],
+                //         ))
+                //     : Container(),
                 Container(
-                    decoration: BoxDecoration(
-                        color: Colors.black54,
-                        // borderRadius: BorderRadius.only(
-                        //     topLeft: Radius.circular(14.0),
-                        //     topRight: Radius.circular(14.0))
-                            ),
-                    child: showBottom
-                        ? Wrap(
-                            children: <Widget>[
-                              SingleChildScrollView(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 8.0, bottom: 8.0, left: 8.0),
-                                  child: Text(widget.incomingQuestion,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 16.0)),
-                                ),
-                              ),
-                              Center(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      border: Border.all(
-                                          width: 4.0, color: Colors.white)),
-                                  child: IconButton(
-                                    icon: isRecording
-                                        ? Icon(Icons.stop)
-                                        : Icon(Icons.fiber_manual_record),
-                                    iconSize: 30.0,
-                                    color: Colors.red,
-                                    onPressed: () {
-                                      _startTimer();
-                                      // if(!isRecording)
-                                      // Navigator.pop(context);
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        : Wrap(
-                            children: <Widget>[
-                              SingleChildScrollView(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 8.0, bottom: 8.0, left: 8.0),
-                                  child: Text(widget.incomingQuestion,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 16.0)),
-                                ),
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  IconButton(
-                                    icon: Icon(Icons.refresh),
-                                    iconSize: 40.0,
-                                    onPressed: () {
-                                      setState(() {
-                                        // onResumeButtonPressed();
-                                        showBottom = true;
-                                      });
-                                    },
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left:10.0),
-                                    child: FlatButton(
-                                      
-                                      onPressed: () {
-                                        print("videoPath: $videoPath");
-                                        setState(() {
-                                          isUploading = true;
-                                          showBottom = true;
-                                        });
-                                        _updateAcceptedStatus();
-                                        
-                                        uploadToStorage(videoPath).then((url) {
-                                          _updateAnswerUrl(url);
-                                        });
-                                        Navigator.pop(context);
-                                        Fluttertoast.showToast(
-                                          msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
-                                          toastLength: Toast.LENGTH_LONG,
-                                          gravity: ToastGravity.BOTTOM,
-                                          timeInSecForIos: 2,
-                                          backgroundColor: Colors.grey,
-                                          textColor: Colors.white,
-                                          fontSize: 16.0);
-                                        
-                                        
-                                        //                   Navigator.pushReplacement(
-                                        // context,
-                                        // MaterialPageRoute(
-                                        //   builder: (context) => new MyHomePage2(),
-                                        // ));
-                                      },
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(360.0)),
-                                      color: Colors.white,
-                                      child: Row(
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child: Text(
-                                              "Tap to send",
-                                              style:
-                                                  TextStyle(color: Colors.black, fontSize: 18.0),
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.send,
-                                            color: Colors.amber,
-                                          ),
-                                        ],
+                  child: Column(
+                    children: <Widget>[
+                      // decoration: BoxDecoration(
+                      //     color: Colors.black54,
+                      //     // borderRadius: BorderRadius.only(
+                      //     //     topLeft: Radius.circular(14.0),
+                      //     //     topRight: Radius.circular(14.0))
+                      //         ),
+                      Column(
+                        children: <Widget>[
+                          Center(
+                            child: Container(
+                              height: !showBottom &&
+                                      widget.incomingQuestion.length > 200
+                                  ? MediaQuery.of(context).size.height * 0.25
+                                  : MediaQuery.of(context).size.height * 0.17,
+                              width: MediaQuery.of(context).size.width * 0.9,
+                              child: Card(
+                                elevation: 8.0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15.0)),
+                                color: isRecording
+                                    ? Colors.transparent
+                                    : Colors.white,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Container(
+                                      // height: !showBottom?MediaQuery.of(context).size.height * 0.09:MediaQuery.of(context).size.height * 0.12,
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text(
+                                            // 'sdasfbdkfbksdfksdjhfgkjdhflhfjf;lsjf;ljd;lgjf;lmbvmf;ljv;lrguvljfvl;m;fljgv;lmfv;lfbv;lfd;lb;aljfgotugjporeugpoerogju;dflbjmd bl,dvssmgc;,oa;dlka;ifpaovmrpvr,ef.sdasfbdkfbksdfksdjhfgkjdhflhfjf;lsjf;ljd;lgjf;lmbvmf;ljv;lrguvljfvl;m;fljgv;lmfv;lfbv;lfd;lb;aljfgotugjporeugpoerogju;dflbjmd bl,dvssmgc;,oa;dlka;ifpaovmrpvr,ef',
+                                            widget.incomingQuestion.length > 200
+                                                ? widget.incomingQuestion
+                                                        .substring(0, 199) +
+                                                    '...'
+                                                : widget.incomingQuestion,
+                                            textAlign: TextAlign.start,
+                                            maxLines: 6,
+                                            style: TextStyle(
+                                              color: isRecording
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                              fontSize: 17.0,
+                                            )),
                                       ),
                                     ),
-                                  )
-                                ],
+                                    !showBottom && !isChatVideo
+                                        ? Divider(
+                                            color: Colors.grey,
+                                            height: 5.0,
+                                            thickness: 1.0,
+                                          )
+                                        : Container(
+                                            height: 0.0,
+                                          ),
+                                    !showBottom && !isChatVideo
+                                        ?
+                                        // padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+                                        Container(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: <Widget>[
+                                                Text('MARK ANSWER AS: ',
+                                                    style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 12.0)),
+                                                Text("PAID",
+                                                    style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 12.0)),
+                                                CupertinoSwitch(
+                                                  value: _paid,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      _paid = value;
+                                                    });
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : Container(
+                                            height: 0.0,
+                                          ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ) //todo,
-                    ),
+                            ),
+                          ),
+                          // SingleChildScrollView(
+                          //   child: Padding(
+                          //     padding: const EdgeInsets.only(
+                          //         top: 8.0, bottom: 8.0, left: 8.0),
+                          //     child: Text(widget.incomingQuestion,
+                          //         textAlign: TextAlign.center,
+                          //         style: TextStyle(
+                          //             color: Colors.white, fontSize: 16.0)),
+                          //   ),
+                          // ),
+                          showBottom
+                              ? Padding(
+                                  padding: EdgeInsets.only(
+                                      left: MediaQuery.of(context).size.width *
+                                          0.2,
+                                      right: MediaQuery.of(context).size.width *
+                                          0.2,
+                                      top: 8.0,
+                                      bottom: 8.0),
+                                  child: FlatButton(
+                                    color: Colors.red,
+                                    padding: EdgeInsets.all(10.0),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(360.0)),
+                                    child: Center(
+                                      child: Text(
+                                        isRecording
+                                            ? 'Stop recording'
+                                            : 'Tap to record',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20.0),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      _startTimer();
+                                    },
+                                  ),
+                                )
+                              : Container(height: 0.0),
+                          // Center(
+                          //   child: Container(
+                          //     decoration: BoxDecoration(
+                          //         borderRadius: BorderRadius.circular(20.0),
+                          //         border: Border.all(
+                          //             width: 4.0, color: Colors.white)),
+                          //     child: IconButton(
+                          //       icon: isRecording
+                          //           ? Icon(Icons.stop)
+                          //           : Icon(Icons.fiber_manual_record),
+                          //       iconSize: 30.0,
+                          //       color: Colors.red,
+                          //       onPressed: () {
+                          //         _startTimer();
+                          //         // if(!isRecording)
+                          //         // Navigator.pop(context);
+                          //       },
+                          //     ),
+                          //   ),
+                          // ),
+                        ],
+                      ),
+
+                      !showBottom
+                          ? Wrap(
+                              children: <Widget>[
+                                // SingleChildScrollView(
+                                //   child: Padding(
+                                //     padding: const EdgeInsets.only(
+                                //         top: 8.0, bottom: 8.0, left: 8.0),
+                                //     child: Text(widget.incomingQuestion,
+                                //         textAlign: TextAlign.center,
+                                //         style: TextStyle(
+                                //             color: Colors.white, fontSize: 16.0)),
+                                //   ),
+                                // ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    IconButton(
+                                      icon: Icon(Icons.refresh),
+                                      iconSize: 40.0,
+                                      onPressed: () {
+                                        setState(() {
+                                          // onResumeButtonPressed();
+                                          videoController.pause();
+                                          videoController?.removeListener(
+                                              videoPlayerListener);
+                                          videoPath = '';
+                                          showBottom = true;
+                                        });
+                                      },
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 10.0),
+                                      child: FlatButton(
+                                        onPressed: () async {
+                                          print("videoPath: $videoPath");
+                                          if (!isChatVideo)
+                                            setState(() {
+                                              isUploading = true;
+                                              showBottom = true;
+                                            });
+
+                                          // Platform messages may fail, so we use a try/catch PlatformException.
+                                          // try {
+                                          //   await VideoManipulation.platformVersion.then((value){
+                                          //     print('Platform version: ' + value.toString());
+                                          //   }).whenComplete(() async{
+                                          //     await VideoManipulation.generateVideo([videoPath, 'assets/app_logo_bg.png'], '', 30, 1).then((path){
+                                          //                                       print('Watermarked vid path: ' + path);
+                                          //                                       if(widget.orderDocId != null){
+                                          //                                       _updateAcceptedStatus();
+
+                                          //                                     uploadToStorage(path).then((url) {
+                                          //                                       _updateAnswerUrl(url);
+                                          //                                     });
+                                          //                                     } else if(widget.orderDocId==null && widget.docId == null){
+                                          //                                       setState(() {
+                                          //                                         isChatVideo = true;
+                                          //                                       });
+                                          //                                       uploadToStorage(path).then((url){
+                                          //                                         Navigator.pop(context, url);
+                                          //                                         isChatVideo = false;
+                                          //                                       });
+                                          //                                     }
+                                          //                                     else{
+                                          //                                       uploadToStorage(path).then((url){
+                                          //                                         _createNewOrder(url);
+                                          //                                       });
+                                          //                                     }
+
+                                          //                                     if(widget.orderDocId != null){
+                                          //                                       Navigator.pop(context);
+                                          //                                       Fluttertoast.showToast(
+                                          //                                       msg: "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
+                                          //                                       toastLength: Toast.LENGTH_LONG,
+                                          //                                       gravity: ToastGravity.BOTTOM,
+                                          //                                       timeInSecForIos: 2,
+                                          //                                       backgroundColor: Colors.grey,
+                                          //                                       textColor: Colors.white,
+                                          //                                       fontSize: 16.0);
+                                          //                                     }else{
+                                          //                                       Fluttertoast.showToast(
+                                          //                                       msg: "Thanks! Sending your video message...",
+                                          //                                       toastLength: Toast.LENGTH_LONG,
+                                          //                                       gravity: ToastGravity.BOTTOM,
+                                          //                                       timeInSecForIos: 2,
+                                          //                                       backgroundColor: Colors.grey,
+                                          //                                       textColor: Colors.white,
+                                          //                                       fontSize: 16.0);
+                                          //                                     }
+
+                                          //                                     });
+                                          //   });
+                                          // } on PlatformException {
+                                          //   print('Failed to get platform version.');
+                                          // }
+
+                                          if (widget.orderDocId != null) {
+                                            _updateAcceptedStatus();
+
+                                            uploadToStorage(videoPath)
+                                                .then((url) {
+                                              _updateAnswerUrl(url);
+                                              if (widget.type == 'orange')
+                                                _updateIntroVideoField(url);
+                                            });
+                                          } else if (widget.orderDocId ==
+                                                  null &&
+                                              widget.docId == null) {
+                                            // setState(() {
+                                            //   isChatVideo = true;
+                                            // });
+                                            Navigator.pop(context, videoPath);
+                                            // uploadToStorage(videoPath).then((url){
+
+                                            //   isChatVideo = false;
+                                            // });
+                                          } else {
+                                            uploadToStorage(videoPath)
+                                                .then((url) {
+                                              _createNewOrder(url);
+                                            });
+                                          }
+
+                                          if (widget.orderDocId == null &&
+                                              widget.docId == null) {
+                                            Fluttertoast.showToast(
+                                                msg:
+                                                    "Thanks! Sending your video message...",
+                                                toastLength: Toast.LENGTH_LONG,
+                                                gravity: ToastGravity.BOTTOM,
+                                                timeInSecForIos: 2,
+                                                backgroundColor: Colors.grey,
+                                                textColor: Colors.white,
+                                                fontSize: 16.0);
+                                          } else {
+                                            Fluttertoast.showToast(
+                                                msg:
+                                                    "Thanks! We are uploading your answer in the background - which will take a few minutes. In the meantime feel free to browse/answer other requests.",
+                                                toastLength: Toast.LENGTH_LONG,
+                                                gravity: ToastGravity.BOTTOM,
+                                                timeInSecForIos: 2,
+                                                backgroundColor: Colors.grey,
+                                                textColor: Colors.white,
+                                                fontSize: 16.0);
+                                          }
+
+                                          if (!isChatVideo) {
+                                            Navigator.pop(context);
+                                          }
+
+                                          //                   Navigator.pushReplacement(
+                                          // context,
+                                          // MaterialPageRoute(
+                                          //   builder: (context) => new MyHomePage2(),
+                                          // ));
+                                        },
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(360.0)),
+                                        color: Colors.white,
+                                        child: Row(
+                                          children: <Widget>[
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child: Text(
+                                                "Tap to send",
+                                                style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 18.0),
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.send,
+                                              color: Colors.amber,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            )
+                          : Container(
+                              height: 0.0,
+                            ),
+                    ],
+                  ), //todo,
+                ),
               ],
             ),
           ),
@@ -471,13 +773,13 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           //     ),
           //   ),
           // ),
-          Align(
-            alignment: AlignmentDirectional.bottomEnd,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10.0, right: 10.0),
-              child: _thumbnailWidget(),
-            ),
-          )
+          // Align(
+          //   alignment: AlignmentDirectional.bottomEnd,
+          //   child: Padding(
+          //     padding: const EdgeInsets.only(bottom: 10.0, right: 10.0),
+          //     child: _thumbnailWidget(),
+          //   ),
+          // )
         ],
       ),
     );
@@ -540,93 +842,95 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   /// Toggle recording audio
   Widget _toggleAudioWidget() {
-    return !showBottom && !isRecording?Container(height: 0.0,):Row(
-      children: <Widget>[
-        Text(
-          'TURN ON VIDEO',
-          style: TextStyle(color: Colors.white, fontSize: 17.0,
-          shadows: <Shadow>[
-            Shadow(
-              offset: Offset(0.0, 0.0),
-              blurRadius: 3.0,
-              color: Colors.black
-            ),
-            Shadow(
-              offset: Offset(0.0, 0.0),
-              blurRadius: 8.0,
-              color: Colors.black
-            ),
-          ]
-          ),
-        ),
-        Container(
-          height: 20.0,
-          child: CupertinoSwitch(
-            activeColor: Colors.green,
-            // activeTrackColor: Colors.amberAccent,
-            // inactiveThumbColor: Colors.grey,
-            // inactiveTrackColor: Colors.blueGrey,
-            value: onlyVideo,
-            onChanged: (bool value) {
-              print(value);
-              setState(() {
-                onlyVideo = value;
-                if (!onlyVideo) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AudioRecPage(
-                        incomingQuestion: widget.incomingQuestion,
-                        userDocId: widget.docId,
-                        orderDocId: widget.orderDocId,
-                      ),
+    return isChatVideo
+        ? Container(height: 0.0)
+        : !showBottom && !isRecording
+            ? Container(
+                height: 0.0,
+              )
+            : Row(
+                children: <Widget>[
+                  Text(
+                    'TURN ON VIDEO',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17.0,
+                        shadows: <Shadow>[
+                          Shadow(
+                              offset: Offset(0.0, 0.0),
+                              blurRadius: 3.0,
+                              color: Colors.black),
+                          Shadow(
+                              offset: Offset(0.0, 0.0),
+                              blurRadius: 8.0,
+                              color: Colors.black),
+                        ]),
+                  ),
+                  Container(
+                    height: 20.0,
+                    child: CupertinoSwitch(
+                      activeColor: Colors.green,
+                      // activeTrackColor: Colors.amberAccent,
+                      // inactiveThumbColor: Colors.grey,
+                      // inactiveTrackColor: Colors.blueGrey,
+                      value: onlyVideo,
+                      onChanged: (bool value) {
+                        print(value);
+                        setState(() {
+                          onlyVideo = value;
+                          if (!onlyVideo) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AudioRecPage(
+                                  incomingQuestion: widget.incomingQuestion,
+                                  userDocId: widget.docId,
+                                  orderDocId: widget.orderDocId,
+                                ),
+                              ),
+                            );
+                          }
+                        });
+                        // if (controller != null) {
+                        //   onNewCameraSelected(controller.description);
+                        // }
+                      },
                     ),
-                  );
-                }
-              });
-              // if (controller != null) {
-              //   onNewCameraSelected(controller.description);
-              // }
-            },
-          ),
-        ),
-        // IconButton(
-        //   icon: Icon(Icons.videocam),
-        //   color: Colors.white,
-        //   onPressed: () {},
-        // )
-      ],
-    );
+                  ),
+                  // IconButton(
+                  //   icon: Icon(Icons.videocam),
+                  //   color: Colors.white,
+                  //   onPressed: () {},
+                  // )
+                ],
+              );
   }
 
   /// Display the thumbnail of the captured image or video.
   Widget _thumbnailWidget() {
     return Container(
-      height: 70.0,
-      width: 70.0,
-      child: Row(
-        children: <Widget>[
-          videoController == null && imagePath == null
-              ? Container()
-              : SizedBox(
-                  child: (videoController == null)
-                      ? Image.file(File(imagePath))
-                      : Container(
-                          child: Center(
-                            child: AspectRatio(
-                                aspectRatio: videoController.value.size != null
-                                    ? videoController.value.aspectRatio
-                                    : 1.0,
-                                child: VideoPlayer(videoController)),
-                          ),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.amber)),
-                        ),
-                  width: 64.0,
-                  height: 64.0,
-                ),
-        ],
-      ),
+      // height: MediaQuery.of(context).size.height,
+      // width: MediaQuery.of(context).size.width,
+      child: videoController == null && imagePath == null
+          ? Container(
+              height: 0.0,
+            )
+          : SizedBox(
+              child: (videoController == null)
+                  ? Container(
+                      height: 0.0,
+                    )
+                  : Center(
+                      child: Transform.scale(
+                        scale: 1 / videoController.value.aspectRatio,
+                        child: AspectRatio(
+                            aspectRatio: videoController.value.size != null
+                                ? videoController.value.aspectRatio
+                                : 1.0,
+                            child: VideoPlayer(videoController)),
+                      ),
+                    ),
+            ),
     );
   }
 
@@ -698,43 +1002,66 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          isRecording?Container(height: 0.0,):
-          !showBottom && !isRecording?Container(height: 0.0,):Padding(
-            padding: const EdgeInsets.only(left:16.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.grey,
-              radius: 20.0,
-              child: IconTheme(
-                data: IconThemeData(color: Colors.white),
-                child: IconButton(
-                  tooltip: 'Switch Camera',
-                  iconSize: 25.0,
-                  onPressed: () {
-                    onNewCameraSelected(camerasDesc.elementAt(cameraDir));
-                    if (cameraDir == 0)
-                      cameraDir = 1;
-                    else
-                      cameraDir = 0;
-                  },
-                  icon: Icon(Icons.switch_camera),
-                ),
-              ),
-            ),
-          ),
-          Row(
-            children: <Widget>[
-              IconTheme(
-                data: IconThemeData(color: Colors.red),
-                child: isRecording
-                    ? Icon(Icons.fiber_manual_record)
-                    : Container(height: 1.0),
-              ),
-              Text(
-                _timeString,
-                style: TextStyle(color: Colors.white, fontSize: 20.0),
-              ),
-            ],
-          ),
+          isRecording
+              ? Container(
+                  height: 0.0,
+                )
+              : !showBottom && !isRecording
+                  ? Container(
+                      height: 0.0,
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.only(left: 16.0),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.grey,
+                        radius: 20.0,
+                        child: IconTheme(
+                          data: IconThemeData(color: Colors.white),
+                          child: IconButton(
+                            tooltip: 'Switch Camera',
+                            iconSize: 25.0,
+                            onPressed: () {
+                              onNewCameraSelected(
+                                  camerasDesc.elementAt(cameraDir));
+                              if (cameraDir == 0)
+                                cameraDir = 1;
+                              else
+                                cameraDir = 0;
+                            },
+                            icon: Icon(Icons.switch_camera),
+                          ),
+                        ),
+                      ),
+                    ),
+          isRecording
+              ? Container(
+                  height: 50.0,
+                  width: 50.0,
+                  decoration:
+                      BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                  child: Center(
+                    child: Text(
+                      _timeString,
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                )
+              : Container(height: 0.0),
+          // Row(
+          //   children: <Widget>[
+          //     IconTheme(
+          //       data: IconThemeData(color: Colors.red),
+          //       child: isRecording
+          //           ? Icon(Icons.fiber_manual_record)
+          //           : Container(height: 1.0),
+          //     ),
+          //     Text(
+          //       _timeString,
+          //       style: TextStyle(color: Colors.white, fontSize: 20.0),
+          //     ),
+          //   ],
+          // ),
           isRecording ? Container(height: 1.0) : _toggleAudioWidget()
         ],
       );
@@ -828,15 +1155,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   void startTimer() {
     const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
-      oneSec,
-      (Timer timer) => setState(
-        () {
-          _start = _start + 1;
-          _timeString = formatHHMMSS(_start);
-        },
-      ),
-    );
+    _timer = new Timer.periodic(oneSec, (Timer timer) {
+      if (mounted)
+        setState(
+          () {
+            _start = _start + 1;
+            _timeString = formatHHMMSS(_start);
+          },
+        );
+    });
   }
 
   // String _formatDateTime(DateTime dateTime) {
@@ -974,7 +1301,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       _showCameraException(e);
       return null;
     }
-    // await _startVideoPlayer();
+    await _startVideoPlayer();
   }
 
   Future<void> pauseVideoRecording() async {
@@ -1021,7 +1348,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     vcontroller.addListener(videoPlayerListener);
     await vcontroller.setLooping(true);
     await vcontroller.initialize();
-    await videoController?.dispose();
+    // await videoController?.dispose();
     if (mounted) {
       setState(() {
         imagePath = null;
