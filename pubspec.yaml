@@ -40,6 +40,7 @@ dependencies:
   share:
   cloud_firestore:
   firebase_auth:
+  sliding_up_panel:
 
 dev_dependencies:
   flutter_test:

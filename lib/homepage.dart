@@ -6,6 +6,7 @@ import 'package:xpert/broadcastpage.dart';
 import 'package:xpert/detail_question_page.dart';
 import 'package:xpert/videoanswerscreen.dart';
 import 'package:xpert/xpert_profile_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title, this.cameras}) : super(key: key);
@@ -28,12 +29,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _isCardScrollable = false;
   bool _isPopularQuestion = false;
   var dropdownValue = '';
+  bool _allQuestionsDone = false;
   static bool _isVisible = false;
   static bool _isAccepted = false; //let's assume default action is reject
   // The question incoming goes here below
-  String _questionAsked = 'What dietary restrictions should be followed by people who follow a sedentary lifestyle without much scope for exercise?';
+  // String _questionAsked = 'What dietary restrictions should be followed by people who follow a sedentary lifestyle without much scope for exercise?';
   
-  Widget _questionCard() {
+  Widget _questionCard(String questionAsked) {
 //    if(_isCardScrollable){
 //      setState(() {
 //        Navigator.pushReplacement(context,
@@ -50,7 +52,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           else{
             _isCardScrollable = true;
             Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context)=> DetailQuestionPage(incomingQuestion: _questionAsked,))
+                MaterialPageRoute(builder: (context)=> DetailQuestionPage(incomingQuestion: questionAsked,))
             );
           }
         });
@@ -126,7 +128,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        _questionAsked,
+                        questionAsked,
                         style: TextStyle(color: Colors.black, fontSize: 18.0,),
                       ),
                     ))
@@ -134,7 +136,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      _questionAsked,
+                      questionAsked,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.black, fontSize: 18.0, fontWeight: FontWeight.w300),
                     ),
@@ -243,10 +245,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
   }
-
+int _currDocIndex = 0;
   @override
   Widget build(BuildContext context) {
     CardController controller; //Use this to trigger swap.
+    List<DocumentSnapshot> userDocuments;
+    Firestore.instance.collection('web_orders')
+    .snapshots().listen(
+      (data) => userDocuments = data.documents
+          // (data) => print('grower ${data.documents[0]['name']}')
+    );
+    int _documentsLength;
+    
+    if(userDocuments != null)
+    _documentsLength = userDocuments.length;
 
     return new Scaffold(
       body: Column(
@@ -277,65 +289,84 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Container(
                   padding: EdgeInsets.only(top: 20.0),
                   height: MediaQuery.of(context).size.height * 0.6,
-                  child: _isCardScrollable
-                      ? _questionCard()
-                      : Transform.scale(
-                          scale: 1/0.68,
-                                                  child: TinderSwapCard(
-                            orientation: AmassOrientation.BOTTOM,
-                            totalNum: 6,
-                            stackNum: 3,
-                            swipeEdge: 3.0,
-                            maxWidth: MediaQuery.of(context).size.width * 0.7,
-                            maxHeight: MediaQuery.of(context).size.width * 1.0,
-                            minWidth: MediaQuery.of(context).size.width * 0.6,
-                            minHeight: MediaQuery.of(context).size.width * 0.9,
-                            cardBuilder: (context, index) => _questionCard(),
-                            // cardBuilder: (context, index) => Card(
-                            //       child: Image.asset('${welcomeImages[index]}'),
-                            //       color: Colors.white,
-                            //     ),
-                            cardController: controller = CardController(),
-                            swipeUpdateCallback:
-                                (DragUpdateDetails details, Alignment align) {
-                              /// Get swiping card's alignment
-                              print(align.x);
-                              if(align.x > 0 && align.x <= 3.2){
-                                _isVisible = true;
-                                _isAccepted = true;
-                              }
-                              
-                              else if (align.x < 0) {
-                                _isVisible = true;
-                                _isAccepted = false;
-                                print('left');
-                                //Card is LEFT swiping
-                              } else if (align.x > 3.2) {
-                                //Card is RIGHT swiping
-                                // Future.delayed(
-                                //     const Duration(milliseconds: 500), () {});
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            new CameraApp(widget.cameras, _questionAsked)));
+                  child: _allQuestionsDone?
+                  Container()
+                  :
+                  StreamBuilder(
+                    stream: Firestore.instance.collection('web_orders').document(userDocuments.elementAt(_currDocIndex).toString()).snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+          return CircularProgressIndicator();
+        }
+        var userDocument = snapshot.data;
+                      return _isCardScrollable
+                          ? _questionCard(userDocument["message"])
+                          : Transform.scale(
+                              scale: 1/0.68,
+                                                      child: TinderSwapCard(
+                                orientation: AmassOrientation.BOTTOM,
+                                totalNum: 6,
+                                stackNum: 3,
+                                swipeEdge: 3.0,
+                                maxWidth: MediaQuery.of(context).size.width * 0.7,
+                                maxHeight: MediaQuery.of(context).size.width * 1.0,
+                                minWidth: MediaQuery.of(context).size.width * 0.6,
+                                minHeight: MediaQuery.of(context).size.width * 0.9,
+                                cardBuilder: (context, index) => _questionCard(userDocument["message"]),
+                                // cardBuilder: (context, index) => Card(
+                                //       child: Image.asset('${welcomeImages[index]}'),
+                                //       color: Colors.white,
+                                //     ),
+                                cardController: controller = CardController(),
+                                swipeUpdateCallback:
+                                    (DragUpdateDetails details, Alignment align) {
+                                  /// Get swiping card's alignment
+                                  print(align.x);
+                                  if(align.x > 0 && align.x <= 3.2){
+                                    _isVisible = true;
+                                    _isAccepted = true;
+                                  }
+                                  
+                                  else if (align.x < 0) {
+                                    _isVisible = true;
+                                    _isAccepted = false;
+                                    print('left');
+                                    //Card is LEFT swiping
+                                  } else if (align.x > 3.2) {
+                                    //Card is RIGHT swiping
+                                    // Future.delayed(
+                                    //     const Duration(milliseconds: 500), () {});
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                new CameraApp(widget.cameras, userDocument["message"])));
 
-                                print('right');
-                                // _isVisible = false;
-                              }
-                            },
-                            swipeCompleteCallback:
-                                (CardSwipeOrientation orientation, int index) {
-                              /// Get orientation & index of swiped card!
-                               _isVisible = false;
-                            }
-                            ),
-                ),
+                                    print('right');
+                                    // _isVisible = false;
+                                  }
+                                },
+                                swipeCompleteCallback:
+                                    (CardSwipeOrientation orientation, int index) {
+                                  /// Get orientation & index of swiped card!
+                                   _isVisible = false;
+                                   _currDocIndex++;
+                                   if(_currDocIndex >= _documentsLength){
+                                     setState(() {
+                                       _allQuestionsDone = true;
+                                     });
+                                   }
+                                   
+                                }
+                                ),
+                );
+                    }
+                  ),
                 ),
                 SizedBox(
                   height: 100.0,
                 ),
-                _isCardScrollable
+                _isCardScrollable || _allQuestionsDone
                     ? Container()
                     : Text(
                         'Swipe right to answer',
